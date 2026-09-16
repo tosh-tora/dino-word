@@ -165,11 +165,11 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 .stage.bounce svg{animation:bounce .6s ease;}
 @keyframes bounce{
-  0%{transform:translateY(0) scale(1);}
-  30%{transform:translateY(-16px) scale(1.04);}
-  55%{transform:translateY(0) scale(.99);}
-  75%{transform:translateY(-6px);}
-  100%{transform:translateY(0);}
+  0%{transform:translate(-50%,-50%) translateY(0) scale(1);}
+  30%{transform:translate(-50%,-50%) translateY(-16px) scale(1.04);}
+  55%{transform:translate(-50%,-50%) translateY(0) scale(.99);}
+  75%{transform:translate(-50%,-50%) translateY(-6px);}
+  100%{transform:translate(-50%,-50%) translateY(0);}
 }
 
 /* ---------- せいかい えんしゅつ（クイズ・ぶんをつくろう・かんじ きょうつう） ---------- */
@@ -177,27 +177,14 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .confetti-layer{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:15;}
 .confetti-piece{
   position:absolute;top:4%;left:0;font-size:clamp(18px,3.2vw,28px);
-  opacity:0;animation:confetti-fall ease-in forwards;
-}
-@keyframes confetti-fall{
-  0%{opacity:0;transform:translate(0,0) rotate(0deg) scale(.5);}
-  14%{opacity:1;transform:translate(calc(var(--drift) * .25),8%) rotate(calc(var(--rot) * .3)) scale(1);}
-  100%{opacity:0;transform:translate(var(--drift),var(--fall)) rotate(var(--rot)) scale(1);}
+  opacity:0;
 }
 .correct-badge{
-  position:absolute;top:8%;left:50%;transform:translate(-50%,-14px) scale(.5) rotate(-8deg);
+  position:absolute;top:8%;left:50%;transform:translate(-50%,-14px) scale(.4) rotate(-10deg);
   font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
   font-size:clamp(22px,4vw,34px);color:#fff;background:var(--accent-deep);
   padding:10px 26px;border-radius:999px;box-shadow:0 8px 20px var(--shadow);
   opacity:0;pointer-events:none;z-index:16;white-space:nowrap;
-}
-.correct-badge.show{animation:badge-pop 1.6s cubic-bezier(.34,1.56,.64,1) forwards;}
-@keyframes badge-pop{
-  0%{opacity:0;transform:translate(-50%,-14px) scale(.4) rotate(-10deg);}
-  18%{opacity:1;transform:translate(-50%,0) scale(1.12) rotate(4deg);}
-  30%{transform:translate(-50%,0) scale(1) rotate(-2deg);}
-  80%{opacity:1;transform:translate(-50%,0) scale(1) rotate(0deg);}
-  100%{opacity:0;transform:translate(-50%,-6px) scale(.96) rotate(0deg);}
 }
 
 /* ---------- sentence slots ---------- */
@@ -357,6 +344,11 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 }
 .kanji-top svg,.kanji-top img{width:clamp(120px,26vw,260px);height:auto;object-fit:contain;}
 .kanji-q{color:var(--muted);font-size:clamp(13px,1.7vw,17px);}
+.kanji-hint-text{
+  color:var(--accent-deep);font-weight:700;text-align:center;
+  font-family:"Zen Maru Gothic",sans-serif;
+  font-size:clamp(13px,1.7vw,17px);min-height:1.6em;
+}
 .ksent{
   font-family:"Zen Maru Gothic",sans-serif;font-weight:700;text-align:center;
   font-size:clamp(18px,2.7vw,32px);line-height:2.2;min-height:2.2em;
@@ -377,9 +369,15 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important;transition:none !important;}
+  /* うごきを へらす せっていの ときも、バッジは JS が じかに
+     opacity/transform を かきかえるので とめても きえない。
+     キラキラだけ ひょうじさせない */
+  .confetti-layer{display:none !important;}
 }
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
+
+<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-16-4</div>
 
 <div class="app">
 
@@ -440,7 +438,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <span><i style="background:var(--r-prd)"></i>おわりのことば</span>
       </div>
       <div class="done" id="build-done" style="display:none;">
-        <span class="msg" id="build-msg">よく できました！</span>
         <button class="big" id="build-next">つぎの きょうりゅう →</button>
       </div>
     </div>
@@ -472,6 +469,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
     <div class="bar">
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
+      <button class="iconbtn" id="kanji-hint">💡 ヒント</button>
       <button class="iconbtn" id="kanji-say">🔊 きく</button>
       <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
@@ -486,6 +484,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <div id="kanji-art"></div>
       </div>
       <div class="kanji-q" id="kanji-q">この かんじは どれ？</div>
+      <div class="kanji-hint-text" id="kanji-hint-text"></div>
       <div class="ksent" id="ksent"></div>
       <div class="choices" id="kchoices"></div>
       <div class="done" id="kanji-done" style="display:none;">
@@ -1324,7 +1323,7 @@ function newSentence(){
   });
 
   $("#build-done").style.display="none";
-  $("#build-badge").classList.remove("show");
+  hideBadge($("#build-badge"));
   $("#build-confetti").innerHTML="";
 }
 
@@ -1354,12 +1353,11 @@ function sentenceText(){return curTokens.map(function(t){return t[0];}).join("")
 function speechSentenceText(){return curTokens.map(speechWord).join("");}
 
 function finishSentence(){
-  var msgs=["よく できました！","すごい！","かんぺき！","じょうずだね！"];
-  $("#build-msg").textContent=pick(msgs);
   $("#build-done").style.display="flex";
-  $("#build-stage").classList.add("bounce");
   addStar();
+  $("#build-badge").textContent=cur.name+"、ゲット！🎉";
   celebrate("#build-badge","#build-confetti");
+  playCapture($("#build-stage svg, #build-stage img"));
   setTimeout(function(){speak(speechSentenceText(),0.78);},250);
 }
 $("#build-next").addEventListener("click",newSentence);
@@ -1377,7 +1375,7 @@ var quizDino=null,quizLastId=null;
 function newQuiz(){
   var pool=DINOS.filter(function(d){return d.id!==quizLastId;});
   quizDino=pick(pool);quizLastId=quizDino.id;
-  $("#quiz-badge").classList.remove("show");
+  hideBadge($("#quiz-badge"));
   $("#quiz-confetti").innerHTML="";
   var stage=$("#quiz-stage");
   stage.innerHTML='<div class="shadow"></div>'+dinoSVG(quizDino.id,"mystery");
@@ -1399,28 +1397,87 @@ function newQuiz(){
     h.appendChild(b);
   });
 }
+function prefersReducedMotion(){
+  try{return window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(e){return false;}
+}
+/* CSSアニメーションや Web Animations API に たよらず、
+   requestAnimationFrame で じかに style.transform / style.opacity を
+   かきかえる。ふるい ブラウザでも かならず うごくようにする ため。 */
+function runRAF(durationMs,delayMs,onFrame,onDone){
+  var start=null;
+  function step(ts){
+    if(start===null)start=ts;
+    var t=ts-start-(delayMs||0);
+    if(t<0){requestAnimationFrame(step);return;}
+    var p=Math.min(1,t/durationMs);
+    onFrame(p);
+    if(p<1)requestAnimationFrame(step);
+    else if(onDone)onDone();
+  }
+  requestAnimationFrame(step);
+}
+function animateConfettiPiece(el,delay,dur,drift,fall,rot){
+  runRAF(dur,delay,function(p){
+    var scale=p<.15?(.5+.5*(p/.15)):1;
+    var opacity=p<.15?(p/.15):(1-(p-.15)/.85);
+    el.style.opacity=String(Math.max(0,Math.min(1,opacity)));
+    el.style.transform="translate("+(drift*p)+"px,"+(fall*p)+"px) rotate("+(rot*p)+"deg) scale("+scale+")";
+  },function(){
+    if(el.parentNode)el.parentNode.removeChild(el);
+  });
+}
 function burstConfetti(container){
   var emojis=["⭐","✨","🎉","🦕","🦴"];
+  var rect=container.getBoundingClientRect();
+  var h=(rect&&rect.height)||300;
   var n=18,i;
   for(i=0;i<n;i++){
     var el=document.createElement("span");
     el.className="confetti-piece";
     el.textContent=emojis[Math.floor(Math.random()*emojis.length)];
-    el.style.left=(4+Math.random()*88)+"%";
-    el.style.setProperty("--drift",Math.round(Math.random()*90-45)+"px");
-    el.style.setProperty("--fall",Math.round(34+Math.random()*30)+"dvh");
-    el.style.setProperty("--rot",Math.round(Math.random()*300-150)+"deg");
-    el.style.animationDelay=(Math.random()*.3)+"s";
-    el.style.animationDuration=(.9+Math.random()*.6)+"s";
+    el.style.left=Math.round(4+Math.random()*88)+"%";
     container.appendChild(el);
+    animateConfettiPiece(el,Math.random()*300,900+Math.random()*600,
+      Math.round(Math.random()*90-45),
+      Math.round(h*(.34+Math.random()*.3)),
+      Math.round(Math.random()*300-150));
   }
-  setTimeout(function(){container.innerHTML="";},1900);
+}
+function playCapture(el){
+  if(!el)return;
+  runRAF(900,0,function(p){
+    var e=p*p;
+    var scale=1-e*.96;
+    var ty=-170*e;
+    var rot=25*e;
+    el.style.transform="translate(-50%,-50%) translateY("+ty+"px) scale("+scale+") rotate("+rot+"deg)";
+    el.style.opacity=String(1-e);
+  });
+}
+function showBadge(el){
+  if(!el)return;
+  el.style.transition="none";
+  el.style.opacity="0";
+  el.style.transform="translate(-50%,-14px) scale(.4) rotate(-10deg)";
+  void el.offsetWidth;
+  el.style.transition="opacity .3s ease,transform .5s cubic-bezier(.34,1.56,.64,1)";
+  el.style.opacity="1";
+  el.style.transform="translate(-50%,0) scale(1) rotate(0deg)";
+  clearTimeout(el._hideTimer);
+  el._hideTimer=setTimeout(function(){
+    el.style.transition="opacity .4s ease";
+    el.style.opacity="0";
+  },1300);
+}
+function hideBadge(el){
+  if(!el)return;
+  clearTimeout(el._hideTimer);
+  el.style.transition="none";
+  el.style.opacity="0";
+  el.style.transform="translate(-50%,-14px) scale(.4) rotate(-10deg)";
 }
 function celebrate(badgeId,confettiId){
-  var badge=$(badgeId);
-  badge.classList.remove("show");
-  void badge.offsetWidth;
-  badge.classList.add("show");
+  showBadge($(badgeId));
   burstConfetti($(confettiId));
 }
 $("#quiz-reveal").addEventListener("click",function(){
@@ -1494,8 +1551,9 @@ function newKanji(){
   $("#kanji-art").innerHTML="";
   $("#kanji-q").textContent="この かんじは どれ？";
   $("#ksent").innerHTML="";
+  $("#kanji-hint-text").textContent="";
   $("#kanji-done").style.display="none";
-  $("#kanji-badge").classList.remove("show");
+  hideBadge($("#kanji-badge"));
   $("#kanji-confetti").innerHTML="";
 
   var others=shuffle(KANJI.filter(function(x){return x.k!==kCur.k;})).slice(0,2);
@@ -1533,6 +1591,17 @@ function tapKanji(btn,opt){
   }
 }
 $("#kanji-next").addEventListener("click",newKanji);
+function blankFirst(str,word){
+  var i=str.indexOf(word);
+  if(i<0)return str;
+  return str.slice(0,i)+"◯◯◯"+str.slice(i+word.length);
+}
+$("#kanji-hint").addEventListener("click",function(){
+  if(!kCur||kSolved)return;
+  $("#kanji-art").innerHTML=dinoSVG(kCur.dino);
+  $("#kanji-hint-text").textContent=blankFirst(kCur.plain,kCur.w);
+  speak("この きょうりゅうを みて、かんがえてみよう",0.85);
+});
 $("#kanji-say").addEventListener("click",function(){
   if(!kCur)return;
   if(kSolved)speak(kCur.plain,0.78);
@@ -1581,13 +1650,10 @@ $("#sheet").addEventListener("click",function(e){if(e.target===this)closeSheet()
 /* ============================================================
    スタート
    ============================================================ */
-var CREDITS=[
-  {id:"tricera",text:"トリケラトプス: Nobu Tamura (Wikimedia Commons / CC BY 3.0)"}
-];
-(function(){
-  var have=CREDITS.filter(function(c){return PHOTO[c.id];});
-  if(have.length)$("#credits").textContent="きょうりゅうの イラスト — "+have.map(function(c){return c.text;}).join(" ／ ");
-})();
+/* CC BY などの ライセンスが ひつような しゃしんの クレジットひょうじは
+   がめんじょうからは はずした（おやこさま向けの UI を シンプルに するため）が、
+   ライセンスじょうけんを まもるため、ソースコードには のこしておく。
+   トリケラトプス しゃしん: Nobu Tamura (Wikimedia Commons / CC BY 3.0) */
 $("#home-art").innerHTML=dinoSVG("tricera");
 renderStars();
 
