@@ -205,7 +205,11 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   font-size:clamp(20px,2.6vw,30px);
   border:2px dashed transparent;
 }
-.slot.next{border-color:var(--accent);animation:pulse 1.6s ease-in-out infinite;}
+.slot.n-sub{--next:var(--r-sub);}
+.slot.n-par{--next:var(--r-par);}
+.slot.n-wrd{--next:var(--r-wrd);}
+.slot.n-prd{--next:var(--r-prd);}
+.slot.next{border-color:var(--next,var(--accent));animation:pulse 1.6s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
 .slot.filled{color:var(--chip-text);border-color:transparent;}
 .slot.r-sub{background:var(--r-sub);}
@@ -1429,7 +1433,7 @@ function newSentence(){
   var slots=$("#slots");slots.innerHTML="";
   curTokens.forEach(function(t,i){
     var el=document.createElement("div");
-    el.className="slot"+(i===0?" next":"");
+    el.className="slot n-"+t[1]+(i===0?" next":"");
     el.dataset.i=i;
     slots.appendChild(el);
   });
