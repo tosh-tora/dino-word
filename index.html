@@ -23,6 +23,7 @@
   --r-prd:#D2483F;
   --chip-text:#FFFFFF;
   --slot-empty:#EAEFE5;
+  --miss:#C0392B;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -42,6 +43,7 @@
     --r-prd:#F3877C;
     --chip-text:#0E1713;
     --slot-empty:#23322A;
+    --miss:#FF6B5E;
   }
 }
 :root[data-theme="dark"]{
@@ -61,6 +63,7 @@
   --r-prd:#F3877C;
   --chip-text:#0E1713;
   --slot-empty:#23322A;
+  --miss:#FF6B5E;
 }
 
 *{box-sizing:border-box;}
@@ -234,8 +237,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .chip.r-prd{background:var(--r-prd);box-shadow:0 4px 0 rgba(0,0,0,.18);}
 .chip:active{transform:translateY(4px);box-shadow:none;}
 .chip.used{opacity:.18;pointer-events:none;}
-.chip.shake{animation:shake .4s ease;}
-@keyframes shake{0%,100%{transform:translateX(0);}20%{transform:translateX(-8px);}40%{transform:translateX(8px);}60%{transform:translateX(-5px);}80%{transform:translateX(5px);}}
+.chip.miss,.choice.miss{box-shadow:0 0 0 4px var(--miss);filter:grayscale(.6);}
 
 .legend{display:flex;flex-wrap:wrap;justify-content:center;gap:14px;color:var(--muted);font-size:clamp(11px,1.3vw,13px);}
 .legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px;}
@@ -370,7 +372,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .choice:active{transform:translateY(4px);box-shadow:none;}
 .choice .ic{display:block;font-size:clamp(26px,4.6vw,44px);line-height:1.2;}
 .choice b{font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(17px,2.3vw,26px);font-weight:700;}
-.choice.wrong{animation:shake .4s ease;}
 .choice.right{background:var(--r-wrd);color:var(--chip-text);box-shadow:none;}
 
 @media (prefers-reduced-motion: reduce){
@@ -383,7 +384,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-16-5</div>
+<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-19-1</div>
 
 <div class="app">
 
@@ -1489,9 +1490,7 @@ function tapChip(btn,tok){
     if(nx)nx.classList.add("next");
     if(slotPos===curTokens.length)finishSentence();
   }else{
-    btn.classList.remove("shake");
-    void btn.offsetWidth;
-    btn.classList.add("shake");
+    wrongFeedback(btn);
   }
 }
 
@@ -1563,6 +1562,47 @@ function runRAF(durationMs,delayMs,onFrame,onDone){
     else if(onDone)onDone();
   }
   requestAnimationFrame(step);
+}
+/* まちがえたときの おと。ユーザーの タップの なかで AudioContext を つくる（iOS の きまり） */
+var audioCtx=null;
+function playMissSound(){
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return;
+    if(!audioCtx)audioCtx=new AC();
+    if(audioCtx.state==="suspended")audioCtx.resume();
+    var t0=audioCtx.currentTime;
+    [[220,0],[165,.13]].forEach(function(n){
+      var osc=audioCtx.createOscillator(),g=audioCtx.createGain();
+      osc.type="triangle";
+      osc.frequency.value=n[0];
+      g.gain.setValueAtTime(0.0001,t0+n[1]);
+      g.gain.exponentialRampToValueAtTime(0.25,t0+n[1]+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+n[1]+.12);
+      osc.connect(g);g.connect(audioCtx.destination);
+      osc.start(t0+n[1]);osc.stop(t0+n[1]+.13);
+    });
+  }catch(e){}
+}
+/* まちがいの はんのう。CSSアニメに たよらない（iPhoneの「ししゃこうかを へらす」でも わかるように、
+   いろの わく と おとは いつも だす。ゆれは うごきを へらす せっていの ときは しない） */
+function wrongFeedback(el){
+  el.classList.add("miss");
+  clearTimeout(el._missTimer);
+  el._missTimer=setTimeout(function(){el.classList.remove("miss");},450);
+  playMissSound();
+  if(prefersReducedMotion())return;
+  var token=(el._shakeToken||0)+1;
+  el._shakeToken=token;
+  runRAF(400,0,function(p){
+    if(el._shakeToken!==token)return;
+    el.style.transition="none";
+    el.style.transform="translateX("+(Math.sin(p*Math.PI*6)*(1-p)*9)+"px)";
+  },function(){
+    if(el._shakeToken!==token)return;
+    el.style.transform="";
+    el.style.transition="";
+  });
 }
 function animateConfettiPiece(el,delay,dur,drift,fall,rot){
   runRAF(dur,delay,function(p){
@@ -1743,9 +1783,7 @@ function tapKanji(btn,opt){
     celebrate("#kanji-badge","#kanji-confetti");
     speak(kCur.y.replace(/[（）]/g,"")+"。"+kCur.plain,0.78);
   }else{
-    btn.classList.remove("wrong");
-    void btn.offsetWidth;
-    btn.classList.add("wrong");
+    wrongFeedback(btn);
   }
 }
 $("#kanji-next").addEventListener("click",newKanji);
