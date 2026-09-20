@@ -306,6 +306,31 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   box-shadow:0 4px 0 var(--line);text-align:center;
 }
 .zcard:active{transform:translateY(4px);box-shadow:none;}
+.zcard{position:relative;}
+.zcard .times{
+  position:absolute;top:8px;right:8px;padding:2px 9px;border-radius:999px;
+  background:var(--accent-deep);color:#fff;font-family:"Zen Maru Gothic",sans-serif;
+  font-weight:900;font-size:12px;font-variant-numeric:tabular-nums;
+}
+:root[data-theme="dark"] .zcard .times{color:#20160A;}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .zcard .times{color:#20160A;}}
+.zcard.locked{background:var(--panel2);}
+.caught{
+  text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
+  font-size:clamp(18px,2.4vw,24px);color:var(--accent-deep);margin:0 0 12px;
+}
+.caught em{font-style:normal;font-size:1.4em;font-variant-numeric:tabular-nums;}
+.zcard.locked b{color:var(--muted);letter-spacing:.2em;}
+.zprogress{
+  flex:0 0 auto;margin:0 clamp(12px,3vw,28px) 12px;padding:12px 18px;border-radius:20px;
+  background:var(--panel);box-shadow:0 3px 0 var(--line);text-align:center;
+}
+.zprogress .count{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(17px,2.4vw,24px);}
+.zprogress .count em{font-style:normal;color:var(--accent-deep);font-size:1.5em;font-variant-numeric:tabular-nums;}
+.zprogress .track{height:12px;border-radius:999px;background:var(--slot-empty);margin-top:8px;overflow:hidden;}
+.zprogress .fill{height:100%;width:0;border-radius:999px;background:var(--accent);transition:width .4s ease;}
+.zprogress .note{display:block;color:var(--muted);font-size:clamp(12px,1.4vw,14px);margin-top:6px;}
+.sheet-locked p{text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:500;font-size:clamp(15px,1.9vw,19px);line-height:1.7;margin:8px 0 16px;}
 .zcard svg,.zcard img{width:100%;height:clamp(66px,8.5vw,104px);object-fit:contain;display:block;}
 .zcard b{display:block;font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(13px,1.5vw,16px);margin-top:2px;}
 
@@ -384,7 +409,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-19-1</div>
+<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-20-1</div>
 
 <div class="app">
 
@@ -414,7 +439,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         </button>
         <button class="mode" data-go="zukan">
           <span class="badge">📖</span>
-          <span><b>ずかんを みる</b><span>30ひきの きょうりゅうを しらべる</span></span>
+          <span><b>ずかんを みる</b><span id="zukan-sub">ぶんを つくって きょうりゅうを ゲットしよう</span></span>
         </button>
       </div>
       <p class="credits" id="credits"></p>
@@ -445,6 +470,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
         <span><i style="background:var(--r-prd)"></i>おわりのことば</span>
       </div>
       <div class="done" id="build-done" style="display:none;">
+        <span class="msg" id="build-new" style="display:none;">📖 ずかんに のったよ！</span>
         <button class="big" id="build-next">つぎの きょうりゅう →</button>
       </div>
     </div>
@@ -508,6 +534,7 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
       <div class="spacer"></div>
       <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
+    <div class="zprogress" id="zprogress"></div>
     <div class="zukan" id="zukan"></div>
   </section>
 
@@ -1349,6 +1376,27 @@ try{stars=parseInt(localStorage.getItem("dinolab_stars")||"0",10)||0;}catch(e){s
 function renderStars(){$$(".stars span, #star-count").forEach(function(el){el.textContent=stars;});}
 function addStar(){stars++;try{localStorage.setItem("dinolab_stars",String(stars));}catch(e){}renderStars();}
 
+/* ゲットした きょうりゅう（ぶんを つくろうで かんせいさせると ずかんに のる）。
+   got[id] = つかまえた かいすう。むかしの ほぞんけいしき（id の はいれつ）も よみこむ。 */
+var got={};
+try{
+  var saved=JSON.parse(localStorage.getItem("dinolab_got")||"{}");
+  if(Array.isArray(saved))saved.forEach(function(id){got[id]=1;});
+  else Object.keys(saved).forEach(function(id){var n=parseInt(saved[id],10);if(n>0)got[id]=n;});
+}catch(e){got={};}
+function gotCount(){return DINOS.filter(function(d){return got[d.id];}).length;}
+/* つかまえた かいすうを 1 ふやす。はじめての ゲットなら true */
+function markGot(id){
+  var first=!got[id];
+  got[id]=(got[id]||0)+1;
+  try{localStorage.setItem("dinolab_got",JSON.stringify(got));}catch(e){}
+  renderZukanSub();
+  return first;
+}
+function renderZukanSub(){
+  $("#zukan-sub").textContent="ゲットした きょうりゅう "+gotCount()+" / "+DINOS.length+" ひき";
+}
+
 /* よみあげ */
 var voices=[];
 function loadVoices(){try{voices=window.speechSynthesis.getVoices()||[];}catch(e){voices=[];}}
@@ -1502,6 +1550,7 @@ function speechSentenceText(){return curTokens.map(speechWord).join("");}
 function finishSentence(){
   $("#build-done").style.display="flex";
   addStar();
+  $("#build-new").style.display=markGot(cur.id)?"":"none";
   $("#build-badge").textContent=cur.name+"、ゲット！🎉";
   celebrate("#build-badge","#build-confetti");
   playCapture($("#build-stage svg, #build-stage img"));
@@ -1808,20 +1857,46 @@ $("#kanji-say").addEventListener("click",function(){
    ずかん
    ============================================================ */
 function renderZukan(){
+  var n=gotCount(),total=DINOS.length;
+  $("#zprogress").innerHTML=
+    '<div class="count">ゲットした きょうりゅう <em>'+n+'</em> / '+total+' ひき</div>'+
+    '<div class="track"><div class="fill" style="width:'+Math.round(n/total*100)+'%"></div></div>'+
+    '<span class="note">'+(n===total?"ぜんぶ ゲット！ ずかん コンプリート！🏆":
+      n===0?"「ぶんを つくろう」で ぶんを かんせいさせると ゲットできるよ":
+      "あと "+(total-n)+"ひき！ ぶんを つくって ゲットしよう")+'</span>';
   var z=$("#zukan");
-  if(z.childElementCount)return;
+  z.innerHTML="";
   DINOS.forEach(function(d){
     var b=document.createElement("button");
-    b.className="zcard";
-    b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
+    if(got[d.id]){
+      b.className="zcard";
+      b.innerHTML='<span class="times">×'+got[d.id]+'</span>'+dinoSVG(d.id)+'<b>'+d.name+'</b>';
+    }else{
+      b.className="zcard locked";
+      b.innerHTML=dinoSVG(d.id,"mystery")+'<b>？？？</b>';
+    }
     b.addEventListener("click",function(){openSheet(d);});
     z.appendChild(b);
   });
 }
+function openLockedSheet(){
+  $("#sheet-inner").innerHTML=
+   '<div class="sheet-locked"><h2>？？？</h2>'+
+   '<p>まだ ゲットして いないよ。<br>「ぶんを つくろう」で ぶんを かんせいさせると<br>ずかんに のるよ！</p></div>'+
+   '<div class="sheet-actions">'+
+     '<button class="big" id="sheet-build">🧩 ぶんを つくりに いく</button>'+
+     '<button class="ghost" id="sheet-close">とじる</button>'+
+   '</div>';
+  $("#sheet").classList.add("on");
+  $("#sheet-close").addEventListener("click",closeSheet);
+  $("#sheet-build").addEventListener("click",function(){closeSheet();go("build");});
+}
 function openSheet(d){
+  if(!got[d.id]){openLockedSheet();return;}
   var html=dinoSVG(d.id)+
    '<h2>'+d.name+'</h2>'+
    '<div class="kindrow"><span class="kind">'+d.kind+'</span></div>'+
+   '<p class="caught">🎉 <em>'+got[d.id]+'</em>ひき つかまえたよ！</p>'+
    '<dl class="facts">'+
      '<div class="fact"><dt>なまえの いみ</dt><dd>'+d.meaning+'</dd></div>'+
      '<div class="fact"><dt>おおきさ</dt><dd>'+d.size+'</dd></div>'+
@@ -1852,6 +1927,7 @@ var homeIds=Object.keys(ART);
 var homeId=homeIds[Math.floor(Math.random()*homeIds.length)];
 $("#home-art").innerHTML=dinoSVG(homeId);
 renderStars();
+renderZukanSub();
 
 })();
 </script>
