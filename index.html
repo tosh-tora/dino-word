@@ -382,6 +382,10 @@ details.credits a{color:inherit;}
   font-family:"Zen Maru Gothic",sans-serif;font-weight:700;color:var(--accent-deep);
   font-size:clamp(16px,2.2vw,26px);min-height:1.4em;
 }
+.kstreak{display:flex;justify-content:center;gap:4px;font-size:clamp(22px,3vw,32px);min-height:1.3em;line-height:1.3;}
+.kstreak .egg{opacity:.55;filter:grayscale(.3);}
+.kstreak .pop{display:inline-block;animation:khatch .6s cubic-bezier(.3,1.6,.5,1);}
+@keyframes khatch{0%{transform:scale(.2) rotate(-30deg);}100%{transform:scale(1) rotate(0);}}
 .kanji-top svg,.kanji-top img{width:clamp(120px,26vw,260px);height:auto;object-fit:contain;}
 .kanji-q{color:var(--muted);font-size:clamp(13px,1.7vw,17px);}
 .kanji-hint-text{
@@ -442,7 +446,7 @@ details.credits a{color:inherit;}
         </button>
         <button class="mode" data-go="kanji">
           <span class="badge">竜</span>
-          <span><b>かんじを おぼえよう</b><span>きょうりゅうの かんじ 14こ に ちょうせん</span></span>
+          <span><b>かんじを おぼえよう</b><span id="kanji-sub">きょうりゅうの かんじに ちょうせん</span></span>
         </button>
         <button class="mode" data-go="zukan">
           <span class="badge">📖</span>
@@ -524,6 +528,7 @@ details.credits a{color:inherit;}
         <div class="kcard">
           <div class="kbig" id="kbig">竜</div>
           <div class="kyomi" id="kyomi"></div>
+          <div class="kstreak" id="kstreak" title="ヒントなしで 5かい つづけて せいかいすると たまごが ぜんぶ かえって マスター"></div>
         </div>
         <div id="kanji-art"></div>
       </div>
@@ -1837,13 +1842,124 @@ var KANJI=[
   plain:"スピノサウルスの くちは ながいです"},
  {k:"手",y:"て",w:"て",ic:"✋",dino:"iguano",
   ruby:'イグアノドンの <ruby>手<rt>て</rt></ruby>に とげが あります。',
-  plain:"イグアノドンの てに とげが あります"}
+  plain:"イグアノドンの てに とげが あります"},
+ /* かず */
+ {k:"一",n:1,y:"いち",w:"いち",ic:"1️⃣",dino:"tyranno",
+  ruby:'ティラノサウルスは <ruby>一<rt>いち</rt></ruby>ばん つよいです。',
+  plain:"ティラノサウルスは いちばん つよいです"},
+ {k:"二",n:2,y:"に",w:"に",ic:"2️⃣",dino:"tyranno",
+  ruby:'ティラノサウルスの ゆびは <ruby>二<rt>に</rt></ruby>ほんです。',
+  plain:"ティラノサウルスの ゆびは にほんです"},
+ {k:"三",n:3,y:"さん",w:"さん",ic:"3️⃣",dino:"tricera",
+  ruby:'トリケラトプスの つのは <ruby>三<rt>さん</rt></ruby>ぼんです。',
+  plain:"トリケラトプスの つのは さんぼんです"},
+ {k:"四",n:4,y:"よん",w:"よん",ic:"4️⃣",dino:"stego",
+  ruby:'ステゴサウルスの しっぽの とげは <ruby>四<rt>よん</rt></ruby>ほんです。',
+  plain:"ステゴサウルスの しっぽの とげは よんほんです"},
+ {k:"五",n:5,y:"ご",w:"ご",ic:"5️⃣",dino:"raptor",
+  ruby:'ヴェロキラプトルが <ruby>五<rt>ご</rt></ruby>ひき います。',
+  plain:"ヴェロキラプトルが ごひき います"},
+ {k:"六",n:6,y:"ろく",w:"ろく",ic:"6️⃣",dino:"ptera",
+  ruby:'プテラノドンの つばさは <ruby>六<rt>ろく</rt></ruby>メートルです。',
+  plain:"プテラノドンの つばさは ろくメートルです"},
+ {k:"七",n:7,y:"なな",w:"なな",ic:"7️⃣",dino:"ankylo",
+  ruby:'アンキロサウルスは <ruby>七<rt>なな</rt></ruby>メートルです。',
+  plain:"アンキロサウルスは ななメートルです"},
+ {k:"八",n:8,y:"はち",w:"はち",ic:"8️⃣",dino:"carno",
+  ruby:'カルノタウルスは <ruby>八<rt>はち</rt></ruby>メートルです。',
+  plain:"カルノタウルスは はちメートルです"},
+ {k:"九",n:9,y:"きゅう",w:"きゅう",ic:"9️⃣",dino:"stego",
+  ruby:'ステゴサウルスは <ruby>九<rt>きゅう</rt></ruby>メートルです。',
+  plain:"ステゴサウルスは きゅうメートルです"},
+ {k:"十",n:10,y:"じゅう",w:"じゅう",ic:"🔟",dino:"iguano",
+  ruby:'イグアノドンは <ruby>十<rt>じゅう</rt></ruby>メートルです。',
+  plain:"イグアノドンは じゅうメートルです"},
+ /* かんたんな かんじ */
+ {k:"山",y:"やま",w:"やま",ic:"⛰️",dino:"brachio",
+  ruby:'ブラキオサウルスは <ruby>山<rt>やま</rt></ruby>のように おおきいです。',
+  plain:"ブラキオサウルスは やまのように おおきいです"},
+ {k:"川",y:"かわ",w:"かわ",ic:"🏞️",dino:"spino",
+  ruby:'スピノサウルスは <ruby>川<rt>かわ</rt></ruby>で さかなを とります。',
+  plain:"スピノサウルスは かわで さかなを とります"},
+ {k:"木",y:"き",w:"き",ic:"🌳",dino:"brachio",
+  ruby:'ブラキオサウルスは <ruby>木<rt>き</rt></ruby>の はっぱを たべます。',
+  plain:"ブラキオサウルスは きの はっぱを たべます"},
+ {k:"水",y:"みず",w:"みず",ic:"💧",dino:"diplo",
+  ruby:'ディプロドクスは <ruby>水<rt>みず</rt></ruby>を のみます。',
+  plain:"ディプロドクスは みずを のみます"},
+ {k:"火",y:"ひ",w:"ひ",ic:"🔥",dino:"parasaur",
+  ruby:'かざんから <ruby>火<rt>ひ</rt></ruby>が でて、パラサウロロフスが にげます。',
+  plain:"かざんから ひが でて、パラサウロロフスが にげます"},
+ {k:"月",y:"つき",w:"つき",ic:"🌙",dino:"ptera",
+  ruby:'プテラノドンが <ruby>月<rt>つき</rt></ruby>の よるに とびます。',
+  plain:"プテラノドンが つきの よるに とびます"},
+ {k:"石",y:"いし",w:"いし",ic:"🪨",dino:"ankylo",
+  ruby:'アンキロサウルスの せなかは <ruby>石<rt>いし</rt></ruby>のように かたいです。',
+  plain:"アンキロサウルスの せなかは いしのように かたいです"},
+ {k:"人",y:"ひと",w:"ひと",ic:"🧍",dino:"tyranno",
+  ruby:'きょうりゅうの じだいに <ruby>人<rt>ひと</rt></ruby>は いませんでした。',
+  plain:"きょうりゅうの じだいに ひとは いませんでした"},
+ {k:"子",y:"こ",w:"こ",ic:"👶",dino:"tricera",
+  ruby:'トリケラトプスの <ruby>子<rt>こ</rt></ruby>どもが あるきます。',
+  plain:"トリケラトプスの こどもが あるきます"},
+ {k:"上",y:"うえ",w:"うえ",ic:"⬆️",dino:"ptera",
+  ruby:'プテラノドンは もりの <ruby>上<rt>うえ</rt></ruby>を とびます。',
+  plain:"プテラノドンは もりの うえを とびます"},
+ {k:"下",y:"した",w:"した",ic:"⬇️",dino:"troodon",
+  ruby:'トロオドンは きの <ruby>下<rt>した</rt></ruby>で あめやどりを します。',
+  plain:"トロオドンは きの したで あめやどりを します"},
+ {k:"中",y:"なか",w:"なか",ic:"🎯",dino:"proto",
+  ruby:'たまごの <ruby>中<rt>なか</rt></ruby>に プロトケラトプスの あかちゃんが います。',
+  plain:"たまごの なかに プロトケラトプスの あかちゃんが います"},
+ {k:"虫",y:"むし",w:"むし",ic:"🐛",dino:"troodon",
+  ruby:'トロオドンは <ruby>虫<rt>むし</rt></ruby>も たべます。',
+  plain:"トロオドンは むしも たべます"},
+ {k:"雨",y:"あめ",w:"あめ",ic:"☔",dino:"tricera",
+  ruby:'<ruby>雨<rt>あめ</rt></ruby>が ふっても トリケラトプスは へいきです。',
+  plain:"あめが ふっても トリケラトプスは へいきです"},
+ {k:"犬",y:"いぬ",w:"いぬ",ic:"🐕",dino:"raptor",
+  ruby:'ヴェロキラプトルは <ruby>犬<rt>いぬ</rt></ruby>ぐらいの おおきさです。',
+  plain:"ヴェロキラプトルは いぬぐらいの おおきさです"}
 ];
-var kOrder=shuffle(KANJI),kIdx=0,kCur=null,kSolved=false;
+
+/* ヒントなし・まちがいなしで 5かい つづけて せいかい → マスター（もう でない） */
+var K_MASTER=5;
+var kStreak={};
+try{kStreak=JSON.parse(localStorage.getItem("dinolab_kanji_streak")||"{}")||{};}catch(e){kStreak={};}
+function saveKStreak(){try{localStorage.setItem("dinolab_kanji_streak",JSON.stringify(kStreak));}catch(e){}}
+function kMastered(x){return (kStreak[x.k]||0)>=K_MASTER;}
+function kLeft(){return KANJI.filter(function(x){return !kMastered(x);});}
+function renderKanjiSub(){
+  var m=KANJI.length-kLeft().length;
+  $("#kanji-sub").textContent="マスターした かんじ "+m+" / "+KANJI.length+" こ";
+}
+/* せいかいする たびに たまごが 1こずつ かえる */
+var K_HATCH=["🦕","🦖","🦕","🦖","🦕"];
+function renderKStreak(pop){
+  var n=Math.min(kStreak[kCur.k]||0,K_MASTER),s="";
+  for(var i=0;i<K_MASTER;i++){
+    s+=i<n?'<span class="hatched'+(pop&&i===n-1?' pop':'')+'">'+K_HATCH[i]+'</span>'
+          :'<span class="egg">🥚</span>';
+  }
+  $("#kstreak").innerHTML=s;
+}
+
+var kOrder=[],kIdx=0,kCur=null,kSolved=false,kClean=true;
 
 function newKanji(){
-  if(kIdx>=kOrder.length){kOrder=shuffle(KANJI);kIdx=0;}
-  kCur=kOrder[kIdx++];kSolved=false;
+  var left=kLeft();
+  if(!left.length){showKanjiAllDone();return;}
+  if(kIdx>=kOrder.length){kOrder=shuffle(left);kIdx=0;}
+  while(kIdx<kOrder.length&&kMastered(kOrder[kIdx]))kIdx++;
+  if(kIdx>=kOrder.length){kOrder=shuffle(left);kIdx=0;}
+  // おなじ かんじが つづかないように
+  var j=kIdx+1;
+  if(kCur&&kOrder[kIdx].k===kCur.k&&j<kOrder.length&&!kMastered(kOrder[j])){
+    var t=kOrder[kIdx];kOrder[kIdx]=kOrder[j];kOrder[j]=t;
+  }
+  kCur=kOrder[kIdx++];kSolved=false;kClean=true;
+  $("#kanji-next").textContent="つぎの かんじ →";
+  renderKStreak();
 
   $("#kbig").textContent=kCur.k;
   $("#kyomi").textContent="";
@@ -1855,7 +1971,7 @@ function newKanji(){
   hideBadge($("#kanji-badge"));
   $("#kanji-confetti").innerHTML="";
 
-  var others=shuffle(KANJI.filter(function(x){return x.k!==kCur.k;})).slice(0,2);
+  var others=shuffle(KANJI.filter(function(x){return x.w!==kCur.w;})).slice(0,2);
   var opts=shuffle([kCur].concat(others));
   var box=$("#kchoices");box.innerHTML="";box.classList.remove("solved");
   opts.forEach(function(o){
@@ -1877,17 +1993,40 @@ function tapKanji(btn,opt){
     $("#kanji-art").innerHTML=dinoSVG(kCur.dino);
     $("#kanji-q").textContent="";
     $("#ksent").innerHTML=kCur.ruby;
-    $("#kanji-msg").textContent=pick(["よく できました！","すごい！","おぼえたね！","せいかい！"]);
+    kStreak[kCur.k]=kClean?(kStreak[kCur.k]||0)+1:0;
+    saveKStreak();renderKStreak(kClean);renderKanjiSub();
+    var justMastered=kClean&&kStreak[kCur.k]===K_MASTER;
+    $("#kanji-msg").textContent=justMastered?"「"+kCur.k+"」を マスター！🏅":
+      pick(["よく できました！","すごい！","おぼえたね！","せいかい！"]);
     $("#kanji-done").style.display="flex";
     $("#kchoices").classList.add("solved");
     addStar();
     celebrate("#kanji-badge","#kanji-confetti");
     speak(kCur.y.replace(/[（）]/g,"")+"。"+kCur.plain,0.78);
   }else{
+    kClean=false;
     wrongFeedback(btn);
   }
 }
-$("#kanji-next").addEventListener("click",newKanji);
+$("#kanji-next").addEventListener("click",function(){
+  if(!kCur&&!kLeft().length){kStreak={};saveKStreak();renderKanjiSub();kOrder=[];kIdx=0;}
+  newKanji();
+});
+function showKanjiAllDone(){
+  kCur=null;kSolved=true;
+  $("#kbig").textContent="🏅";
+  $("#kyomi").textContent="";
+  $("#kstreak").textContent="";
+  $("#kanji-art").innerHTML="";
+  $("#kanji-q").textContent="";
+  $("#kanji-hint-text").textContent="";
+  $("#ksent").textContent="ぜんぶの かんじを マスターしたよ！";
+  $("#kchoices").innerHTML="";
+  $("#kanji-msg").textContent="すごい！ "+KANJI.length+"こ ぜんぶ マスター！";
+  $("#kanji-next").textContent="もういちど さいしょから";
+  $("#kanji-done").style.display="flex";
+  speak("ぜんぶの かんじを マスターしたよ",0.85);
+}
 function blankFirst(str,word){
   var i=str.indexOf(word);
   if(i<0)return str;
@@ -1895,10 +2034,14 @@ function blankFirst(str,word){
 }
 $("#kanji-hint").addEventListener("click",function(){
   if(!kCur||kSolved)return;
+  kClean=false;
   $("#kanji-art").innerHTML=dinoSVG(kCur.dino);
-  $("#kanji-hint-text").textContent=blankFirst(kCur.plain,kCur.w);
+  // かずの かんじは ぶんだと どの かずでも あてはまるので、かぞえる ヒントに する
+  $("#kanji-hint-text").textContent=kCur.n?
+    "🦕".repeat(kCur.n)+" いくつ あるかな？":blankFirst(kCur.plain,kCur.w);
   speak("この きょうりゅうを みて、かんがえてみよう",0.85);
 });
+renderKanjiSub();
 $("#kanji-say").addEventListener("click",function(){
   if(!kCur)return;
   if(kSolved)speak(kCur.plain,0.78);
