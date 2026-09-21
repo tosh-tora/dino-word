@@ -157,6 +157,17 @@ details.credits>summary::after{content:" ▾";}
 details.credits[open]>summary::after{content:" ▴";}
 details.credits>span{display:block;margin-top:6px;}
 details.credits a{color:inherit;}
+.testmode-toggle{
+  background:none;border:0;padding:4px 8px;margin:0 auto;display:block;cursor:pointer;
+  color:var(--muted);opacity:.45;font-size:11px;font-family:inherit;
+}
+.testmode-toggle:hover{opacity:.8;}
+.testmode-flag{
+  display:none;position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:9999;
+  padding:2px 10px;border-radius:999px;background:var(--accent-deep);color:#fff;
+  font-size:11px;font-weight:700;pointer-events:none;opacity:.85;
+}
+body.testmode .testmode-flag{display:block;}
 .parent-note{
   width:min(94vw,940px);border-radius:16px;padding:12px 16px;
   border:1px dashed var(--line);color:var(--muted);
@@ -420,7 +431,9 @@ details.credits a{color:inherit;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-20-5</div>
+<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-22-1</div>
+
+<div class="testmode-flag">テストモード（きろくされません）</div>
 
 <div class="app">
 
@@ -461,6 +474,7 @@ details.credits a{color:inherit;}
       <p class="parent-note">
         <b>おうちのかたへ</b>／ことばの色は役割です。<b style="color:var(--r-sub)">青＝だれが</b>・<b style="color:var(--r-par)">きいろ＝は / を / が / の / で</b>・<b style="color:var(--r-wrd)">みどり＝ことば</b>・<b style="color:var(--r-prd)">あか＝おわりのことば</b>。述語は正しい形しか出てこないので、並べるだけで「〜します」「〜です」の型が入ります。「クイズを だそう」は、指示語（あれ・これ）では伝わらない状況をつくって、説明する言葉を引き出すモードです。「かんじを おぼえよう」は、漢字→読み→恐竜の実物を1画面で結びつけ、最後にふりがな付きの漢字かな交じり文を見せます。
       </p>
+      <button class="testmode-toggle" id="testmode-btn">テストモードに する</button>
     </div>
   </section>
 
@@ -1428,10 +1442,18 @@ var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelect
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
 
+/* テストモード：せいかいしても ほし・ずかん・かんじの マスターが すすまない（リロードで もどる） */
+var testMode=false;
+$("#testmode-btn").addEventListener("click",function(){
+  testMode=!testMode;
+  document.body.classList.toggle("testmode",testMode);
+  this.textContent=testMode?"テストモードを おわる":"テストモードに する";
+});
+
 var stars=0;
 try{stars=parseInt(localStorage.getItem("dinolab_stars")||"0",10)||0;}catch(e){stars=0;}
 function renderStars(){$$(".stars span, #star-count").forEach(function(el){el.textContent=stars;});}
-function addStar(){stars++;try{localStorage.setItem("dinolab_stars",String(stars));}catch(e){}renderStars();}
+function addStar(){if(testMode)return;stars++;try{localStorage.setItem("dinolab_stars",String(stars));}catch(e){}renderStars();}
 
 /* ゲットした きょうりゅう（ぶんを つくろうで かんせいさせると ずかんに のる）。
    got[id] = つかまえた かいすう。むかしの ほぞんけいしき（id の はいれつ）も よみこむ。 */
@@ -1444,6 +1466,7 @@ try{
 function gotCount(){return DINOS.filter(function(d){return got[d.id];}).length;}
 /* つかまえた かいすうを 1 ふやす。はじめての ゲットなら true */
 function markGot(id){
+  if(testMode)return false;
   var first=!got[id];
   got[id]=(got[id]||0)+1;
   try{localStorage.setItem("dinolab_got",JSON.stringify(got));}catch(e){}
@@ -1993,9 +2016,11 @@ function tapKanji(btn,opt){
     $("#kanji-art").innerHTML=dinoSVG(kCur.dino);
     $("#kanji-q").textContent="";
     $("#ksent").innerHTML=kCur.ruby;
-    kStreak[kCur.k]=kClean?(kStreak[kCur.k]||0)+1:0;
-    saveKStreak();renderKStreak(kClean);renderKanjiSub();
-    var justMastered=kClean&&kStreak[kCur.k]===K_MASTER;
+    if(!testMode){
+      kStreak[kCur.k]=kClean?(kStreak[kCur.k]||0)+1:0;
+      saveKStreak();renderKStreak(kClean);renderKanjiSub();
+    }
+    var justMastered=!testMode&&kClean&&kStreak[kCur.k]===K_MASTER;
     $("#kanji-msg").textContent=justMastered?"「"+kCur.k+"」を マスター！🏅":
       pick(["よく できました！","すごい！","おぼえたね！","せいかい！"]);
     $("#kanji-done").style.display="flex";
