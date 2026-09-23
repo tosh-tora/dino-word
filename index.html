@@ -181,6 +181,7 @@ body.testmode .testmode-flag{display:block;}
 }
 .stage svg,.stage img{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:100%;height:100%;max-width:min(92vw,560px);object-fit:contain;}
 .stage img{object-position:center bottom;}
+.stage .gen-icon{position:relative;font-size:min(28vw,140px);line-height:1;}
 .stage .shadow{
   position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
   width:min(46vw,300px);height:16px;border-radius:50%;
@@ -431,7 +432,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-22-1</div>
+<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-23-1</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -597,7 +598,8 @@ var DINOS = [
     [["ティラノサウルス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["ティラノサウルス","sub"],["の","par"],["まえあし","wrd"],["は","par"],["ちいさいです","prd"]],
     [["ティラノサウルス","sub"],["は","par"],["2ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
-    [["ティラノサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["を","par"],["たべます","prd"]]
+    [["ティラノサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["を","par"],["たべます","prd"]],
+    [["ティラノサウルス","sub"],["の","par"],["きば","wrd"],["は","par"],["おおきい","wrd"],["と","par"],["されています","prd"]]
   ]},
 
  {id:"ankylo", name:"アンキロサウルス", kind:"きょうりゅう", meaning:"「つながった とかげ」",
@@ -617,7 +619,9 @@ var DINOS = [
     [["アンキロサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["アンキロサウルス","sub"],["は","par"],["ハンマー","wrd"],["を","par"],["もっています","prd"]],
     [["アンキロサウルス","sub"],["の","par"],["せなか","wrd"],["は","par"],["よろい","wrd"],["です","prd"]],
-    [["アンキロサウルス","sub"],["は","par"],["みじかい","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]]
+    [["アンキロサウルス","sub"],["は","par"],["みじかい","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
+    [["アンキロサウルス","sub"],["は","par"],["のんびりや","wrd"],["だと","par"],["かんがえられています","prd"]],
+    [["アンキロサウルス","sub"],["の","par"],["あし","wrd"],["は","par"],["ながく","wrd"],["ありません","prd"]]
   ]},
 
  {id:"spino", name:"スピノサウルス", kind:"きょうりゅう", meaning:"「とげの とかげ」",
@@ -658,7 +662,8 @@ var DINOS = [
     [["トリケラトプス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["トリケラトプス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["トリケラトプス","sub"],["は","par"],["つの","wrd"],["が","par"],["3ぼん","wrd"],["あります","prd"]],
-    [["トリケラトプス","sub"],["は","par"],["4ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]]
+    [["トリケラトプス","sub"],["は","par"],["4ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
+    [["トリケラトプス","sub"],["は","par"],["ゾウ","wrd"],["より","par"],["おおきいです","prd"]]
   ]},
 
  {id:"ptera", name:"プテラノドン", kind:"よくりゅう", meaning:"「はの ない つばさ」",
@@ -678,7 +683,8 @@ var DINOS = [
     [["プテラノドン","sub"],["は","par"],["よくりゅう","wrd"],["です","prd"]],
     [["プテラノドン","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["プテラノドン","sub"],["は","par"],["とさか","wrd"],["が","par"],["あります","prd"]],
-    [["プテラノドン","sub"],["は","par"],["おおきな","wrd"],["つばさ","wrd"],["で","par"],["とびます","prd"]]
+    [["プテラノドン","sub"],["は","par"],["おおきな","wrd"],["つばさ","wrd"],["で","par"],["とびます","prd"]],
+    [["プテラノドン","sub"],["は","par"],["うみ","wrd"],["の","par"],["ちかく","wrd"],["で","par"],["くらしていました","prd"]]
   ]},
 
  {id:"iguano", name:"イグアノドン", kind:"きょうりゅう", meaning:"「イグアナの は」",
@@ -719,7 +725,8 @@ var DINOS = [
     [["パキケファロサウルス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["パキケファロサウルス","sub"],["の","par"],["あたま","wrd"],["は","par"],["まるいです","prd"]],
     [["パキケファロサウルス","sub"],["の","par"],["からだ","wrd"],["は","par"],["ちいさいです","prd"]],
-    [["パキケファロサウルス","sub"],["は","par"],["あたま","wrd"],["で","par"],["しょうぶします","prd"]]
+    [["パキケファロサウルス","sub"],["は","par"],["あたま","wrd"],["で","par"],["しょうぶします","prd"]],
+    [["パキケファロサウルス","sub"],["は","par"],["あたま","wrd"],["で","par"],["しょうぶした","wrd"],["と","par"],["かんがえられています","prd"]]
   ]},
 
  {id:"parasaur", name:"パラサウロロフス", kind:"きょうりゅう", meaning:"「すこし にた とかげ」",
@@ -739,7 +746,8 @@ var DINOS = [
     [["パラサウロロフス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["パラサウロロフス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["パラサウロロフス","sub"],["は","par"],["おおきな","wrd"],["こえ","wrd"],["で","par"],["なきます","prd"]],
-    [["パラサウロロフス","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","wrd"],["あるきます","prd"]]
+    [["パラサウロロフス","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","wrd"],["あるきます","prd"]],
+    [["パラサウロロフス","sub"],["は","par"],["ぶき","wrd"],["を","par"],["もっていません","prd"]]
   ]},
 
  {id:"mosa", name:"モササウルス", kind:"うみの なかま", meaning:"「ムーズがわの とかげ」",
@@ -779,7 +787,8 @@ var DINOS = [
     [["ヴェロキラプトル","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["ヴェロキラプトル","sub"],["は","par"],["さばく","wrd"],["に","par"],["いました","prd"]],
     [["ヴェロキラプトル","sub"],["は","par"],["2ほんの","wrd"],["あし","wrd"],["で","par"],["はしります","prd"]],
-    [["ヴェロキラプトル","sub"],["は","par"],["つめ","wrd"],["で","par"],["つかまえます","prd"]]
+    [["ヴェロキラプトル","sub"],["は","par"],["つめ","wrd"],["で","par"],["つかまえます","prd"]],
+    [["ヴェロキラプトル","sub"],["は","par"],["はね","wrd"],["が","par"],["あった","wrd"],["と","par"],["かんがえられています","prd"]]
   ]},
 
  {id:"stego", name:"ステゴサウルス", kind:"きょうりゅう", meaning:"「やねの とかげ」",
@@ -980,7 +989,8 @@ var DINOS = [
     [["アルゼンチノサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["アルゼンチノサウルス","sub"],["は","par"],["みなみアメリカ","wrd"],["に","par"],["いました","prd"]],
     [["アルゼンチノサウルス","sub"],["は","par"],["4ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
-    [["アルゼンチノサウルス","sub"],["の","par"],["あし","wrd"],["は","par"],["ふといです","prd"]]
+    [["アルゼンチノサウルス","sub"],["の","par"],["あし","wrd"],["は","par"],["ふといです","prd"]],
+    [["アルゼンチノサウルス","sub"],["の","par"],["ほね","wrd"],["は","par"],["すこししか","wrd"],["みつかっていません","prd"]]
   ]},
 
  {id:"brachio", name:"ブラキオサウルス", kind:"きょうりゅう", meaning:"「うでの とかげ」",
@@ -1001,7 +1011,8 @@ var DINOS = [
     [["ブラキオサウルス","sub"],["は","par"],["アメリカ","wrd"],["に","par"],["いました","prd"]],
     [["ブラキオサウルス","sub"],["は","par"],["たかい","wrd"],["はっぱ","wrd"],["を","par"],["たべます","prd"]],
     [["ブラキオサウルス","sub"],["の","par"],["まえあし","wrd"],["は","par"],["ながいです","prd"]],
-    [["ブラキオサウルス","sub"],["は","par"],["4ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]]
+    [["ブラキオサウルス","sub"],["は","par"],["4ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
+    [["ブラキオサウルス","sub"],["の","par"],["まえあし","wrd"],["は","par"],["うしろあし","wrd"],["より","par"],["ながいです","prd"]]
   ]},
 
  {id:"diplo", name:"ディプロドクス", kind:"きょうりゅう", meaning:"「ふたつの はり」",
@@ -1062,7 +1073,8 @@ var DINOS = [
     [["プシッタコサウルス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["プシッタコサウルス","sub"],["は","par"],["アジア","wrd"],["に","par"],["いました","prd"]],
     [["プシッタコサウルス","sub"],["は","par"],["ちいさい","wrd"],["きょうりゅう","wrd"],["です","prd"]],
-    [["プシッタコサウルス","sub"],["は","par"],["2ほんあし","wrd"],["で","par"],["あるきます","prd"]]
+    [["プシッタコサウルス","sub"],["は","par"],["2ほんあし","wrd"],["で","par"],["あるきます","prd"]],
+    [["プシッタコサウルス","sub"],["の","par"],["こども","wrd"],["は","par"],["むれ","wrd"],["で","par"],["くらしていました","prd"]]
   ]},
 
  {id:"therizino", name:"テリジノサウルス", kind:"きょうりゅう", meaning:"「かまの とかげ」",
@@ -1182,7 +1194,8 @@ var DINOS = [
     [["プロトケラトプス","sub"],["は","par"],["モンゴル","wrd"],["に","par"],["いました","prd"]],
     [["プロトケラトプス","sub"],["は","par"],["ちいさい","wrd"],["きょうりゅう","wrd"],["です","prd"]],
     [["プロトケラトプス","sub"],["は","par"],["4ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
-    [["プロトケラトプス","sub"],["は","par"],["えりかざり","wrd"],["が","par"],["あります","prd"]]
+    [["プロトケラトプス","sub"],["は","par"],["えりかざり","wrd"],["が","par"],["あります","prd"]],
+    [["プロトケラトプス","sub"],["は","par"],["こそだて","wrd"],["を","par"],["した","wrd"],["と","par"],["かんがえられています","prd"]]
   ]},
 
  {id:"carno", name:"カルノタウルス", kind:"きょうりゅう", meaning:"「にくを たべる うし」",
@@ -1223,9 +1236,138 @@ var DINOS = [
     [["カルカロドントサウルス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["カルカロドントサウルス","sub"],["は","par"],["2ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
     [["カルカロドントサウルス","sub"],["は","par"],["おおきな","wrd"],["きょうりゅう","wrd"],["です","prd"]],
-    [["カルカロドントサウルス","sub"],["は","par"],["しっぽ","wrd"],["が","par"],["ながいです","prd"]]
+    [["カルカロドントサウルス","sub"],["は","par"],["しっぽ","wrd"],["が","par"],["ながいです","prd"]],
+    [["カルカロドントサウルス","sub"],["は","par"],["ティラノサウルス","wrd"],["と","par"],["おなじくらい","wrd"],["おおきいです","prd"]]
   ]}
 ];
+
+/* ============================================================
+   きょうりゅうの データ（ぶんを つくろう の テンプレートで つかう）
+   len/lenTxt: ぜんちょう（メートル）  wing: つばさを ひろげた ながさ
+   kg/wt: おもさ（くらべる ときは kg、ひょうじは wt）
+   era: じだい（さんじょうき・じゅらき・はくあき）
+   area: いた たいりく  place: かせきが みつかった ところ
+   home: くらした ばしょ  food: たべもの  eats: meat/plant（「〜を たべません」よう）
+   group: なかま（「〜は ○○ です」）  notDino: きょうりゅうでは ない
+   move: 2/4（あしの ほんすう）・fly・swim  herd: むれで くらした（sure/maybe）
+   feather: はねが あった  trait: せいかく [ことば, めいし?]（「と かんがえられています」）
+   parts: [ぶぶん, …じゅつご]  weapon: [[ぶき], たたかいます/まもります]
+   すうちは こどもむけ ずかんで よく つかわれる だいたいの あたい。
+   ============================================================ */
+var FACTS={
+ tyranno:{len:12,wt:"9トン",kg:9000,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",home:["もり"],
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,trait:["ちからもち",1],
+  parts:[["あたま","おおきいです"],["まえあし","ちいさいです"],["きば","するどいです"]],
+  weapon:[["きば"],"たたかいます"]},
+ ankylo:{len:7,wt:"6トン",kg:6000,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:4,trait:["のんびりや",1],
+  parts:[["せなか","かたいです"],["あし","みじかいです"]],
+  weapon:[["しっぽの","ハンマー"],"まもります"]},
+ spino:{len:15,wt:"7トン",kg:7000,era:"はくあき",area:"アフリカ",place:"アフリカ",home:["みずべ"],
+  food:["さかな"],group:["きょうりゅう"],
+  parts:[["ほ","おおきいです"],["くち","ながいです"]]},
+ tricera:{len:9,wt:"6トン",kg:6000,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:4,trait:["おだやか",1],
+  parts:[["つの","3ぼん","あります"],["えりかざり","おおきいです"]],
+  weapon:[["つの"],"まもります"]},
+ ptera:{wing:"6メートル",wt:"20キロ",kg:20,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["さかな"],group:["よくりゅう"],notDino:true,move:"fly",
+  parts:[["とさか","ながいです"],["つばさ","おおきいです"]]},
+ iguano:{len:10,wt:"4トン",kg:4000,era:"はくあき",area:"ヨーロッパ",place:"ヨーロッパ",
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],herd:"sure",trait:["なかよし",1],
+  weapon:[["おやゆびの","とげ"],"まもります"]},
+ pachy:{len:4.5,wt:"450キロ",kg:450,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:2,trait:["げんき",1],
+  parts:[["あたま","かたいです"],["あたま","まるいです"]],
+  weapon:[["あたま"],"たたかいます"]},
+ parasaur:{len:9,wt:"3トン",kg:3000,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",home:["もり"],
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],herd:"sure",
+  parts:[["とさか","ながいです"]]},
+ mosa:{len:13,era:"はくあき",area:"ヨーロッパ",place:"オランダ",home:["うみ"],
+  food:["さかな"],group:["とかげの","なかま"],notDino:true,move:"swim",
+  parts:[["あし","ひれ","です"],["きば","するどいです"]]},
+ raptor:{len:2,wt:"15キロ",kg:15,era:"はくあき",area:"アジア",place:"モンゴル",home:["さばく"],
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,feather:1,trait:["すばやい",0],
+  parts:[["つめ","するどいです"],["からだ","ちいさいです"]],
+  weapon:[["あしの","つめ"],"たたかいます"]},
+ stego:{len:9,wt:"5トン",kg:5000,era:"じゅらき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:4,trait:["のんびりや",1],
+  parts:[["いた","おおきいです"],["あたま","ちいさいです"],["とげ","4ほん","あります"]],
+  weapon:[["しっぽの","とげ"],"まもります"]},
+ ampelo:{len:14,era:"はくあき",area:"ヨーロッパ",place:"フランス",home:["しま"],
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],move:4,trait:["おだやか",1],
+  parts:[["くび","ながいです"],["せなか","かたいです"]],
+  weapon:[["かたい","こつばん"],"まもります"]},
+ giganto:{len:13,wt:"8トン",kg:8000,era:"はくあき",area:"みなみアメリカ",place:"アルゼンチン",
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,trait:["ちからもち",1],
+  parts:[["あたま","おおきいです"],["きば","するどいです"]],
+  weapon:[["きば"],"たたかいます"]},
+ quetz:{wing:"11メートル",wt:"200キロ",kg:200,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["ちいさな","どうぶつ"],group:["よくりゅう"],notDino:true,move:"fly",
+  parts:[["くび","ながいです"],["つばさ","おおきいです"]]},
+ yi:{len:0.35,lenTxt:"35センチ",wt:"400グラム",kg:0.4,era:"じゅらき",area:"アジア",place:"ちゅうごく",home:["きの","うえ"],
+  food:["こんちゅう"],group:["きょうりゅう"],feather:1,trait:["しずか",1],
+  parts:[["からだ","ちいさいです"]]},
+ kentro:{len:4.5,wt:"1トン",kg:1000,era:"じゅらき",area:"アフリカ",place:"タンザニア",
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:4,
+  parts:[["とげ","するどいです"]],
+  weapon:[["しっぽの","とげ"],"まもります"]},
+ troodon:{len:2.4,wt:"50キロ",kg:50,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["ちいさな","どうぶつ"],group:["きょうりゅう"],move:2,feather:1,trait:["かしこい",0],
+  parts:[["め","おおきいです"]]},
+ yuty:{len:9,wt:"1.4トン",kg:1400,era:"はくあき",area:"アジア",place:"ちゅうごく",
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,feather:1,herd:"maybe",
+  parts:[["はね","ながいです"]]},
+ archaeo:{len:0.5,lenTxt:"50センチ",wt:"1キロ",kg:1,era:"じゅらき",area:"ヨーロッパ",place:"ドイツ",home:["しま"],
+  food:["こんちゅう"],group:["とりに","ちかい","きょうりゅう"],move:2,feather:1,
+  parts:[["しっぽ","ながいです"],["つめ","するどいです"]]},
+ argentino:{len:30,lenTxt:"30メートルいじょう",wt:"70トン",kg:70000,era:"はくあき",area:"みなみアメリカ",place:"アルゼンチン",
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],move:4,
+  parts:[["からだ","おおきいです"],["くび","ながいです"]],
+  weapon:[["おおきな","からだ"],"まもります"]},
+ brachio:{len:20,wt:"40トン",kg:40000,era:"じゅらき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],move:4,trait:["おだやか",1],
+  parts:[["まえあし","ながいです"],["くび","ながいです"]]},
+ diplo:{len:25,wt:"15トン",kg:15000,era:"じゅらき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],move:4,herd:"maybe",
+  parts:[["しっぽ","ながいです"],["くび","ながいです"]],
+  weapon:[["ながい","しっぽ"],"まもります"]},
+ allo:{len:9,wt:"2トン",kg:2000,era:"じゅらき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,trait:["すばやい",0],
+  parts:[["つめ","するどいです"]],
+  weapon:[["つめ"],"たたかいます"]},
+ psitta:{len:2,wt:"20キロ",kg:20,era:"はくあき",area:"アジア",place:"アジア",
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:2,
+  parts:[["からだ","ちいさいです"]]},
+ therizino:{len:10,wt:"5トン",kg:5000,era:"はくあき",area:"アジア",place:"モンゴル",
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],move:2,feather:1,trait:["おとなしい",0],
+  parts:[["つめ","ながいです"]]},
+ shantungo:{len:15,wt:"16トン",kg:16000,era:"はくあき",area:"アジア",place:"ちゅうごく",
+  food:["はっぱ"],eats:"plant",group:["きょうりゅう"],herd:"sure",
+  parts:[["からだ","おおきいです"],["くちばし","ひらたいです"]]},
+ styraco:{len:5.5,wt:"3トン",kg:3000,era:"はくあき",area:"きたアメリカ",place:"カナダ",
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:4,herd:"maybe",
+  parts:[["つの","1ぽん","あります"],["えりかざり","おおきいです"]],
+  weapon:[["つの"],"まもります"]},
+ elasmo:{len:12,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",home:["うみ"],
+  food:["さかな"],group:["くびながりゅう"],notDino:true,move:"swim",
+  parts:[["くび","ながいです"],["あし","ひれ","です"]]},
+ deino:{len:3.3,wt:"70キロ",kg:70,era:"はくあき",area:"きたアメリカ",place:"きたアメリカ",
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,feather:1,trait:["かしこい",0],
+  parts:[["つめ","おおきいです"]],
+  weapon:[["あしの","つめ"],"たたかいます"]},
+ proto:{len:2,era:"はくあき",area:"アジア",place:"モンゴル",home:["さばく"],
+  food:["くさ"],eats:"plant",group:["きょうりゅう"],move:4,
+  parts:[["からだ","ちいさいです"]]},
+ carno:{len:8,wt:"1.5トン",kg:1500,era:"はくあき",area:"みなみアメリカ",place:"アルゼンチン",
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,trait:["すばやい",0],
+  parts:[["つの","2ほん","あります"],["まえあし","みじかいです"]],
+  weapon:[["つの"],"たたかいます"]},
+ carcharo:{len:12,wt:"7トン",kg:7000,era:"はくあき",area:"アフリカ",place:"アフリカ",
+  food:["にく"],eats:"meat",group:["きょうりゅう"],move:2,trait:["ちからもち",1],
+  parts:[["あたま","おおきいです"],["きば","するどいです"]],
+  weapon:[["きば"],"たたかいます"]}
+};
 
 /* ============================================================
    イラスト（SVG）
@@ -1554,18 +1696,169 @@ var WRD_PRD_CONFLICTS={
 /* じょしも おなじ。「に」と「で」は どちらも ただしく きこえる ことが あるので、いっしょに ださない。 */
 var PAR_CONFLICTS={"に":["で"],"で":["に"]};
 /* ことば（wrd）に かんけいなく、どうさ どうしどうしの いみが ちかくて
-   どちらも あってそうに なる くみあわせ（あるく と はしる など）。 */
-var PRD_CONFLICT_GROUPS=[["あるきます","はしります"]];
-var cur=null,curTokens=null,slotPos=0,lastId=null;
+   どちらも あってそうに なる くみあわせ（あるく と はしる、「〜より おおきい／ながい」など）。 */
+var PRD_CONFLICT_GROUPS=[["あるきます","はしります"],["おおきいです","ながいです"]];
+/* こたえの じゅつごに たいして、ダミーに だすと ぶんが なりたって しまう じゅつご（かたほうこう）。
+   「もりで くらしていました」に「もりで あるきます」、「くさを たべません」に「くさを たべます」など。 */
+var PRD_PRD_CONFLICTS={
+  "くらしていました":["あるきます","はしります","およぎます","とびます"],
+  "たべません":["たべます"],
+  "たたかいます":["まもります"]
+};
+
+/* ------------------------------------------------------------
+   テンプレートで ぶんを つくる（FACTS を つかう）
+   ぶんは [ことば, やくわり] の はいれつ。1ばんめは いつも きょうりゅうの なまえ（sub）。
+   ------------------------------------------------------------ */
+var ERA_RANK={"さんじょうき":0,"じゅらき":1,"はくあき":2};
+/* "p:は" "w:もり" "e:たべます" の かたちで かいて、トークンに する。 */
+function mkSent(d,spec){
+  var role={p:"par",w:"wrd",e:"prd"};
+  return [[d.name,"sub"]].concat(spec.map(function(s){return [s.slice(2),role[s[0]]];}));
+}
+function W(arr){return arr.map(function(x){return "w:"+x;});}
+
+var TEMPLATES={
+  size:function(d,f){
+    if(f.wing)return [mkSent(d,["p:は","w:つばさ","p:を","w:ひろげると","w:"+f.wing,"e:です"])];
+    return f.len?[mkSent(d,["p:の","w:ぜんちょう","p:は","w:"+(f.lenTxt||f.len+"メートル"),"e:です"])]:[];
+  },
+  weight:function(d,f){return f.wt?[mkSent(d,["p:の","w:おもさ","p:は","w:"+f.wt,"e:です"])]:[];},
+  era:function(d,f){return [mkSent(d,["p:は","w:"+f.era,"p:に","e:いました"])];},
+  area:function(d,f){
+    return [mkSent(d,["p:は","w:"+f.area,"p:で","e:くらしていました"]),
+            mkSent(d,["p:の","w:かせき","p:は","w:"+f.place,"p:で","e:みつかりました"])];
+  },
+  home:function(d,f){return f.home?[mkSent(d,["p:は"].concat(W(f.home),["p:で","e:くらしていました"]))]:[];},
+  food:function(d,f){
+    var r=[mkSent(d,["p:は"].concat(W(f.food),["p:を","e:たべます"]))];
+    if(f.eats==="meat")r.push(mkSent(d,["p:は","w:くさ","p:を","e:たべません"]));
+    if(f.eats==="plant")r.push(mkSent(d,["p:は","w:にく","p:を","e:たべません"]));
+    return r;
+  },
+  group:function(d,f){
+    var r=[mkSent(d,["p:は"].concat(W(f.group),["e:です"]))];
+    if(f.notDino)r.push(mkSent(d,["p:は","w:きょうりゅう","p:では","e:ありません"]));
+    return r;
+  },
+  move:function(d,f){
+    if(f.move===2||f.move===4)return [mkSent(d,["p:は","w:"+f.move+"ほんの","w:あし","p:で","e:あるきます"])];
+    if(f.move==="fly")return [mkSent(d,["p:は","w:そら","p:を","e:とびます"])];
+    if(f.move==="swim")return [mkSent(d,["p:は","w:うみ","p:を","e:およぎます"])];
+    return [];
+  },
+  herd:function(d,f){
+    if(!f.herd)return [];
+    var r=[mkSent(d,["p:は","w:むれ","p:で","w:くらしていた","p:と","e:かんがえられています"])];
+    if(f.herd==="sure")r.push(mkSent(d,["p:は","w:むれ","p:で","e:くらしていました"]));
+    return r;
+  },
+  feather:function(d,f){return f.feather?[mkSent(d,["p:は","w:はね","p:を","e:もっていました"])]:[];},
+  trait:function(d,f){
+    return f.trait?[mkSent(d,["p:は","w:"+f.trait[0],"p:"+(f.trait[1]?"だと":"と"),"e:かんがえられています"])]:[];
+  },
+  parts:function(d,f){
+    var r=[];
+    (f.parts||[]).forEach(function(p){
+      if(p.length===2){
+        r.push(mkSent(d,["p:の","w:"+p[0],"p:は","e:"+p[1]]));
+        r.push(mkSent(d,["p:は","w:"+p[0],"p:が","e:"+p[1]]));
+      }else if(p[2]==="あります"){
+        r.push(mkSent(d,["p:は","w:"+p[0],"p:が","w:"+p[1],"e:あります"]));
+      }else{
+        r.push(mkSent(d,["p:の","w:"+p[0],"p:は","w:"+p[1],"e:"+p[2]]));
+      }
+    });
+    return r;
+  },
+  weapon:function(d,f){
+    if(!f.weapon)return [];
+    var w=f.weapon[0],v=f.weapon[1];
+    /* ぶきが 1ごの ときだけ「みを まもります」（ながく なりすぎない ように） */
+    var tail=(v==="まもります"&&w.length===1)?["w:み","p:を","e:まもります"]:["e:"+v];
+    return [mkSent(d,["p:は"].concat(W(w),["p:で"],tail))];
+  },
+  meaning:function(d){
+    var m=d.meaning.replace(/」.*$/,"」");
+    return [mkSent(d,["p:は","w:"+m,"p:という","w:いみ","e:です"])];
+  },
+  /* ほかの きょうりゅうと くらべる。おもさが 2ばいいじょう、または ぜんちょうが 1.5ばいいじょう ちがう ときだけ。
+     おもさの ちがいが 1.25ばい いないなら「おなじくらい」（おおきい どうし・ちいさい どうし だけ）。 */
+  cmpSize:function(d,f){
+    var r=[];
+    DINOS.forEach(function(o){
+      var g=FACTS[o.id];if(o.id===d.id||!g)return;
+      var big=null;
+      if(f.kg&&g.kg){if(f.kg>=g.kg*2)big=true;else if(g.kg>=f.kg*2)big=false;}
+      else if(f.len&&g.len&&!f.wing&&!g.wing){if(f.len>=g.len*1.5)big=true;else if(g.len>=f.len*1.5)big=false;}
+      if(big!==null)r.push(mkSent(d,["p:は","w:"+o.name,"p:より","e:"+(big?"おおきいです":"ちいさいです")]));
+      if(f.kg&&g.kg&&!f.wing&&!g.wing&&Math.max(f.kg,g.kg)<=Math.min(f.kg,g.kg)*1.25){
+        if(f.kg>=1000&&g.kg>=1000)r.push(mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじくらい","e:おおきいです"]));
+        if(f.kg<100&&g.kg<100)r.push(mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじくらい","e:ちいさいです"]));
+      }
+      if(f.len&&g.len&&!f.wing&&!g.wing&&f.len>=g.len*1.5)
+        r.push(mkSent(d,["p:は","w:"+o.name,"p:より","e:ながいです"]));
+    });
+    return r;
+  },
+  cmpEra:function(d,f){
+    var r=[];
+    DINOS.forEach(function(o){
+      var g=FACTS[o.id];if(o.id===d.id||!g)return;
+      if(f.era!==g.era)r.push(mkSent(d,["p:は","w:"+o.name,"p:より","w:"+(ERA_RANK[f.era]<ERA_RANK[g.era]?"まえ":"あと"),"p:に","e:いました"]));
+    });
+    return r;
+  },
+  cmpEraSame:function(d,f){
+    return DINOS.filter(function(o){return o.id!==d.id&&FACTS[o.id]&&FACTS[o.id].era===f.era;})
+      .map(function(o){return mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころ","p:に","e:いました"]);});
+  }
+};
+/* ずかんの ぶん（sents）は その きょうりゅう だけの ぶん。すこし でやすく する。 */
+var OWN_WEIGHT=3;
+function sentKey(s){return s.map(function(t){return t[0];}).join(" ");}
+function pickSentence(d){
+  var f=FACTS[d.id]||{},seen={},groups=[];
+  Object.keys(TEMPLATES).forEach(function(k){
+    var list=TEMPLATES[k](d,f);
+    list.forEach(function(s){seen[sentKey(s)]=1;});
+    if(list.length)groups.push({w:1,list:list});
+  });
+  var own=d.sents.filter(function(s){return !seen[sentKey(s)];});
+  if(own.length)groups.push({w:OWN_WEIGHT,list:own});
+  return pick(pickWeighted(groups,function(g){return g.w;}).list);
+}
+/* どの きょうりゅうにも ひもづかない、きょうりゅう ぜんたいの おはなし。GENERAL_RATE の かくりつで でる。 */
+var GENERAL_RATE=0.05;
+var GENERAL=[
+  {icon:"☄️",s:[["おおくの","wrd"],["きょうりゅう","sub"],["は","par"],["いんせき","wrd"],["で","par"],["ぜつめつしました","prd"]]},
+  {icon:"☄️",s:[["いんせき","sub"],["は","par"],["6600まんねんまえ","wrd"],["に","par"],["おちました","prd"]]},
+  {icon:"🐦",s:[["とり","sub"],["は","par"],["いきのこった","wrd"],["きょうりゅう","wrd"],["です","prd"]]},
+  {icon:"🐦",s:[["とり","sub"],["は","par"],["きょうりゅう","wrd"],["の","par"],["なかま","wrd"],["です","prd"]]},
+  {icon:"🐔",s:[["にわとり","sub"],["も","par"],["きょうりゅう","wrd"],["の","par"],["なかま","wrd"],["です","prd"]]},
+  {icon:"🥚",s:[["きょうりゅう","sub"],["は","par"],["たまご","wrd"],["から","par"],["うまれます","prd"]]},
+  {icon:"🦴",s:[["きょうりゅう","sub"],["の","par"],["ほね","wrd"],["は","par"],["かせき","wrd"],["に","par"],["なりました","prd"]]},
+  {icon:"🌋",s:[["きょうりゅう","sub"],["は","par"],["さんじょうき","wrd"],["に","par"],["あらわれました","prd"]]},
+  {icon:"🐊",s:[["ワニ","sub"],["は","par"],["きょうりゅう","wrd"],["では","par"],["ありません","prd"]]},
+  {icon:"🧒",s:[["ひと","sub"],["は","par"],["きょうりゅう","wrd"],["に","par"],["あっていません","prd"]]}
+];
+var cur=null,curGeneral=null,curTokens=null,slotPos=0,lastId=null;
 
 function newSentence(){
-  var pool=DINOS.filter(function(d){return d.id!==lastId;});
-  cur=pickWeighted(pool,function(d){return 1/(1+(got[d.id]||0));});lastId=cur.id;
-  curTokens=pick(cur.sents);
+  var stage=$("#build-stage");
+  curGeneral=Math.random()<GENERAL_RATE?pick(GENERAL):null;
+  if(curGeneral){
+    cur=null;
+    curTokens=curGeneral.s;
+    stage.innerHTML='<div class="shadow"></div><div class="gen-icon">'+curGeneral.icon+'</div>';
+  }else{
+    var pool=DINOS.filter(function(d){return d.id!==lastId;});
+    cur=pickWeighted(pool,function(d){return 1/(1+(got[d.id]||0));});lastId=cur.id;
+    curTokens=pickSentence(cur);
+    stage.innerHTML='<div class="shadow"></div>'+dinoSVG(cur.id);
+  }
   slotPos=0;
 
-  var stage=$("#build-stage");
-  stage.innerHTML='<div class="shadow"></div>'+dinoSVG(cur.id);
   stage.classList.remove("bounce");
 
   var slots=$("#slots");slots.innerHTML="";
@@ -1588,6 +1881,10 @@ function newSentence(){
     PRD_CONFLICT_GROUPS.forEach(function(g){
       if(g.indexOf(prdTok[0])>=0)conflict=conflict.concat(g);
     });
+    conflict=conflict.concat(PRD_PRD_CONFLICTS[prdTok[0]]||[]);
+    /* こたえが「〜いです」の ときは、ほかの「〜いです」も あってそうに きこえるので ださない。 */
+    if(/いです$/.test(prdTok[0]))
+      conflict=conflict.concat(PARTS.prd.filter(function(w){return /いです$/.test(w);}));
   }
   ["par","prd"].forEach(function(role){
     var bad=role==="prd"?conflict:parConflict;
@@ -1595,8 +1892,14 @@ function newSentence(){
     if(cand.length)extras.push([pick(cand),role]);
   });
   /* きょうりゅうの なまえも ダミーを 1つ（がぞうと あわない ほう）。 */
-  var otherDinos=DINOS.filter(function(d){return d.id!==cur.id;});
-  extras.push([pick(otherDinos).name,"sub"]);
+  /* 「〜は〜より おおきい」のように ぶんの なかに べつの きょうりゅうの なまえが あるときは、
+     どちらの なまえを おくのか まぎらわしいので ださない。 */
+  var names=DINOS.map(function(d){return d.name;});
+  var hasOtherName=curTokens.some(function(t){return t[1]!=="sub"&&names.indexOf(t[0])>=0;});
+  if(cur&&!hasOtherName){
+    var otherDinos=DINOS.filter(function(d){return d.id!==cur.id;});
+    extras.push([pick(otherDinos).name,"sub"]);
+  }
   var bankTokens=shuffle(curTokens.concat(extras));
 
   var bank=$("#bank");bank.innerHTML="";
@@ -1639,10 +1942,11 @@ function speechSentenceText(){return curTokens.map(speechWord).join("");}
 function finishSentence(){
   $("#build-done").style.display="flex";
   addStar();
-  $("#build-new").style.display=markGot(cur.id)?"":"none";
-  $("#build-badge").textContent=cur.name+"、ゲット！🎉";
+  /* きょうりゅう ぜんたいの おはなしは ずかんに のらない。 */
+  $("#build-new").style.display=(cur&&markGot(cur.id))?"":"none";
+  $("#build-badge").textContent=cur?cur.name+"、ゲット！🎉":"せいかい！🎉";
   celebrate("#build-badge","#build-confetti");
-  playCapture($("#build-stage svg, #build-stage img"));
+  if(cur)playCapture($("#build-stage svg, #build-stage img"));
   setTimeout(function(){speak(speechSentenceText(),0.78);},250);
 }
 $("#build-next").addEventListener("click",newSentence);
