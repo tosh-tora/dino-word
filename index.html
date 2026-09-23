@@ -1441,6 +1441,15 @@ var $=function(s,r){return (r||document).querySelector(s);};
 var $$=function(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));};
 function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 function pick(a){return a[Math.floor(Math.random()*a.length)];}
+/* おもみつき ランダム。wf(item) が おおきいほど えらばれやすい */
+function pickWeighted(a,wf){
+  var total=0,i,w=[];
+  for(i=0;i<a.length;i++){w[i]=wf(a[i]);total+=w[i];}
+  if(total<=0)return pick(a);
+  var r=Math.random()*total;
+  for(i=0;i<a.length;i++){r-=w[i];if(r<0)return a[i];}
+  return a[a.length-1];
+}
 
 /* テストモード：せいかいしても ほし・ずかん・かんじの マスターが すすまない（リロードで もどる） */
 var testMode=false;
@@ -1551,7 +1560,7 @@ var cur=null,curTokens=null,slotPos=0,lastId=null;
 
 function newSentence(){
   var pool=DINOS.filter(function(d){return d.id!==lastId;});
-  cur=pick(pool);lastId=cur.id;
+  cur=pickWeighted(pool,function(d){return 1/(1+(got[d.id]||0));});lastId=cur.id;
   curTokens=pick(cur.sents);
   slotPos=0;
 
