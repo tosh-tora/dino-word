@@ -1815,7 +1815,7 @@ var TEMPLATES={
   },
   cmpEraSame:function(d,f){
     return DINOS.filter(function(o){return o.id!==d.id&&FACTS[o.id]&&FACTS[o.id].era===f.era;})
-      .map(function(o){return mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころ","w:いきて","e:いました"]);});
+      .map(function(o){return mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころ","e:いきていました"]);});
   }
 };
 /* ずかんの ぶん（sents）は その きょうりゅう だけの ぶん。すこし でやすく する。 */
