@@ -292,7 +292,18 @@ body.testmode .testmode-flag{display:block;}
 .quiz-head small{display:block;color:var(--muted);font-weight:500;font-size:clamp(12px,1.4vw,15px);margin-top:4px;font-family:"Zen Kaku Gothic New",sans-serif;}
 .hint-grid{flex-shrink:0;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.2vw,14px);}
 #quiz-stage{flex-grow:0.6;max-height:32dvh;}
-@media (max-width:700px){.hint-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:700px){.hint-grid{grid-template-columns:repeat(3,1fr);}}
+/* スマホでは ヒントを こぶりに して、6こ ぜんぶと したの ボタンが 1がめんに おさまるように する */
+@media (max-width:700px){
+  .hint{padding:8px 6px;border-radius:14px;}
+  .hint .ic{font-size:22px;}
+  .hint b{margin-top:2px;}
+}
+.quiz-actions{padding:6px clamp(12px,3vw,28px) clamp(10px,1.6vh,18px);flex-wrap:nowrap;}
+.quiz-actions .big,.quiz-actions .ghost{white-space:nowrap;}
+@media (max-width:420px){.quiz-actions .big,.quiz-actions .ghost{padding:12px 16px;font-size:16px;}}
+/* ヒントや ボタンを さきに ならべ、きょうりゅうの え は のこりの たかさに おさめる */
+#s-quiz .quiz-wrap{flex:0 1 auto;padding-bottom:4px;}
 .hint{
   padding:14px 12px;border-radius:18px;background:var(--panel);
   box-shadow:0 4px 0 var(--line);text-align:center;
@@ -435,7 +446,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-24-1</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-24-2</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -523,10 +534,11 @@ body.testmode .testmode-flag{display:block;}
       <div class="quiz-head" id="quiz-head">この きょうりゅうは なに？<small>ヒントを よんで、じぶんの ことばで パパに つたえよう</small></div>
       <div class="saybox" id="saybox"><span class="placeholder">↓ ヒントを タップ</span></div>
       <div class="hint-grid" id="hints"></div>
-      <div class="done">
-        <button class="big" id="quiz-reveal">こたえを みる</button>
-        <button class="ghost" id="quiz-next">つぎの もんだい →</button>
-      </div>
+    </div>
+    <!-- スクロールの そとに おいて、iPhone でも いつも みえるように する -->
+    <div class="done quiz-actions">
+      <button class="big" id="quiz-reveal">こたえを みる</button>
+      <button class="ghost" id="quiz-next">つぎの もんだい →</button>
     </div>
   </section>
 
