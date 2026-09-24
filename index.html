@@ -1815,7 +1815,12 @@ var TEMPLATES={
   },
   cmpEraSame:function(d,f){
     return DINOS.filter(function(o){return o.id!==d.id&&FACTS[o.id]&&FACTS[o.id].era===f.era;})
-      .map(function(o){return mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころ","e:いきていました"]);});
+      .map(function(o){
+        /* 「AとBは おなじころに いきていました」の じゅんばんでも ただしいので、こたえに いれておく。 */
+        var s=mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころに","e:いきていました"]);
+        s.alts=[mkSent(d,["p:と","w:"+o.name,"p:は","w:おなじころに","e:いきていました"])];
+        return s;
+      });
   }
 };
 /* ずかんの ぶん（sents）は その きょうりゅう だけの ぶん。すこし でやすく する。 */
@@ -1854,7 +1859,8 @@ var GENERAL=[
   {icon:"🐊",s:[["ワニ","sub"],["は","par"],["きょうりゅう","wrd"],["では","par"],["ありません","prd"]]},
   {icon:"🧒",s:[["ひと","sub"],["は","par"],["きょうりゅう","wrd"],["に","par"],["あっていません","prd"]]}
 ];
-var cur=null,curGeneral=null,curTokens=null,slotPos=0,lastId=null;
+/* curCands: いままで ならべた ことばと あう こたえの こうほ（ならべかたが いくつか ある ぶん のため）。 */
+var cur=null,curGeneral=null,curTokens=null,curCands=null,slotPos=0,lastId=null;
 
 function newSentence(){
   var stage=$("#build-stage");
@@ -1870,6 +1876,7 @@ function newSentence(){
     stage.innerHTML='<div class="shadow"></div>'+dinoSVG(cur.id);
   }
   slotPos=0;
+  curCands=[curTokens].concat(curTokens.alts||[]);
 
   stage.classList.remove("bounce");
 
@@ -1933,8 +1940,10 @@ function newSentence(){
 
 function tapChip(btn,tok){
   if(slotPos>=curTokens.length)return;
-  var want=curTokens[slotPos];
-  if(tok[0]===want[0]){
+  var ok=curCands.filter(function(c){return c[slotPos][0]===tok[0];});
+  if(ok.length){
+    curCands=ok;curTokens=ok[0];
+    var want=curTokens[slotPos];
     var slot=$('.slot[data-i="'+slotPos+'"]');
     slot.textContent=tok[0];
     slot.className="slot filled pop r-"+want[1];
