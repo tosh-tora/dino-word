@@ -1820,6 +1820,14 @@ var TEMPLATES={
 /* ずかんの ぶん（sents）は その きょうりゅう だけの ぶん。すこし でやすく する。 */
 var OWN_WEIGHT=3;
 function sentKey(s){return s.map(function(t){return t[0];}).join(" ");}
+/* その きょうりゅうの ぶんに でてくる じゅつご ぜんぶ。 */
+function truePredicates(d){
+  var f=FACTS[d.id]||{},r=[];
+  Object.keys(TEMPLATES).map(function(k){return TEMPLATES[k](d,f);}).concat([d.sents]).forEach(function(list){
+    list.forEach(function(sent){sent.forEach(function(t){if(t[1]==="prd"&&r.indexOf(t[0])<0)r.push(t[0]);});});
+  });
+  return r;
+}
 function pickSentence(d){
   var f=FACTS[d.id]||{},seen={},groups=[];
   Object.keys(TEMPLATES).forEach(function(k){
@@ -1885,6 +1893,9 @@ function newSentence(){
       if(g.indexOf(prdTok[0])>=0)conflict=conflict.concat(g);
     });
     conflict=conflict.concat(PRD_PRD_CONFLICTS[prdTok[0]]||[]);
+    /* その きょうりゅうに ついて ほんとうの じゅつご（エラスモサウルスの「およぎます」など）を ダミーに すると、
+       「エラスモサウルスは およぎます」のように ぶんが なりたって しまうので ださない。 */
+    if(cur)conflict=conflict.concat(truePredicates(cur));
     /* こたえが「〜いです」の ときは、ほかの「〜いです」も あってそうに きこえるので ださない。 */
     if(/いです$/.test(prdTok[0]))
       conflict=conflict.concat(PARTS.prd.filter(function(w){return /いです$/.test(w);}));
