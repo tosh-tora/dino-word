@@ -82,6 +82,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   display:flex;flex-direction:column;
   background:radial-gradient(120% 90% at 50% 0%, var(--bg) 0%, var(--bg2) 100%);
   user-select:none;-webkit-user-select:none;
+  /* viewport-fit=cover のため、時計・ノッチ・ホームバーの下に ボタンが もぐらないよう 余白をとる */
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 .screen{flex:1;min-height:0;display:none;flex-direction:column;}
 .screen.on{display:flex;}
@@ -163,7 +165,7 @@ details.credits a{color:inherit;}
 }
 .testmode-toggle:hover{opacity:.8;}
 .testmode-flag{
-  display:none;position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:9999;
+  display:none;position:fixed;top:calc(6px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;
   padding:2px 10px;border-radius:999px;background:var(--accent-deep);color:#fff;
   font-size:11px;font-weight:700;pointer-events:none;opacity:.85;
 }
@@ -355,7 +357,8 @@ body.testmode .testmode-flag{display:block;}
 
 .sheet{
   position:fixed;inset:0;background:rgba(10,18,14,.55);
-  display:none;place-items:center;padding:16px;z-index:20;
+  display:none;place-items:center;z-index:20;
+  padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
 }
 .sheet.on{display:grid;}
 .sheet-inner{
@@ -432,7 +435,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-23-1</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-24-1</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
