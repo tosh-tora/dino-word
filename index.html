@@ -1698,8 +1698,6 @@ var WRD_PRD_CONFLICTS={
 };
 /* じょしも おなじ。「に」と「で」は どちらも ただしく きこえる ことが あるので、いっしょに ださない。 */
 var PAR_CONFLICTS={"に":["で"],"で":["に"]};
-/* ことばの あとに つけても ぶんが なりたつ じょし。「おなじころ に いきていました」も ただしいので「に」は ださない。 */
-var WRD_PAR_CONFLICTS={"おなじころ":["に"]};
 /* ことば（wrd）に かんけいなく、どうさ どうしどうしの いみが ちかくて
    どちらも あってそうに なる くみあわせ（あるく と はしる、「〜より おおきい／ながい」など）。 */
 var PRD_CONFLICT_GROUPS=[["あるきます","はしります"],["おおきいです","ながいです"]];
@@ -1818,9 +1816,9 @@ var TEMPLATES={
   cmpEraSame:function(d,f){
     return DINOS.filter(function(o){return o.id!==d.id&&FACTS[o.id]&&FACTS[o.id].era===f.era;})
       .map(function(o){
-        /* 「AとBは おなじころ いきていました」の じゅんばんでも ただしいので、こたえに いれておく。 */
-        var s=mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころ","e:いきていました"]);
-        s.alts=[mkSent(d,["p:と","w:"+o.name,"p:は","w:おなじころ","e:いきていました"])];
+        /* 「AとBは おなじころに いきていました」の じゅんばんでも ただしいので、こたえに いれておく。 */
+        var s=mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころ","p:に","e:いきていました"]);
+        s.alts=[mkSent(d,["p:と","w:"+o.name,"p:は","w:おなじころ","p:に","e:いきていました"])];
         return s;
       });
   }
@@ -1895,10 +1893,7 @@ function newSentence(){
   var prdTok=curTokens.filter(function(t){return t[1]==="prd";})[0];
   var conflict=[],parConflict=[];
   curTokens.forEach(function(t){
-    if(t[1]==="wrd"){
-      conflict=conflict.concat(WRD_PRD_CONFLICTS[t[0]]||[]);
-      parConflict=parConflict.concat(WRD_PAR_CONFLICTS[t[0]]||[]);
-    }
+    if(t[1]==="wrd")conflict=conflict.concat(WRD_PRD_CONFLICTS[t[0]]||[]);
     if(t[1]==="par")parConflict=parConflict.concat(PAR_CONFLICTS[t[0]]||[]);
   });
   if(prdTok){
