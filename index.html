@@ -1808,7 +1808,8 @@ var TEMPLATES={
     var r=[];
     DINOS.forEach(function(o){
       var g=FACTS[o.id];if(o.id===d.id||!g)return;
-      if(f.era!==g.era)r.push(mkSent(d,["p:は","w:"+o.name,"p:より","w:"+(ERA_RANK[f.era]<ERA_RANK[g.era]?"まえ":"あと"),"p:に","e:いました"]));
+      /* 「〜より まえに いました」は わかりにくいので「〜より ふるい きょうりゅうです」の かたちに する。 */
+      if(f.era!==g.era&&f.group)r.push(mkSent(d,["p:は","w:"+o.name,"p:より","w:"+(ERA_RANK[f.era]<ERA_RANK[g.era]?"ふるい":"あたらしい")].concat(W(f.group),["e:です"])));
     });
     return r;
   },
