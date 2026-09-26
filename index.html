@@ -82,6 +82,8 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   display:flex;flex-direction:column;
   background:radial-gradient(120% 90% at 50% 0%, var(--bg) 0%, var(--bg2) 100%);
   user-select:none;-webkit-user-select:none;
+  /* viewport-fit=cover のため、時計・ノッチ・ホームバーの下に ボタンが もぐらないよう 余白をとる */
+  padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);
 }
 .screen{flex:1;min-height:0;display:none;flex-direction:column;}
 .screen.on{display:flex;}
@@ -163,7 +165,7 @@ details.credits a{color:inherit;}
 }
 .testmode-toggle:hover{opacity:.8;}
 .testmode-flag{
-  display:none;position:fixed;top:6px;left:50%;transform:translateX(-50%);z-index:9999;
+  display:none;position:fixed;top:calc(6px + env(safe-area-inset-top));left:50%;transform:translateX(-50%);z-index:9999;
   padding:2px 10px;border-radius:999px;background:var(--accent-deep);color:#fff;
   font-size:11px;font-weight:700;pointer-events:none;opacity:.85;
 }
@@ -290,7 +292,18 @@ body.testmode .testmode-flag{display:block;}
 .quiz-head small{display:block;color:var(--muted);font-weight:500;font-size:clamp(12px,1.4vw,15px);margin-top:4px;font-family:"Zen Kaku Gothic New",sans-serif;}
 .hint-grid{flex-shrink:0;display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(8px,1.2vw,14px);}
 #quiz-stage{flex-grow:0.6;max-height:32dvh;}
-@media (max-width:700px){.hint-grid{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:700px){.hint-grid{grid-template-columns:repeat(3,1fr);}}
+/* スマホでは ヒントを こぶりに して、6こ ぜんぶと したの ボタンが 1がめんに おさまるように する */
+@media (max-width:700px){
+  .hint{padding:8px 6px;border-radius:14px;}
+  .hint .ic{font-size:22px;}
+  .hint b{margin-top:2px;}
+}
+.quiz-actions{padding:6px clamp(12px,3vw,28px) clamp(10px,1.6vh,18px);flex-wrap:nowrap;}
+.quiz-actions .big,.quiz-actions .ghost{white-space:nowrap;}
+@media (max-width:420px){.quiz-actions .big,.quiz-actions .ghost{padding:12px 16px;font-size:16px;}}
+/* ヒントや ボタンを さきに ならべ、きょうりゅうの え は のこりの たかさに おさめる */
+#s-quiz .quiz-wrap{flex:0 1 auto;padding-bottom:4px;}
 .hint{
   padding:14px 12px;border-radius:18px;background:var(--panel);
   box-shadow:0 4px 0 var(--line);text-align:center;
@@ -355,7 +368,8 @@ body.testmode .testmode-flag{display:block;}
 
 .sheet{
   position:fixed;inset:0;background:rgba(10,18,14,.55);
-  display:none;place-items:center;padding:16px;z-index:20;
+  display:none;place-items:center;z-index:20;
+  padding:calc(16px + env(safe-area-inset-top)) calc(16px + env(safe-area-inset-right)) calc(16px + env(safe-area-inset-bottom)) calc(16px + env(safe-area-inset-left));
 }
 .sheet.on{display:grid;}
 .sheet-inner{
@@ -522,7 +536,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-4</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-5</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -614,10 +628,11 @@ body.testmode .testmode-flag{display:block;}
       <div class="quiz-head" id="quiz-head">この きょうりゅうは なに？<small>ヒントを よんで、じぶんの ことばで パパに つたえよう</small></div>
       <div class="saybox" id="saybox"><span class="placeholder">↓ ヒントを タップ</span></div>
       <div class="hint-grid" id="hints"></div>
-      <div class="done">
-        <button class="big" id="quiz-reveal">こたえを みる</button>
-        <button class="ghost" id="quiz-next">つぎの もんだい →</button>
-      </div>
+    </div>
+    <!-- スクロールの そとに おいて、iPhone でも いつも みえるように する -->
+    <div class="done quiz-actions">
+      <button class="big" id="quiz-reveal">こたえを みる</button>
+      <button class="ghost" id="quiz-next">つぎの もんだい →</button>
     </div>
   </section>
 
@@ -1950,18 +1965,32 @@ var TEMPLATES={
     var r=[];
     DINOS.forEach(function(o){
       var g=FACTS[o.id];if(o.id===d.id||!g)return;
-      if(f.era!==g.era)r.push(mkSent(d,["p:は","w:"+o.name,"p:より","w:"+(ERA_RANK[f.era]<ERA_RANK[g.era]?"まえ":"あと"),"p:に","e:いました"]));
+      /* 「〜より まえに いました」は わかりにくいので「〜より ふるい きょうりゅうです」の かたちに する。 */
+      if(f.era!==g.era&&f.group)r.push(mkSent(d,["p:は","w:"+o.name,"p:より","w:"+(ERA_RANK[f.era]<ERA_RANK[g.era]?"ふるい":"あたらしい")].concat(W(f.group),["e:です"])));
     });
     return r;
   },
   cmpEraSame:function(d,f){
     return DINOS.filter(function(o){return o.id!==d.id&&FACTS[o.id]&&FACTS[o.id].era===f.era;})
-      .map(function(o){return mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころ","p:に","e:いました"]);});
+      .map(function(o){
+        /* 「AとBは おなじころに いきていました」の じゅんばんでも ただしいので、こたえに いれておく。 */
+        var s=mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじころに","e:いきていました"]);
+        s.alts=[mkSent(d,["p:と","w:"+o.name,"p:は","w:おなじころに","e:いきていました"])];
+        return s;
+      });
   }
 };
 /* ずかんの ぶん（sents）は その きょうりゅう だけの ぶん。すこし でやすく する。 */
 var OWN_WEIGHT=3;
 function sentKey(s){return s.map(function(t){return t[0];}).join(" ");}
+/* その きょうりゅうの ぶんに でてくる じゅつご ぜんぶ。 */
+function truePredicates(d){
+  var f=FACTS[d.id]||{},r=[];
+  Object.keys(TEMPLATES).map(function(k){return TEMPLATES[k](d,f);}).concat([d.sents]).forEach(function(list){
+    list.forEach(function(sent){sent.forEach(function(t){if(t[1]==="prd"&&r.indexOf(t[0])<0)r.push(t[0]);});});
+  });
+  return r;
+}
 function pickSentence(d){
   var f=FACTS[d.id]||{},seen={},groups=[];
   Object.keys(TEMPLATES).forEach(function(k){
@@ -1987,7 +2016,8 @@ var GENERAL=[
   {icon:"🐊",s:[["ワニ","sub"],["は","par"],["きょうりゅう","wrd"],["では","par"],["ありません","prd"]]},
   {icon:"🧒",s:[["ひと","sub"],["は","par"],["きょうりゅう","wrd"],["に","par"],["あっていません","prd"]]}
 ];
-var cur=null,curGeneral=null,curTokens=null,slotPos=0,lastId=null;
+/* curCands: いままで ならべた ことばと あう こたえの こうほ（ならべかたが いくつか ある ぶん のため）。 */
+var cur=null,curGeneral=null,curTokens=null,curCands=null,slotPos=0,lastId=null;
 
 function newSentence(){
   var stage=$("#build-stage");
@@ -2003,6 +2033,7 @@ function newSentence(){
     stage.innerHTML='<div class="shadow"></div>'+dinoSVG(cur.id);
   }
   slotPos=0;
+  curCands=[curTokens].concat(curTokens.alts||[]);
 
   stage.classList.remove("bounce");
 
@@ -2027,6 +2058,9 @@ function newSentence(){
       if(g.indexOf(prdTok[0])>=0)conflict=conflict.concat(g);
     });
     conflict=conflict.concat(PRD_PRD_CONFLICTS[prdTok[0]]||[]);
+    /* その きょうりゅうに ついて ほんとうの じゅつご（エラスモサウルスの「およぎます」など）を ダミーに すると、
+       「エラスモサウルスは およぎます」のように ぶんが なりたって しまうので ださない。 */
+    if(cur)conflict=conflict.concat(truePredicates(cur));
     /* こたえが「〜いです」の ときは、ほかの「〜いです」も あってそうに きこえるので ださない。 */
     if(/いです$/.test(prdTok[0]))
       conflict=conflict.concat(PARTS.prd.filter(function(w){return /いです$/.test(w);}));
@@ -2063,8 +2097,10 @@ function newSentence(){
 
 function tapChip(btn,tok){
   if(slotPos>=curTokens.length)return;
-  var want=curTokens[slotPos];
-  if(tok[0]===want[0]){
+  var ok=curCands.filter(function(c){return c[slotPos][0]===tok[0];});
+  if(ok.length){
+    curCands=ok;curTokens=ok[0];
+    var want=curTokens[slotPos];
     var slot=$('.slot[data-i="'+slotPos+'"]');
     slot.textContent=tok[0];
     slot.className="slot filled pop r-"+want[1];
