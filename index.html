@@ -125,9 +125,9 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .home-art svg,.home-art img{width:100%;height:100%;max-height:28dvh;object-fit:contain;}
 .modes{
   display:grid;gap:clamp(10px,1.6vw,18px);width:min(94vw,1080px);
-  grid-template-columns:repeat(4,1fr);
+  grid-template-columns:repeat(5,1fr);
 }
-@media (max-width:1000px){.modes{grid-template-columns:repeat(2,1fr);}}
+@media (max-width:1000px){.modes{grid-template-columns:repeat(2,1fr);}.mode.wide{grid-column:1/-1;}}
 @media (max-width:560px){.modes{grid-template-columns:1fr;}}
 .mode{
   display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
@@ -422,6 +422,96 @@ body.testmode .testmode-flag{display:block;}
 .choice b{font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(17px,2.3vw,26px);font-weight:700;}
 .choice.right{background:var(--r-wrd);color:var(--chip-text);box-shadow:none;}
 
+/* ---------- バトルを じっきょう ---------- */
+#s-battle,#s-bpick{position:relative;}
+.bpick-top{
+  flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:10px;
+  padding:0 clamp(12px,3vw,28px) 12px;
+}
+.corners{display:flex;align-items:center;justify-content:center;gap:clamp(8px,2vw,18px);width:100%;}
+.corner{
+  flex:0 1 220px;min-width:0;height:clamp(96px,16vw,140px);border-radius:20px;
+  border:3px dashed var(--cc);background:var(--panel);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;
+  color:var(--muted);font-family:"Zen Maru Gothic",sans-serif;font-weight:700;
+}
+.corner.c0{--cc:var(--r-prd);}
+.corner.c1{--cc:var(--r-sub);}
+.corner.filled{border-style:solid;color:var(--ink);}
+.corner .fimg{width:100%;flex:1;min-height:0;}
+.corner b{font-size:clamp(12px,1.6vw,16px);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%;}
+.vs{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--accent-deep);
+  font-size:clamp(26px,5vw,52px);line-height:1;flex:0 0 auto;
+}
+.bpick-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
+.big:disabled{opacity:.35;pointer-events:none;}
+.bgrid .zcard{padding:10px 8px 10px;}
+.bgrid .zcard.sel0{box-shadow:0 0 0 4px var(--r-prd);}
+.bgrid .zcard.sel1{box-shadow:0 0 0 4px var(--r-sub);}
+
+.fimg{display:flex;align-items:flex-end;justify-content:center;}
+.fimg img,.fimg svg{width:100%;height:100%;min-width:0;min-height:0;object-fit:contain;object-position:center bottom;display:block;}
+.fimg.flip img,.fimg.flip svg{transform:scaleX(-1);}
+
+.bstage{
+  flex:1 1 auto;min-height:130px;position:relative;
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:minmax(0,1fr);align-items:stretch;gap:4px;
+  padding:0 clamp(10px,3vw,30px);
+}
+.bstage .vs{align-self:center;font-size:clamp(20px,3.6vw,38px);opacity:.8;}
+.fighter{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;}
+.hp{flex:0 0 auto;display:flex;flex-direction:column;gap:3px;padding:0 4px;}
+.hp b{
+  font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(12px,1.7vw,18px);
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.fighter.f0 .hp b{color:var(--r-prd);}
+.fighter.f1 .hp b{color:var(--r-sub);text-align:right;}
+.hprow{display:flex;align-items:center;gap:6px;}
+.fighter.f1 .hprow{flex-direction:row-reverse;}
+.hptrack{flex:1;height:14px;border-radius:999px;background:var(--slot-empty);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;}
+.hpfill{height:100%;width:100%;border-radius:999px;background:var(--r-wrd);transition:width .8s ease;}
+.fighter.f1 .hpfill{margin-left:auto;}
+.hpfill.low{background:var(--r-prd);}
+.hpnum{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-variant-numeric:tabular-nums;
+  font-size:clamp(16px,2.2vw,24px);min-width:2ch;text-align:center;
+}
+.fbody{flex:1 1 0;min-height:0;position:relative;overflow:visible;display:flex;align-items:flex-end;justify-content:center;transform-origin:50% 100%;transition:transform .6s ease,opacity .6s ease,filter .6s ease;}
+.fbody .fimg{width:calc(100% * var(--s,1));height:calc(100% * var(--s,1));transition:filter .2s ease;}
+.fighter.turn .fimg{filter:drop-shadow(0 0 10px var(--accent)) drop-shadow(0 0 4px var(--accent));}
+/* まけ：さかさまに なって ねてしまう（💤）。かち：ぴょんぴょん よろこぶ */
+.fighter.down .fimg{transform:scaleY(-1);}
+.bfx.zzz{top:20%;font-size:clamp(28px,5vw,48px);animation:none;}
+.bfx{
+  position:absolute;left:50%;top:30%;transform:translate(-50%,-50%);
+  font-size:clamp(34px,7vw,72px);line-height:1;pointer-events:none;z-index:3;
+  animation:fxpop .5s cubic-bezier(.34,1.56,.64,1);
+}
+.bfx.dmg{
+  top:40%;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--miss);
+  font-size:clamp(28px,5vw,52px);text-shadow:0 2px 0 var(--panel),0 0 8px var(--panel);
+}
+@keyframes fxpop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0;}100%{transform:translate(-50%,-50%) scale(1);opacity:1;}}
+
+.bq{
+  text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:700;
+  font-size:clamp(16px,2.2vw,22px);
+}
+.bank.wait{visibility:hidden;}
+.bmath{display:flex;flex-direction:column;align-items:center;gap:8px;}
+.bmath-q{color:var(--muted);font-size:clamp(14px,1.8vw,18px);text-align:center;}
+.bmath-q em{font-style:normal;font-weight:900;color:var(--ink);}
+.bmath-x{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-variant-numeric:tabular-nums;
+  font-size:clamp(28px,5vw,48px);line-height:1.1;
+}
+.bmath .choices{width:min(94vw,520px);}
+.bmath .choice b{font-size:clamp(24px,3.6vw,36px);font-variant-numeric:tabular-nums;}
+.mtoggle.off{opacity:.55;}
+@media (max-width:560px){#s-battle .lbl{display:none;}#s-battle .bar{gap:8px;}#s-battle .iconbtn{padding:10px 14px;}}
+
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important;transition:none !important;}
   /* うごきを へらす せっていの ときも、バッジは JS が じかに
@@ -432,7 +522,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-23-1</div>
+<div id="build-stamp" style="position:fixed;bottom:2px;right:4px;font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-4</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -465,6 +555,10 @@ body.testmode .testmode-flag{display:block;}
         <button class="mode" data-go="zukan">
           <span class="badge">📖</span>
           <span><b>ずかんを みる</b><span id="zukan-sub">ぶんを つくって きょうりゅうを ゲットしよう</span></span>
+        </button>
+        <button class="mode wide" data-go="bpick">
+          <span class="badge">🎙️</span>
+          <span><b>バトルを じっきょう</b><span>きょうりゅうの たたかいを アナウンサーに なって つたえよう</span></span>
         </button>
       </div>
       <details class="credits" id="credits">
@@ -567,6 +661,56 @@ body.testmode .testmode-flag{display:block;}
     </div>
     <div class="zprogress" id="zprogress"></div>
     <div class="zukan" id="zukan"></div>
+  </section>
+
+  <!-- ============ BATTLE PICK ============ -->
+  <section class="screen" id="s-bpick">
+    <div class="bar">
+      <button class="iconbtn" data-go="home">← もどる</button>
+      <div class="spacer"></div>
+      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
+    </div>
+    <div class="bpick-top">
+      <div class="corners">
+        <button class="corner c0" id="corner0"></button>
+        <span class="vs">VS</span>
+        <button class="corner c1" id="corner1"></button>
+      </div>
+      <div class="bpick-btns">
+        <button class="ghost" id="b-random">🎲 おまかせ</button>
+        <button class="big" id="b-start" disabled>バトル スタート！</button>
+      </div>
+    </div>
+    <div class="zukan bgrid" id="bpick-grid"></div>
+  </section>
+
+  <!-- ============ BATTLE ============ -->
+  <section class="screen" id="s-battle">
+    <div class="bar">
+      <button class="iconbtn" id="b-back">← もどる</button>
+      <div class="spacer"></div>
+      <button class="iconbtn" id="b-replay" aria-label="もういちど みる">🔁<span class="lbl"> もういちど みる</span></button>
+      <button class="iconbtn mtoggle" id="b-mtoggle">🧮 けいさん ON</button>
+      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
+    </div>
+    <div class="bstage" id="bstage"></div>
+    <div class="confetti-layer" id="battle-confetti"></div>
+    <div class="correct-badge" id="battle-badge">バトル スタート！</div>
+    <div class="play">
+      <div class="bq" id="b-q"></div>
+      <div class="slots" id="b-slots"></div>
+      <div class="bank" id="b-bank"></div>
+      <div class="bmath" id="b-math" style="display:none;">
+        <div class="bmath-q" id="b-mq"></div>
+        <div class="bmath-x" id="b-mx"></div>
+        <div class="choices" id="b-mchoices"></div>
+      </div>
+      <div class="done" id="b-done" style="display:none;">
+        <button class="big" id="b-next">つぎへ →</button>
+        <button class="big" id="b-again">もういっかい</button>
+        <button class="ghost" id="b-other">ほかの たいせん</button>
+      </div>
+    </div>
   </section>
 
   <div class="sheet" id="sheet"><div class="sheet-inner" id="sheet-inner"></div></div>
@@ -1632,12 +1776,12 @@ function renderZukanSub(){
 var voices=[];
 function loadVoices(){try{voices=window.speechSynthesis.getVoices()||[];}catch(e){voices=[];}}
 if(window.speechSynthesis){loadVoices();window.speechSynthesis.onvoiceschanged=loadVoices;}
-function speak(text,rate){
+function speak(text,rate,pitch){
   if(!window.speechSynthesis)return;
   try{
     window.speechSynthesis.cancel();
     var u=new SpeechSynthesisUtterance(text);
-    u.lang="ja-JP";u.rate=rate||0.82;u.pitch=1.05;
+    u.lang="ja-JP";u.rate=rate||0.82;u.pitch=pitch||1.05;
     var v=null,i;
     for(i=0;i<voices.length;i++){if(voices[i].lang&&voices[i].lang.toLowerCase().indexOf("ja")===0){v=voices[i];break;}}
     if(v)u.voice=v;
@@ -1653,6 +1797,7 @@ function go(name){
   if(name==="quiz")newQuiz();
   if(name==="kanji")newKanji();
   if(name==="zukan")renderZukan();
+  if(name==="bpick")renderPick();
 }
 $$("[data-go]").forEach(function(b){b.addEventListener("click",function(){go(b.dataset.go);});});
 
@@ -2450,6 +2595,469 @@ function openSheet(d){
 }
 function closeSheet(){$("#sheet").classList.remove("on");try{window.speechSynthesis.cancel();}catch(e){}}
 $("#sheet").addEventListener("click",function(e){if(e.target===this)closeSheet();});
+
+/* ============================================================
+   バトルを じっきょう
+   えらんだ 2ひきが たたかう アニメを みて、なにが おきたかを ぶんに する。
+   あたったら「のこりの たいりょく」を ひきざんで こたえる（2けた どうし）。
+   ============================================================ */
+/* しゃしんが ひだりを むいている きょうりゅう（のこりは みぎむき）。むかいあわせる ときに つかう */
+var FACE_LEFT={iguano:1,stego:1,ampelo:1,quetz:1,troodon:1,diplo:1,shantungo:1,styraco:1,elasmo:1,carcharo:1};
+/* こうげきの どうし。obj＝「〜に／〜を」どちらを つかうか、fx＝あたった ときの えもじ */
+var BVERBS={
+  "かみつきました":{obj:"に",fx:"🦷"},
+  "ひっかきました":{obj:"を",fx:"💢"},
+  "けりました":{obj:"を",fx:"🦶"},
+  "たたきました":{obj:"を",fx:"💥"},
+  "つきました":{obj:"を",fx:"⚡"},
+  "ふみつけました":{obj:"を",fx:"👣"},
+  "つつきました":{obj:"を",fx:"🎯"},
+  "たいあたりしました":{obj:"に",fx:"💨"},
+  "ずつきしました":{obj:"に",fx:"💫"},
+  "おどかしました":{obj:"を",fx:"📢"}
+};
+/* 「〇〇で 〜ました」で ありえる どうし。ダミーに ださない（「つめで けりました」も ただしそうなので）。 */
+var BPLAUS={
+  "きば":["かみつきました"],"くち":["かみつきました"],
+  "くちばし":["つつきました","かみつきました"],
+  "つめ":["ひっかきました","けりました","つきました"],
+  "とげ":["つきました","たたきました"],"ハンマー":["たたきました"],"しっぽ":["たたきました","ふみつけました"],
+  "つの":["つきました","ずつきしました","たいあたりしました"],
+  "あたま":["ずつきしました","たいあたりしました"],
+  "こえ":["おどかしました"],"あし":["ふみつけました","けりました"]
+};
+/* p＝つよさ(1〜10)、m＝わざ（w＝なにで、v＝どうし。w が からなら「〇〇に」の ぶんだけ）、
+   d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ） */
+function MV(w,v){return {w:w,v:v};}
+var BATTLE={
+  tyranno:{p:10,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")]},
+  ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"たたきました")],d:{t:"guard",w:"よろい",r:.35}},
+  spino:{p:9,m:[MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました")]},
+  tricera:{p:8,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
+  ptera:{p:3,m:[MV(["くちばし"],"つつきました")],d:{t:"fly",r:.35}},
+  iguano:{p:5,m:[MV(["おやゆびの","とげ"],"つきました"),MV(["しっぽ"],"たたきました")]},
+  pachy:{p:4,m:[MV(["かたい","あたま"],"ずつきしました")],d:{t:"dodge",r:.15}},
+  parasaur:{p:4,m:[MV(["おおきな","こえ"],"おどかしました"),MV(["しっぽ"],"たたきました")],d:{t:"dodge",r:.15}},
+  mosa:{p:9,m:[MV(["おおきな","くち"],"かみつきました")],d:{t:"dive",r:.3}},
+  raptor:{p:3,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました")],d:{t:"dodge",r:.35}},
+  stego:{p:7,m:[MV(["しっぽの","とげ"],"たたきました")]},
+  ampelo:{p:6,m:[MV(["ながい","しっぽ"],"たたきました"),MV(["あし"],"ふみつけました")],d:{t:"guard",w:"よろい",r:.3}},
+  giganto:{p:9,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")]},
+  quetz:{p:5,m:[MV(["くちばし"],"つつきました")],d:{t:"fly",r:.3}},
+  yi:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"fly",r:.35}},
+  kentro:{p:5,m:[MV(["しっぽの","とげ"],"つきました")]},
+  troodon:{p:3,m:[MV(["つめ"],"ひっかきました"),MV([],"かみつきました")],d:{t:"dodge",r:.35}},
+  yuty:{p:7,m:[MV(["きば"],"かみつきました")]},
+  archaeo:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"dodge",r:.3}},
+  argentino:{p:8,m:[MV(["おおきな","あし"],"ふみつけました"),MV(["ながい","しっぽ"],"たたきました")],d:{t:"dodge",r:.04}},
+  brachio:{p:7,m:[MV(["おおきな","あし"],"ふみつけました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.04}},
+  diplo:{p:7,m:[MV(["ながい","しっぽ"],"たたきました"),MV(["あし"],"ふみつけました")],d:{t:"dodge",r:.05}},
+  allo:{p:8,m:[MV(["きば"],"かみつきました"),MV(["つめ"],"ひっかきました")]},
+  psitta:{p:2,m:[MV(["くちばし"],"かみつきました")],d:{t:"dodge",r:.25}},
+  therizino:{p:7,m:[MV(["ながい","つめ"],"ひっかきました")]},
+  shantungo:{p:7,m:[MV(["しっぽ"],"たたきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.05}},
+  styraco:{p:6,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
+  elasmo:{p:5,m:[MV([],"かみつきました")],d:{t:"dive",r:.3}},
+  deino:{p:4,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました")],d:{t:"dodge",r:.3}},
+  proto:{p:3,m:[MV(["くちばし"],"つつきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.15}},
+  carno:{p:6,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.2}},
+  carcharo:{p:9,m:[MV(["きば"],"かみつきました")]}
+};
+/* バトルの うごきは Web Animations で うごかす。Windows の「アニメーション効果」が オフ
+   （prefers-reduced-motion）だと CSS アニメは ぜんぶ とまるが、だれが なにを したかを
+   きょうりゅうの うごきで みて ぶんを つくる モードなので、ここの うごきは とめない。
+   ------------------------------------------------------------
+   うごきは [じかん(0〜1), いどう] の ならび。d は あいての ほうこう（ひだりの きょうりゅうは +1）。
+   X＝よこ(%)、Y＝たて(%)、R＝かたむき（+ で あたまが さがる）、S＝おおきさ、F＝ひかり、O＝すけ */
+function bKF(d,steps){
+  return steps.map(function(st){
+    var m=st[1]||{},t=[],k={offset:st[0]};
+    if(m.X||m.Y)t.push("translate("+((m.X||0)*d)+"%,"+(m.Y||0)+"%)");
+    if(m.flip)t.push("scaleX(-1)");
+    if(m.R)t.push("rotate("+(m.R*d)+"deg)");
+    if(m.S)t.push("scale("+m.S+")");
+    if(m.SX||m.SY)t.push("scale("+(m.SX||1)+","+(m.SY||1)+")");
+    k.transform=t.length?t.join(" "):"none";
+    k.filter=m.F?"brightness("+m.F+")":"brightness(1)";
+    k.opacity=m.O==null?1:m.O;
+    return k;
+  });
+}
+/* こうげきする がわの うごき（1びょう。0.45 あたりで あいてに とどく） */
+var BATK={
+  /* かみつく：ちかづいて あたまを さげて 2かい がぶっ */
+  bite:[[0],[.3,{X:30,Y:-6,R:-8}],[.42,{X:46,R:12}],[.52,{X:40,R:-4}],[.62,{X:46,R:12}],[.75,{X:40}],[1]],
+  /* ひっかく：たちあがって まえあしを 2かい ふりおろす */
+  scratch:[[0],[.25,{X:32}],[.36,{X:34,Y:-12,R:-18}],[.45,{X:42,R:10}],[.55,{X:34,Y:-12,R:-18}],[.64,{X:42,R:10}],[.8,{X:28}],[1]],
+  /* ける：とびあがって あしを まえに つきだす */
+  kick:[[0],[.2,{X:10}],[.36,{X:32,Y:-40,R:-25}],[.47,{X:46,Y:-18,R:-38}],[.62,{X:30}],[1]],
+  /* しっぽで たたく：くるっと うしろを むいて しっぽを ぶんぶん */
+  tail:[[0],[.2,{X:26}],[.32,{X:28,flip:1}],[.44,{X:42,flip:1,R:10}],[.53,{X:34,flip:1,R:-6}],[.62,{X:42,flip:1,R:10}],[.76,{X:26,flip:1}],[.88,{X:14}],[1]],
+  /* つのや とげで つく：いちど さがって、あたまを さげて まっすぐ つっこむ */
+  stab:[[0],[.2,{X:-10,R:-6}],[.3,{X:-10,R:10}],[.45,{X:50,R:10}],[.54,{X:44,R:10}],[.62,{X:50,R:12}],[.8,{X:20}],[1]],
+  /* ふみつける：おおきく たちあがって ドスン、ドスン */
+  stomp:[[0],[.25,{X:28}],[.4,{X:30,Y:-12,R:-28}],[.5,{X:36,Y:2,R:4}],[.58,{X:36}],[.66,{X:36,Y:-6,R:-14}],[.74,{X:36,R:3}],[1]],
+  /* くちばしで つつく：すばやく 3かい つんつん */
+  peck:[[0],[.25,{X:34}],[.34,{X:40,R:18}],[.41,{X:34,R:-4}],[.49,{X:40,R:18}],[.56,{X:34,R:-4}],[.64,{X:40,R:18}],[.8,{X:24}],[1]],
+  /* たいあたり：うしろに ためて、からだごと ドーン */
+  tackle:[[0],[.22,{X:-14,R:-4}],[.45,{X:56}],[.52,{X:48}],[.75,{X:18}],[1]],
+  /* ずつき：あたまを さげて ゴツン、はねかえる */
+  headbutt:[[0],[.2,{X:-12,R:-10}],[.3,{X:-12,R:16}],[.46,{X:50,R:16}],[.54,{X:38,Y:-6,R:-6}],[.75,{X:14}],[1]],
+  /* おどかす：その ばで のけぞって おおきく なって ブルブル（さわらない） */
+  roar:[[0],[.2,{R:-14,S:1.12}],[.3,{X:4,R:-14,S:1.2}],[.36,{X:-2,R:-14,S:1.2}],[.42,{X:4,R:-14,S:1.2}],[.48,{X:-2,R:-14,S:1.2}],[.54,{X:4,R:-14,S:1.2}],[.6,{X:-2,R:-14,S:1.2}],[.8,{S:1.05}],[1]]
+};
+/* こうげきを うけた がわの うごき（d は おされる ほうこう） */
+var BHURT={
+  /* ピカッと ひかって、グラグラ */
+  hit:[[0],[.15,{X:8,R:-6,F:1.9}],[.3,{X:3,F:1.4}],[.45,{X:10,R:-4,F:1.6}],[.6,{X:3,F:1.2}],[1]],
+  /* おおきく ふっとぶ */
+  knock:[[0],[.2,{X:30,Y:-14,R:-18,F:1.9}],[.45,{X:26,R:-8,F:1.3}],[.7,{X:8}],[1]],
+  /* ぺちゃんこ */
+  squash:[[0],[.15,{SX:1.15,SY:.65,F:1.9}],[.35,{SX:1.1,SY:.72,F:1.3}],[.55,{SX:1.08,SY:.8}],[.8,{SX:.97,SY:1.04}],[1]],
+  /* こわくて ちぢこまって ブルブル */
+  shiver:[[0],[.12,{X:8,S:.86}],[.2,{X:12,S:.86}],[.28,{X:8,S:.86}],[.36,{X:12,S:.86}],[.44,{X:8,S:.86}],[.52,{X:12,S:.86}],[.6,{X:8,S:.86}],[.8,{X:4,S:.95}],[1]]
+};
+/* まもる がわの うごき */
+var BDEF={
+  /* ぴょんと とびのいて よける */
+  dodge:[[0],[.1,{Y:-8}],[.35,{X:22,Y:-60}],[.6,{X:14}],[1]],
+  /* ぐっと ふんばって はねかえす */
+  guard:[[0],[.15,{SX:1.06,SY:.86}],[.3,{X:3,SX:1.06,SY:.86,F:1.35}],[.75,{SX:1.06,SY:.86,F:1.2}],[1]],
+  /* そらへ にげる */
+  fly:[[0],[.1,{Y:6}],[.45,{X:12,Y:-95,S:.6,O:.6}],[.7,{X:12,Y:-95,S:.6,O:.6}],[1]],
+  /* うみに もぐる */
+  dive:[[0],[.4,{Y:40,O:.15}],[.7,{Y:40,O:.15}],[1]]
+};
+/* はねかえされた ほうは、うしろに よろける */
+var BRECOIL=[[0,{X:44}],[.4,{X:-8,Y:-10,R:-12}],[1]];
+/* どうし → こうげきの うごき と うけた がわの うごき */
+var BMOVE={
+  "かみつきました":["bite","hit"],"ひっかきました":["scratch","hit"],"けりました":["kick","knock"],
+  "たたきました":["tail","knock"],"つきました":["stab","hit"],"ふみつけました":["stomp","squash"],
+  "つつきました":["peck","hit"],"たいあたりしました":["tackle","knock"],"ずつきしました":["headbutt","knock"],
+  "おどかしました":["roar","shiver"]
+};
+/* まもりの うごきを はじめる じかん（ms）と ながさ */
+var BDEF_T={dodge:[250,800],guard:[280,700],fly:[220,1300],dive:[220,1300]};
+var BKF={
+  joy:[{transform:"none"},{transform:"translateY(-22%) rotate(-5deg)",offset:.35},
+       {transform:"translateY(-8%) rotate(4deg)",offset:.65},{transform:"none"}]
+};
+
+function bStat(d){return BATTLE[d.id]||{p:5,m:[MV([],"たいあたりしました")]};}
+/* ぜんちょう（つばさの ひとは ひろげた ながさ）で みための おおきさを かえる */
+function bScale(id){
+  var f=FACTS[id]||{},len=f.len||parseFloat(f.wing)||5;
+  return (0.4+0.6*Math.sqrt(Math.min(len,30)/30)).toFixed(2);
+}
+/* i=0 は ひだり（みぎを むく）、i=1 は みぎ（ひだりを むく） */
+function bFace(i,id,extra){
+  var flip=i===0?!!FACE_LEFT[id]:!FACE_LEFT[id];
+  return '<div class="fimg'+(flip?" flip":"")+'"'+(extra||"")+'>'+dinoSVG(id)+'</div>';
+}
+
+/* ---------- たいせんを えらぶ ---------- */
+var bPick=[null,null];
+function renderPick(){
+  var g=$("#bpick-grid");g.innerHTML="";
+  DINOS.forEach(function(d){
+    var b=document.createElement("button");
+    b.className="zcard";b.dataset.id=d.id;
+    b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
+    b.addEventListener("click",function(){pickFighter(d);});
+    g.appendChild(b);
+  });
+  renderCorners();
+}
+function pickFighter(d){
+  var i;
+  for(i=0;i<2;i++)if(bPick[i]&&bPick[i].id===d.id){bPick[i]=null;renderCorners();return;}
+  bPick[bPick[0]?1:0]=d;
+  speak(d.name,0.9);
+  renderCorners();
+}
+function renderCorners(){
+  [0,1].forEach(function(i){
+    var c=$("#corner"+i),d=bPick[i];
+    c.innerHTML=d?bFace(i,d.id)+'<b>'+d.name+'</b>':'<span>'+(i?"あお":"あか")+' コーナー</span>';
+    c.classList.toggle("filled",!!d);
+  });
+  $$("#bpick-grid .zcard").forEach(function(b){
+    b.classList.toggle("sel0",!!bPick[0]&&bPick[0].id===b.dataset.id);
+    b.classList.toggle("sel1",!!bPick[1]&&bPick[1].id===b.dataset.id);
+  });
+  $("#b-start").disabled=!(bPick[0]&&bPick[1]);
+}
+[0,1].forEach(function(i){$("#corner"+i).addEventListener("click",function(){bPick[i]=null;renderCorners();});});
+$("#b-random").addEventListener("click",function(){
+  var two=shuffle(DINOS).slice(0,2);
+  bPick=[two[0],two[1]];
+  renderCorners();
+  speak(two[0].name+" たい "+two[1].name,0.9);
+});
+$("#b-start").addEventListener("click",startBattle);
+
+/* ---------- バトル ---------- */
+var bs=null,bRun=0;
+var bMath=true;
+try{bMath=localStorage.getItem("dinolab_bmath")!=="0";}catch(e){}
+function renderMathToggle(){
+  var b=$("#b-mtoggle");
+  b.innerHTML="🧮<span class=\"lbl\"> けいさん</span> "+(bMath?"ON":"OFF");
+  b.classList.toggle("off",!bMath);
+}
+renderMathToggle();
+$("#b-mtoggle").addEventListener("click",function(){
+  bMath=!bMath;
+  try{localStorage.setItem("dinolab_bmath",bMath?"1":"0");}catch(e){}
+  renderMathToggle();
+});
+/* バトルの とちゅうで もどったら、のこりの タイマーは なにも しない */
+function bLater(fn,ms){var run=bRun;setTimeout(function(){if(run===bRun)fn();},ms);}
+
+function startBattle(){
+  if(!(bPick[0]&&bPick[1]))return;
+  bRun++;
+  bs={f:bPick.map(function(d){var st=bStat(d),mx=30+st.p*3;return {d:d,st:st,hp:mx,max:mx,defended:false};}),
+      over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0};
+  $("#bstage").innerHTML=bs.f.map(function(F,i){
+    return '<div class="fighter f'+i+'" id="bf'+i+'">'+
+      '<div class="hp"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>'+
+      '<div class="fbody">'+bFace(i,F.d.id,' style="--s:'+bScale(F.d.id)+'"')+'</div></div>'+
+      (i===0?'<span class="vs">VS</span>':'');
+  }).join("");
+  setHP(0);setHP(1);
+  go("battle");
+  bClearPlay();
+  $("#b-q").textContent="🔔 バトル スタート！";
+  $("#battle-confetti").innerHTML="";
+  $("#battle-badge").textContent="バトル スタート！";
+  showBadge($("#battle-badge"));
+  speak("さあ、"+bs.f[0].d.name+" たい "+bs.f[1].d.name+"！ バトル スタート！",0.95,1.2);
+  bLater(nextRound,2600);
+}
+function setHP(i){
+  var F=bs.f[i],el=$("#bf"+i),fill=$(".hpfill",el);
+  fill.style.width=Math.round(F.hp/F.max*100)+"%";
+  fill.classList.toggle("low",F.hp/F.max<.35);
+  $(".hpnum",el).textContent=F.hp;
+}
+function bClearPlay(){
+  $("#b-slots").innerHTML="";$("#b-bank").innerHTML="";
+  $("#b-math").style.display="none";$("#b-done").style.display="none";
+  hideBadge($("#battle-badge"));
+}
+/* kf は BKF の なまえ か、キーフレームの はいれつ */
+function bAnim(el,kf,ms,loop){
+  if(!el.animate)return;
+  if(el._anim)el._anim.cancel();
+  el._anim=el.animate(typeof kf==="string"?BKF[kf]:kf,{duration:ms,easing:loop?"ease-in-out":"ease-in-out",iterations:loop?Infinity:1});
+}
+function bFx(i,txt,cls){
+  var s=document.createElement("span");
+  s.className="bfx"+(cls?" "+cls:"");s.textContent=txt;
+  /* ダメージの かずは たおれても かたむかない ように、からだ ではなく わくに だす */
+  $(cls==="dmg"?"#bf"+i:"#bf"+i+" .fbody").appendChild(s);
+  if(cls!=="zzz")setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},cls?1600:1100);
+}
+
+/* ことばを えらばない ぶんの つくりかた */
+function bSentence(ev){
+  var A=bs.f[ev.ai].d,D=bs.f[ev.di].d,toks,extras,v,head;
+  var S=function(n){return [n,"sub"];};
+  if(ev.type==="hit"){
+    v=BVERBS[ev.move.v];
+    if(ev.move.w.length&&Math.random()<.6){
+      /* 「A が きば で かみつきました」 */
+      head=ev.move.w[ev.move.w.length-1];
+      toks=[S(A.name),["が","par"]].concat(ev.move.w.map(function(w){return [w,"wrd"];}),[["で","par"],[ev.move.v,"prd"]]);
+      var ok=BPLAUS[head]||[];
+      extras=[S(D.name),[pick(["を","に","の","と"]),"par"],
+        [pick(Object.keys(BVERBS).filter(function(x){return x!==ev.move.v&&ok.indexOf(x)<0;})),"prd"]];
+    }else{
+      /* 「A が D に かみつきました」「A が D を けりました」：に と を の つかいわけ */
+      toks=[S(A.name),["が","par"],S(D.name),[v.obj,"par"],[ev.move.v,"prd"]];
+      var mine=bs.f[ev.ai].st.m.map(function(m){return m.v;});
+      extras=[[v.obj==="に"?"を":"に","par"],
+        [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].fx!==v.fx&&mine.indexOf(x)<0;})),"prd"]];
+    }
+  }else if(ev.type==="dodge"){
+    toks=[S(D.name),["が","par"],["さっと","wrd"],["よけました","prd"]];
+    extras=[S(A.name),[pick(["を","に"]),"par"],["たおれました","prd"]];
+  }else if(ev.type==="guard"){
+    toks=[S(D.name),["が","par"],[ev.w,"wrd"],["で","par"],["まもりました","prd"]];
+    extras=[S(A.name),[pick(["に","の"]),"par"],["たおれました","prd"]];
+  }else if(ev.type==="fly"){
+    toks=[S(D.name),["が","par"],["そら","wrd"],["へ","par"],["にげました","prd"]];
+    extras=[S(A.name),["を","par"],["もぐりました","prd"]];
+  }else{
+    toks=[S(D.name),["が","par"],["うみ","wrd"],["に","par"],["もぐりました","prd"]];
+    extras=[S(A.name),["と","par"],["たおれました","prd"]];
+  }
+  return {toks:toks,extras:extras};
+}
+
+function nextRound(){
+  bClearPlay();
+  /* こうげきする ほうは まいかい ランダム（こうたいだと さきに こうげきした ほうが ゆうりすぎる） */
+  var ai=Math.random()<.5?0:1,di=1-ai;
+  var A=bs.f[ai],D=bs.f[di];
+  var ev={ai:ai,di:di,move:pick(A.st.m)};
+  var def=D.st.d||{t:"dodge",r:.08};
+  /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
+  if(!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
+  else{
+    D.defended=false;
+    ev.type="hit";
+    ev.dmg=14+A.st.p*2+Math.floor(Math.random()*9);
+    ev.ko=ev.dmg>=D.hp;
+  }
+  bs.ev=ev;bs.phase="round";
+  var sn=bSentence(ev);
+  bRenderSentence(sn.toks,sn.extras);
+  bPlay(ev);
+}
+function bPlay(ev){
+  var fa=$("#bf"+ev.ai),fd=$("#bf"+ev.di);
+  $$("#bstage .fighter").forEach(function(f){f.classList.remove("turn");});
+  fa.classList.add("turn");
+  $("#b-bank").classList.add("wait");
+  $("#b-q").textContent="👀 よく みてね…";
+  var d=ev.ai===0?1:-1,mv=BMOVE[ev.move.v]||["tackle","knock"];
+  var ab=$(".fbody",fa),db=$(".fbody",fd);
+  bAnim(ab,bKF(d,BATK[mv[0]]),1000);
+  if(ev.type==="hit"){
+    bLater(function(){bAnim(db,bKF(d,BHURT[mv[1]]),mv[1]==="hit"||mv[1]==="squash"?650:850);},430);
+  }else{
+    var t=BDEF_T[ev.type];
+    bLater(function(){bAnim(db,bKF(d,BDEF[ev.type]),t[1]);},t[0]);
+    /* まもられたら、こうげきした ほうが はねかえされる */
+    if(ev.type==="guard")bLater(function(){bAnim(ab,bKF(d,BRECOIL),550);},470);
+  }
+  bLater(function(){
+    $("#b-bank").classList.remove("wait");
+    $("#b-q").textContent="🎙️ なにが おきた？ じっきょう しよう！";
+  },1600);
+}
+$("#b-replay").addEventListener("click",function(){
+  if(bs&&bs.phase==="round"&&bs.pos<bs.toks.length)bPlay(bs.ev);
+});
+
+function bRenderSentence(toks,extras){
+  bs.toks=toks;bs.pos=0;
+  var slots=$("#b-slots");slots.innerHTML="";
+  toks.forEach(function(t,i){
+    var el=document.createElement("div");
+    el.className="slot n-"+t[1]+(i===0?" next":"");
+    el.dataset.i=i;
+    slots.appendChild(el);
+  });
+  var bank=$("#b-bank");bank.innerHTML="";
+  shuffle(toks.concat(extras)).forEach(function(t){
+    var b=document.createElement("button");
+    b.className="chip r-"+t[1];
+    b.textContent=t[0];
+    b.addEventListener("click",function(){bTap(b,t);});
+    bank.appendChild(b);
+  });
+}
+function bTap(btn,tok){
+  if(!bs||bs.pos>=bs.toks.length)return;
+  var want=bs.toks[bs.pos];
+  if(tok[0]!==want[0]){wrongFeedback(btn);return;}
+  var slot=$('#b-slots .slot[data-i="'+bs.pos+'"]');
+  slot.textContent=tok[0];
+  slot.className="slot filled pop r-"+want[1];
+  btn.classList.add("used");
+  bs.pos++;
+  speak(speechWord(tok),1);
+  var nx=$('#b-slots .slot[data-i="'+bs.pos+'"]');
+  if(nx)nx.classList.add("next");
+  if(bs.pos===bs.toks.length){$("#b-bank").innerHTML="";bFinish();}
+}
+function bSay(){return bs.toks.map(speechWord).join("");}
+
+function bFinish(){
+  addStar();
+  var ev=bs.ev,D=bs.f[ev.di],say=bSay()+"！";
+  $("#b-q").textContent="🎙️ ナイス じっきょう！";
+  if(ev.type==="hit"){
+    bFx(ev.di,"−"+ev.dmg,"dmg");
+    if(ev.ko){
+      bs.over=true;bs.winner=ev.ai;
+      D.hp=0;setHP(ev.di);
+      say+=" "+D.d.name+"が たおれた！ しょうしゃ、"+bs.f[ev.ai].d.name+"！";
+      bLater(winFinish,700);
+    }else if(bMath){
+      bShowMath(ev);
+    }else{
+      D.hp-=ev.dmg;setHP(ev.di);
+      bShowDone("next");
+    }
+  }else{
+    bShowDone("next");
+  }
+  speak(say,0.95,1.2);
+}
+
+/* のこりの たいりょく ＝ a − b。まちがいの せんたくしは「くりさがりを わすれた こたえ」と ±10・±1 */
+function bMathChoices(a,b){
+  var ans=a-b,out=[ans];
+  var noBorrow=Math.abs(Math.floor(a/10)-Math.floor(b/10))*10+Math.abs(a%10-b%10);
+  var ok=function(x){return x>=0&&x<=99&&out.indexOf(x)<0;};
+  if(ok(noBorrow))out.push(noBorrow);
+  shuffle([ans+10,ans-10,ans+1,ans-1,ans+2,ans-2]).forEach(function(x){if(out.length<3&&ok(x))out.push(x);});
+  return shuffle(out);
+}
+function bShowMath(ev){
+  var D=bs.f[ev.di],a=D.hp,b=ev.dmg,ans=a-b;
+  $("#b-mq").innerHTML=D.d.name+'の たいりょく <em>'+a+'</em> から <em>'+b+'</em> へったら、のこりは？';
+  $("#b-mx").textContent=a+" − "+b+" = ？";
+  var box=$("#b-mchoices");box.innerHTML="";box.classList.remove("solved");
+  bMathChoices(a,b).forEach(function(n){
+    var c=document.createElement("button");
+    c.className="choice";c.innerHTML="<b>"+n+"</b>";
+    c.addEventListener("click",function(){
+      if(box.classList.contains("solved"))return;
+      if(n!==ans){wrongFeedback(c);return;}
+      c.classList.add("right");box.classList.add("solved");
+      $("#b-mx").textContent=a+" − "+b+" = "+ans;
+      D.hp=ans;setHP(ev.di);
+      addStar();
+      speak("のこりは "+ans+"！",1,1.2);
+      bShowDone("next");
+    });
+    box.appendChild(c);
+  });
+  $("#b-math").style.display="flex";
+}
+
+/* けっちゃく：かった ほうは よろこび、まけた ほうは さかさまに ねてしまう */
+function winFinish(){
+  var W=bs.f[bs.winner].d,li=1-bs.winner;
+  $$("#bstage .fighter").forEach(function(f){f.classList.remove("turn");});
+  $("#bf"+li).classList.add("down");
+  var fi=$("#bf"+li+" .fimg");
+  if(fi.animate)fi.animate([{transform:"none"},{transform:"scaleY(-1)"}],{duration:600,easing:"cubic-bezier(.34,1.4,.64,1)"});
+  bFx(li,"💤","zzz");
+  var z=$("#bf"+li+" .bfx.zzz");
+  if(z&&z.animate)z.animate([{transform:"translate(-50%,-50%)",opacity:1},{transform:"translate(-30%,-80%)",opacity:.5},{transform:"translate(-50%,-50%)",opacity:1}],{duration:2400,iterations:Infinity,easing:"ease-in-out"});
+  bAnim($("#bf"+bs.winner+" .fbody"),"joy",700,true);
+  $("#b-q").textContent="🏆 "+W.name+"の かち！";
+  $("#battle-badge").textContent="🏆 "+W.name+"の かち！";
+  celebrate("#battle-badge","#battle-confetti");
+  bShowDone("end");
+}
+function bShowDone(kind){
+  $("#b-next").style.display=kind==="next"?"":"none";
+  $("#b-again").style.display=kind==="end"?"":"none";
+  $("#b-other").style.display=kind==="end"?"":"none";
+  $("#b-done").style.display="flex";
+}
+$("#b-next").addEventListener("click",function(){$("#b-math").style.display="none";nextRound();});
+$("#b-again").addEventListener("click",startBattle);
+$("#b-other").addEventListener("click",function(){bRun++;go("bpick");});
+$("#b-back").addEventListener("click",function(){bRun++;try{window.speechSynthesis.cancel();}catch(e){}go("bpick");});
 
 /* ============================================================
    スタート
