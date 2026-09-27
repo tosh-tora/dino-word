@@ -536,7 +536,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-5</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-8</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -2855,7 +2855,7 @@ function startBattle(){
   if(!(bPick[0]&&bPick[1]))return;
   bRun++;
   bs={f:bPick.map(function(d){var st=bStat(d),mx=30+st.p*3;return {d:d,st:st,hp:mx,max:mx,defended:false};}),
-      over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0};
+      round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0};
   $("#bstage").innerHTML=bs.f.map(function(F,i){
     return '<div class="fighter f'+i+'" id="bf'+i+'">'+
       '<div class="hp"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>'+
@@ -2935,30 +2935,45 @@ function bSentence(ev){
 
 function nextRound(){
   bClearPlay();
-  /* こうげきする ほうは まいかい ランダム（こうたいだと さきに こうげきした ほうが ゆうりすぎる） */
-  var ai=Math.random()<.5?0:1,di=1-ai;
+  /* こうげきする ほうは まいかい ランダム（こうたいだと さきに こうげきした ほうが ゆうりすぎる）。
+     ただし さいしょの 2かいは、どちらも 1かいずつ ぶんの しゅご（だれが）に なる：
+     1かいめは たおれない、2かいめは 1かいめの しゅごで なかった ほうが こうげきして かならず あたる。 */
+  var r=bs.round++;
+  var ai=r===1?1-bs.subj1:(Math.random()<.5?0:1),di=1-ai;
   var A=bs.f[ai],D=bs.f[di];
   var ev={ai:ai,di:di,move:pick(A.st.m)};
   var def=D.st.d||{t:"dodge",r:.08};
   /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
-  if(!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
+  if(r!==1&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
   else{
     D.defended=false;
     ev.type="hit";
     ev.dmg=14+A.st.p*2+Math.floor(Math.random()*9);
+    if(r===0)ev.dmg=Math.min(ev.dmg,D.hp-1);
     ev.ko=ev.dmg>=D.hp;
   }
+  /* ぶんの しゅごは、あたれば こうげきした ほう、まもったら まもった ほう */
+  if(r===0)bs.subj1=ev.type==="hit"?ai:di;
   bs.ev=ev;bs.phase="round";
   var sn=bSentence(ev);
   bRenderSentence(sn.toks,sn.extras);
   bPlay(ev);
 }
 function bPlay(ev){
-  var fa=$("#bf"+ev.ai),fd=$("#bf"+ev.di);
+  var fa=$("#bf"+ev.ai);
   $$("#bstage .fighter").forEach(function(f){f.classList.remove("turn");});
   fa.classList.add("turn");
   $("#b-bank").classList.add("wait");
   $("#b-q").textContent="👀 よく みてね…";
+  bMotion(ev);
+  bLater(function(){
+    $("#b-bank").classList.remove("wait");
+    $("#b-q").textContent="🎙️ なにが おきた？ じっきょう しよう！";
+  },1600);
+}
+/* こうげきと まもりの うごき（ぶんが できた ときにも もういちど ながす） */
+function bMotion(ev){
+  var fa=$("#bf"+ev.ai),fd=$("#bf"+ev.di);
   var d=ev.ai===0?1:-1,mv=BMOVE[ev.move.v]||["tackle","knock"];
   var ab=$(".fbody",fa),db=$(".fbody",fd);
   bAnim(ab,bKF(d,BATK[mv[0]]),1000);
@@ -2970,10 +2985,6 @@ function bPlay(ev){
     /* まもられたら、こうげきした ほうが はねかえされる */
     if(ev.type==="guard")bLater(function(){bAnim(ab,bKF(d,BRECOIL),550);},470);
   }
-  bLater(function(){
-    $("#b-bank").classList.remove("wait");
-    $("#b-q").textContent="🎙️ なにが おきた？ じっきょう しよう！";
-  },1600);
 }
 $("#b-replay").addEventListener("click",function(){
   if(bs&&bs.phase==="round"&&bs.pos<bs.toks.length)bPlay(bs.ev);
@@ -3017,21 +3028,28 @@ function bFinish(){
   addStar();
   var ev=bs.ev,D=bs.f[ev.di],say=bSay()+"！";
   $("#b-q").textContent="🎙️ ナイス じっきょう！";
+  /* ぶんが できたら、じっきょうに あわせて うごきを もういちど みせる。
+     ダメージは あたった ときに だす */
+  bMotion(ev);
   if(ev.type==="hit"){
-    bFx(ev.di,"−"+ev.dmg,"dmg");
     if(ev.ko){
       bs.over=true;bs.winner=ev.ai;
-      D.hp=0;setHP(ev.di);
       say+=" "+D.d.name+"が たおれた！ しょうしゃ、"+bs.f[ev.ai].d.name+"！";
-      bLater(winFinish,700);
-    }else if(bMath){
-      bShowMath(ev);
-    }else{
-      D.hp-=ev.dmg;setHP(ev.di);
-      bShowDone("next");
     }
+    bLater(function(){
+      bFx(ev.di,"−"+ev.dmg,"dmg");
+      if(ev.ko){
+        D.hp=0;setHP(ev.di);
+        bLater(winFinish,800);
+      }else if(bMath){
+        bShowMath(ev);
+      }else{
+        D.hp-=ev.dmg;setHP(ev.di);
+        bShowDone("next");
+      }
+    },500);
   }else{
-    bShowDone("next");
+    bLater(function(){bShowDone("next");},1000);
   }
   speak(say,0.95,1.2);
 }
@@ -3068,12 +3086,23 @@ function bShowMath(ev){
   $("#b-math").style.display="flex";
 }
 
+/* え は わくの したに よせて かいてあるので、わくの まんなかで ひっくりかえすと うえに とんでしまう。
+   え の まんなかを じくに して、じめんの うえで さかさまに なるように する。
+   がめんの おおきさが かわったら（iPad を たてに するなど）じくも かけなおす。 */
+function bFlipOrigin(fi){
+  var im=$("img,svg",fi),bw=fi.clientWidth,bh=fi.clientHeight,ratio=160/240;
+  if(im&&im.naturalWidth)ratio=im.naturalHeight/im.naturalWidth;
+  var ch=Math.min(bh,bw*ratio);
+  fi.style.transformOrigin="50% "+Math.round(bh-ch/2)+"px";
+}
+window.addEventListener("resize",function(){$$("#bstage .fighter.down .fimg").forEach(bFlipOrigin);});
 /* けっちゃく：かった ほうは よろこび、まけた ほうは さかさまに ねてしまう */
 function winFinish(){
   var W=bs.f[bs.winner].d,li=1-bs.winner;
   $$("#bstage .fighter").forEach(function(f){f.classList.remove("turn");});
-  $("#bf"+li).classList.add("down");
   var fi=$("#bf"+li+" .fimg");
+  bFlipOrigin(fi);
+  $("#bf"+li).classList.add("down");
   if(fi.animate)fi.animate([{transform:"none"},{transform:"scaleY(-1)"}],{duration:600,easing:"cubic-bezier(.34,1.4,.64,1)"});
   bFx(li,"💤","zzz");
   var z=$("#bf"+li+" .bfx.zzz");
