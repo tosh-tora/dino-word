@@ -547,6 +547,28 @@ body.testmode .testmode-flag{display:block;}
 .bmath .choice b{font-size:clamp(24px,3.6vw,36px);font-variant-numeric:tabular-nums;}
 .mtoggle.off{opacity:.55;}
 @media (max-width:560px){#s-battle .lbl{display:none;}#s-battle .bar{gap:8px;}#s-battle .iconbtn{padding:10px 14px;}}
+/* よこがめんは たかさが たりないので、うえの メニューを HP の ならびの りょうはしに ちいさく おき、
+   なまえは HP バーに かさねて 1ぎょう ぶんに まとめる。けいさんの ときは つくった ぶんを けして けいさんだけ みせる */
+@media (orientation:landscape){
+  #s-battle .bar{position:absolute;top:0;left:0;right:0;z-index:5;gap:6px;padding:6px clamp(10px,3vw,30px);pointer-events:none;}
+  #s-battle .bar>*{pointer-events:auto;}
+  #s-battle .bar .stars,#s-battle .lbl,#s-battle .bk{display:none;}
+  #s-battle .iconbtn{padding:6px 12px;font-size:15px;min-height:36px;}
+  #s-battle .bstage{padding-top:6px;}
+  #s-battle .bhp{margin:0 var(--br,150px) 0 var(--bl,56px);min-height:36px;align-items:center;}
+  #s-battle .hp{position:relative;}
+  #s-battle .hp b{
+    position:absolute;top:0;height:26px;display:flex;align-items:center;z-index:1;pointer-events:none;
+    max-width:calc(100% - 3.4em);color:#fff;text-shadow:0 0 3px rgba(0,0,0,.85),0 1px 2px rgba(0,0,0,.6);
+    font-size:clamp(12px,1.5vw,16px);
+  }
+  #s-battle .hp.h0 b{left:12px;}
+  #s-battle .hp.h1 b{right:12px;}
+  #s-battle .hptrack{height:26px;}
+  #s-battle .hp.h0 .hptrack{box-shadow:inset 0 0 0 2px var(--r-prd);}
+  #s-battle .hp.h1 .hptrack{box-shadow:inset 0 0 0 2px var(--r-sub);}
+  #s-battle .play.math #b-q,#s-battle .play.math #b-slots{display:none;}
+}
 
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important;transition:none !important;}
@@ -558,7 +580,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-13</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-14</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -725,7 +747,7 @@ body.testmode .testmode-flag{display:block;}
   <!-- ============ BATTLE ============ -->
   <section class="screen" id="s-battle">
     <div class="bar">
-      <button class="iconbtn" id="b-back">← もどる</button>
+      <button class="iconbtn" id="b-back" aria-label="もどる">←<span class="bk"> もどる</span></button>
       <div class="spacer"></div>
       <button class="iconbtn" id="b-replay" aria-label="もういちど みる">🔁<span class="lbl"> もういちど みる</span></button>
       <button class="iconbtn mtoggle" id="b-mtoggle">🧮 けいさん ON</button>
@@ -2876,6 +2898,7 @@ function renderMathToggle(){
   var b=$("#b-mtoggle");
   b.innerHTML="🧮<span class=\"lbl\"> けいさん</span> "+(bMath?"ON":"OFF");
   b.classList.toggle("off",!bMath);
+  if(typeof fitBBar==="function")fitBBar();
 }
 renderMathToggle();
 $("#b-mtoggle").addEventListener("click",function(){
@@ -2901,6 +2924,7 @@ function startBattle(){
     }).join("")+'</div>';
   setHP(0);setHP(1);
   go("battle");
+  fitBBar();
   bClearPlay();
   $("#b-q").textContent="🔔 バトル スタート！";
   $("#battle-confetti").innerHTML="";
@@ -2916,6 +2940,7 @@ function setHP(i){
   $(".hpnum",el).textContent=F.hp;
 }
 function bClearPlay(){
+  $("#s-battle .play").classList.remove("math");
   $("#b-slots").innerHTML="";$("#b-bank").innerHTML="";
   $("#b-math").style.display="none";$("#b-done").style.display="none";
   hideBadge($("#battle-badge"));
@@ -3121,6 +3146,7 @@ function bShowMath(ev){
     });
     box.appendChild(c);
   });
+  $("#s-battle .play").classList.add("math");
   $("#b-math").style.display="flex";
 }
 
@@ -3157,7 +3183,15 @@ function bShowDone(kind){
   $("#b-other").style.display=kind==="end"?"":"none";
   $("#b-done").style.display="flex";
 }
-$("#b-next").addEventListener("click",function(){$("#b-math").style.display="none";nextRound();});
+$("#b-next").addEventListener("click",function(){$("#b-math").style.display="none";$("#s-battle .play").classList.remove("math");nextRound();});
+/* よこがめんで HP の ならびを メニューの ボタンに かからないよう、ボタンの はばを はかって あける */
+function fitBBar(){
+  var sc=$("#s-battle"),r=sc.getBoundingClientRect();
+  if(!r.width)return;
+  sc.style.setProperty("--bl",Math.ceil($("#b-back").getBoundingClientRect().right-r.left)+"px");
+  sc.style.setProperty("--br",Math.ceil(r.right-$("#b-replay").getBoundingClientRect().left)+"px");
+}
+window.addEventListener("resize",fitBBar);
 $("#b-again").addEventListener("click",startBattle);
 $("#b-other").addEventListener("click",function(){bRun++;go("bpick");});
 $("#b-back").addEventListener("click",function(){bRun++;try{window.speechSynthesis.cancel();}catch(e){}go("bpick");});
