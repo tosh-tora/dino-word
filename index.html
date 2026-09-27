@@ -1,6 +1,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>きょうりゅうことばラボ</title>
+<!-- ホームがめんに ついかして ひらいたときは、Safari の ツールバーなしで ぜんがめんに する -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="ことばラボ">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@500;700;900&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap">
@@ -580,7 +585,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-14</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-15</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -2926,7 +2931,7 @@ function startBattle(){
   go("battle");
   fitBBar();
   bClearPlay();
-  $("#b-q").textContent="🔔 バトル スタート！";
+  bQ("🎙️ なにが おきたか じっきょう しよう！");
   $("#battle-confetti").innerHTML="";
   $("#battle-badge").textContent="バトル スタート！";
   showBadge($("#battle-badge"));
@@ -3026,13 +3031,14 @@ function bPlay(ev){
   $$("#bstage .fighter").forEach(function(f){f.classList.remove("turn");});
   fa.classList.add("turn");
   $("#b-bank").classList.add("wait");
-  $("#b-q").textContent="👀 よく みてね…";
+  /* 「じっきょう しよう」は さいしょの かいだけ だす。あとは ばしょを とらないように けしておく */
+  if(bs.round>1)bQ("");
   bMotion(ev);
   bLater(function(){
     $("#b-bank").classList.remove("wait");
-    $("#b-q").textContent="🎙️ なにが おきた？ じっきょう しよう！";
   },1600);
 }
+function bQ(t){var q=$("#b-q");q.textContent=t;q.style.display=t?"":"none";}
 /* こうげきと まもりの うごき（ぶんが できた ときにも もういちど ながす） */
 function bMotion(ev){
   var fa=$("#bf"+ev.ai),fd=$("#bf"+ev.di);
@@ -3090,7 +3096,7 @@ function bSay(){return bs.toks.map(speechWord).join("");}
 function bFinish(){
   addStar();
   var ev=bs.ev,D=bs.f[ev.di],say=bSay()+"！";
-  $("#b-q").textContent="🎙️ ナイス じっきょう！";
+  bQ("");
   /* ぶんが できたら、じっきょうに あわせて うごきを もういちど みせる。
      ダメージは あたった ときに だす */
   bMotion(ev);
@@ -3172,7 +3178,7 @@ function winFinish(){
   var z=$("#bf"+li+" .bfx.zzz");
   if(z&&z.animate)z.animate([{transform:"translate(-50%,-50%)",opacity:1},{transform:"translate(-30%,-80%)",opacity:.5},{transform:"translate(-50%,-50%)",opacity:1}],{duration:2400,iterations:Infinity,easing:"ease-in-out"});
   bAnim($("#bf"+bs.winner+" .fbody"),"joy",700,true);
-  $("#b-q").textContent="🏆 "+W.name+"の かち！";
+  bQ("🏆 "+W.name+"の かち！");
   $("#battle-badge").textContent="🏆 "+W.name+"の かち！";
   celebrate("#battle-badge","#battle-confetti");
   bShowDone("end");
