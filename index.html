@@ -597,7 +597,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-16</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-17</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3174,6 +3174,8 @@ function bTap(btn,tok){
   slot.textContent=tok[0];
   slot.className="slot filled pop r-"+want[1];
   btn.classList.add("used");
+  /* 「じっきょう しよう」は さいしょの 1まいを おいたら けす */
+  if(bs.round===1&&bs.pos===0)bQ("");
   bs.pos++;
   speak(speechWord(tok),1);
   var nx=$('#b-slots .slot[data-i="'+bs.pos+'"]');
@@ -3263,11 +3265,18 @@ function bFlipOrigin(fi){
   var ch=Math.min(bh,bw*ratio);
   fi.style.transformOrigin="50% "+Math.round(bh-ch/2)+"px";
 }
-window.addEventListener("resize",function(){$$("#bstage .fighter.down .fimg").forEach(bFlipOrigin);});
+/* したの ボタンが でて わくが ちぢんだ ときなど、がめんの おおきさが かわらなくても かけなおす */
+function bReflip(){$$("#bstage .fighter.down .fimg").forEach(bFlipOrigin);}
+if(window.ResizeObserver)new ResizeObserver(bReflip).observe($("#bstage"));
+else window.addEventListener("resize",bReflip);
 /* けっちゃく：かった ほうは よろこび、まけた ほうは さかさまに ねてしまう */
 function winFinish(){
   var W=bs.f[bs.winner].d,li=1-bs.winner;
   $$("#bstage .fighter").forEach(function(f){f.classList.remove("turn");});
+  /* かちの ぎょうは ださない（まんなかの バッジで しらせる）。
+     したの ボタンを さきに だして、わくの たかさが きまってから じくを はかる */
+  bQ("");
+  bShowDone("end");
   var fi=$("#bf"+li+" .fimg");
   bFlipOrigin(fi);
   $("#bf"+li).classList.add("down");
@@ -3276,10 +3285,8 @@ function winFinish(){
   var z=$("#bf"+li+" .bfx.zzz");
   if(z&&z.animate)z.animate([{transform:"translate(-50%,-50%)",opacity:1},{transform:"translate(-30%,-80%)",opacity:.5},{transform:"translate(-50%,-50%)",opacity:1}],{duration:2400,iterations:Infinity,easing:"ease-in-out"});
   bAnim($("#bf"+bs.winner+" .fbody"),"joy",700,true);
-  bQ("🏆 "+W.name+"の かち！");
   $("#battle-badge").textContent="🏆 "+W.name+"の かち！";
   celebrate("#battle-badge","#battle-confetti");
-  bShowDone("end");
 }
 function bShowDone(kind){
   $("#b-next").style.display=kind==="next"?"":"none";
