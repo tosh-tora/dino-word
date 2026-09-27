@@ -555,7 +555,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-10</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-11</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -2952,7 +2952,7 @@ function bSentence(ev){
         [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].fx!==v.fx&&mine.indexOf(x)<0;})),"prd"]];
     }
   }else if(ev.type==="dodge"){
-    toks=[S(D.name),["が","par"],["さっと","wrd"],["よけました","prd"]];
+    toks=[S(D.name),["が","par"],["さっと","mod"],["よけました","prd"]];
     extras=[S(A.name),[pick(["を","に"]),"par"],["たおれました","prd"]];
   }else if(ev.type==="guard"){
     toks=[S(D.name),["が","par"],[ev.w,"wrd"],["で","par"],["まもりました","prd"]];
