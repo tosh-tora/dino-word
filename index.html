@@ -488,10 +488,13 @@ body.testmode .testmode-flag{display:block;}
   display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(8px,2vw,24px);
 }
 .fighter{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;}
-/* たてながの がめんでは よこに ならべると ちいさく うえが あくので、ひだりした と みぎうえに ずらして おおきく みせる */
+/* たてながの がめんでは はんぶんずつだと ちいさく うえが あくので、
+   じめんの たかさは そろえたまま まんなかで すこし かさねて おおきく みせる。
+   HP の ならびは きょうりゅうの すぐ うえに よせて、あいだを あけない */
 @media (max-aspect-ratio:4/5){
-  .bfight{grid-template-columns:30fr 40fr 30fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:0;}
-  .fighter.f0{grid-column:1/3;grid-row:2;}
+  .bstage{justify-content:flex-end;}
+  .bfight{flex:0 1 auto;aspect-ratio:5/2;grid-template-columns:40fr 20fr 40fr;gap:0;}
+  .fighter.f0{grid-column:1/3;grid-row:1;}
   .fighter.f1{grid-column:2/4;grid-row:1;}
 }
 .hp{min-width:0;display:flex;flex-direction:column;gap:3px;padding:0 4px;}
@@ -555,7 +558,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-12</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-13</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
