@@ -21,6 +21,7 @@
   --r-par:#DE9111;
   --r-wrd:#2C8A57;
   --r-prd:#D2483F;
+  --r-mod:#8A5CD1;
   --chip-text:#FFFFFF;
   --slot-empty:#EAEFE5;
   --miss:#C0392B;
@@ -41,6 +42,7 @@
     --r-par:#F3C25C;
     --r-wrd:#6ECB98;
     --r-prd:#F3877C;
+    --r-mod:#C4A5F5;
     --chip-text:#0E1713;
     --slot-empty:#23322A;
     --miss:#FF6B5E;
@@ -61,6 +63,7 @@
   --r-par:#F3C25C;
   --r-wrd:#6ECB98;
   --r-prd:#F3877C;
+  --r-mod:#C4A5F5;
   --chip-text:#0E1713;
   --slot-empty:#23322A;
   --miss:#FF6B5E;
@@ -78,7 +81,8 @@ body{
 }
 button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer;}
 .app{
-  height:100dvh;min-height:100vh;
+  /* Safari の 100vh は ツールバーを のぞいた たかさより おおきく、したが はみでるので dvh を つかう */
+  height:100vh;height:100dvh;
   display:flex;flex-direction:column;
   background:radial-gradient(120% 90% at 50% 0%, var(--bg) 0%, var(--bg2) 100%);
   user-select:none;-webkit-user-select:none;
@@ -233,6 +237,7 @@ body.testmode .testmode-flag{display:block;}
 .slot.n-par{--next:var(--r-par);}
 .slot.n-wrd{--next:var(--r-wrd);}
 .slot.n-prd{--next:var(--r-prd);}
+.slot.n-mod{--next:var(--r-mod);}
 .slot.next{border-color:var(--next,var(--accent));animation:pulse 1.6s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
 .slot.filled{color:var(--chip-text);border-color:transparent;}
@@ -240,6 +245,7 @@ body.testmode .testmode-flag{display:block;}
 .slot.r-par{background:var(--r-par);}
 .slot.r-wrd{background:var(--r-wrd);}
 .slot.r-prd{background:var(--r-prd);}
+.slot.r-mod{background:var(--r-mod);}
 .slot.pop{animation:pop .3s ease;}
 @keyframes pop{0%{transform:scale(.6);}60%{transform:scale(1.12);}100%{transform:scale(1);}}
 
@@ -256,6 +262,7 @@ body.testmode .testmode-flag{display:block;}
 .chip.r-par{background:var(--r-par);box-shadow:0 4px 0 rgba(0,0,0,.18);}
 .chip.r-wrd{background:var(--r-wrd);box-shadow:0 4px 0 rgba(0,0,0,.18);}
 .chip.r-prd{background:var(--r-prd);box-shadow:0 4px 0 rgba(0,0,0,.18);}
+.chip.r-mod{background:var(--r-mod);box-shadow:0 4px 0 rgba(0,0,0,.18);}
 .chip:active{transform:translateY(4px);box-shadow:none;}
 .chip.used{opacity:.18;pointer-events:none;}
 .chip.miss,.choice.miss{box-shadow:0 0 0 4px var(--miss);filter:grayscale(.6);}
@@ -469,24 +476,36 @@ body.testmode .testmode-flag{display:block;}
 .fimg.flip img,.fimg.flip svg{transform:scaleX(-1);}
 
 .bstage{
-  flex:1 1 auto;min-height:130px;position:relative;
-  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:minmax(0,1fr);align-items:stretch;gap:4px;
+  flex:1 1 auto;min-height:110px;position:relative;
+  display:flex;flex-direction:column;gap:clamp(4px,1vh,10px);
   padding:0 clamp(10px,3vw,30px);
 }
-.bstage .vs{align-self:center;font-size:clamp(20px,3.6vw,38px);opacity:.8;}
+/* VS は HP の ならびの まんなかに おく（きょうりゅうの あいだに ぽつんと うかせない） */
+.bhp{flex:0 0 auto;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:end;gap:clamp(6px,1.6vw,18px);}
+.bhp .vs{font-size:clamp(20px,3.6vw,38px);}
+.bfight{
+  flex:1 1 0;min-height:0;
+  display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(8px,2vw,24px);
+}
 .fighter{position:relative;display:flex;flex-direction:column;min-width:0;min-height:0;}
-.hp{flex:0 0 auto;display:flex;flex-direction:column;gap:3px;padding:0 4px;}
+/* たてながの がめんでは よこに ならべると ちいさく うえが あくので、ひだりした と みぎうえに ずらして おおきく みせる */
+@media (max-aspect-ratio:4/5){
+  .bfight{grid-template-columns:30fr 40fr 30fr;grid-template-rows:minmax(0,1fr) minmax(0,1fr);gap:0;}
+  .fighter.f0{grid-column:1/3;grid-row:2;}
+  .fighter.f1{grid-column:2/4;grid-row:1;}
+}
+.hp{min-width:0;display:flex;flex-direction:column;gap:3px;padding:0 4px;}
 .hp b{
   font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(12px,1.7vw,18px);
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.fighter.f0 .hp b{color:var(--r-prd);}
-.fighter.f1 .hp b{color:var(--r-sub);text-align:right;}
+.hp.h0 b{color:var(--r-prd);}
+.hp.h1 b{color:var(--r-sub);text-align:right;}
 .hprow{display:flex;align-items:center;gap:6px;}
-.fighter.f1 .hprow{flex-direction:row-reverse;}
+.hp.h1 .hprow{flex-direction:row-reverse;}
 .hptrack{flex:1;height:14px;border-radius:999px;background:var(--slot-empty);box-shadow:inset 0 0 0 1px var(--line);overflow:hidden;}
 .hpfill{height:100%;width:100%;border-radius:999px;background:var(--r-wrd);transition:width .8s ease;}
-.fighter.f1 .hpfill{margin-left:auto;}
+.hp.h1 .hpfill{margin-left:auto;}
 .hpfill.low{background:var(--r-prd);}
 .hpnum{
   font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-variant-numeric:tabular-nums;
@@ -536,7 +555,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-8</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-12</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -581,7 +600,7 @@ body.testmode .testmode-flag{display:block;}
         <span><a href="https://commons.wikimedia.org/wiki/File%3ATyrannosaurus_Rex_colored.png" target="_blank" rel="noopener">Tyrannosaurus</a>: myfavoritedinosaur.com and LadyofHats, <a href="https://creativecommons.org/licenses/by/3.0" target="_blank" rel="noopener">CC BY 3.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AAnkylosaurus_TD.png" target="_blank" rel="noopener">Ankylosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3ASpinosaurus_TD.png" target="_blank" rel="noopener">Spinosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3ATriceratops_TD.png" target="_blank" rel="noopener">Triceratops</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3APteranodon_TD.png" target="_blank" rel="noopener">Pteranodon</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AIguanodon_paleoart_2025.png" target="_blank" rel="noopener">Iguanodon</a>: Sauroarchive, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3APachycephalosaurus_TD.png" target="_blank" rel="noopener">Pachycephalosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AParasaurolophus_TD.png" target="_blank" rel="noopener">Parasaurolophus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AMosasaurus.png" target="_blank" rel="noopener">Mosasaurus</a>: UnexpectedDinoLesson, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AVelociraptor_TD.png" target="_blank" rel="noopener">Velociraptor</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AStegosaurus_stenops_Life_Reconstruction_%28flipped%29.png" target="_blank" rel="noopener">Stegosaurus</a>: Fred Wierum, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AAmpelosaurusDB.jpg" target="_blank" rel="noopener">Ampelosaurus</a>: ДиБгд at Russian Wikipedia, Public domain<br><a href="https://commons.wikimedia.org/wiki/File%3AGiganotosaurus_TD.png" target="_blank" rel="noopener">Giganotosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AQuetzalcoatlus_lawsoni.png" target="_blank" rel="noopener">Quetzalcoatlus</a>: Connor Ashbridge, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AYi_TD.png" target="_blank" rel="noopener">Yi qi</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AKentrosaurus_TD.png" target="_blank" rel="noopener">Kentrosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AHand_drawn_Troodon.jpg" target="_blank" rel="noopener">Troodon</a>: IJReid, <a href="https://creativecommons.org/licenses/by-sa/3.0" target="_blank" rel="noopener">CC BY-SA 3.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AYutyrannus_TD.png" target="_blank" rel="noopener">Yutyrannus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AArchaeopteryx_TD.png" target="_blank" rel="noopener">Archaeopteryx</a>: TotalDino, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AArgentinosaurus_TD.png" target="_blank" rel="noopener">Argentinosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3ABrachiosaurus_TD.png" target="_blank" rel="noopener">Brachiosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3ADiplodocus_longus%282%29.jpg" target="_blank" rel="noopener">Diplodocus</a>: Dmitry Bogdanov, <a href="https://creativecommons.org/licenses/by/3.0" target="_blank" rel="noopener">CC BY 3.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AAllosaurus_TD.png" target="_blank" rel="noopener">Allosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3APsittacosaurus_TD.png" target="_blank" rel="noopener">Psittacosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3ATherizinosaurus_TD.png" target="_blank" rel="noopener">Therizinosaurus</a>: TotalDino, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AShantungosaurus_life.png" target="_blank" rel="noopener">Shantungosaurus</a>: IJReid, <a href="https://creativecommons.org/licenses/by/4.0" target="_blank" rel="noopener">CC BY 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AStyracosaurus_BW_transparent.png" target="_blank" rel="noopener">Styracosaurus</a>: Nobu Tamura (http://spinops.blogspot.com), <a href="https://creativecommons.org/licenses/by-sa/3.0" target="_blank" rel="noopener">CC BY-SA 3.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AElasmosaurus_platyurus_%28transparent%29.png" target="_blank" rel="noopener">Elasmosaurus</a>: DiBgd, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AFred_Wierum_Deinonychus.png" target="_blank" rel="noopener">Deinonychus</a>: Fred Wierum, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3AProtoceratops_TD.png" target="_blank" rel="noopener">Protoceratops</a>: TotalDino, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3ACarnotaurus_Reconstruction_%282022%29.png" target="_blank" rel="noopener">Carnotaurus</a>: Fred Wierum, <a href="https://creativecommons.org/licenses/by-sa/4.0" target="_blank" rel="noopener">CC BY-SA 4.0</a><br><a href="https://commons.wikimedia.org/wiki/File%3ACarcharodontosaurus_BW.jpg" target="_blank" rel="noopener">Carcharodontosaurus</a>: Nobu Tamura (http://spinops.blogspot.com), <a href="https://creativecommons.org/licenses/by/2.5" target="_blank" rel="noopener">CC BY 2.5</a></span>
       </details>
       <p class="parent-note">
-        <b>おうちのかたへ</b>／ことばの色は役割です。<b style="color:var(--r-sub)">青＝だれが</b>・<b style="color:var(--r-par)">きいろ＝は / を / が / の / で</b>・<b style="color:var(--r-wrd)">みどり＝ことば</b>・<b style="color:var(--r-prd)">あか＝おわりのことば</b>。述語は正しい形しか出てこないので、並べるだけで「〜します」「〜です」の型が入ります。「クイズを だそう」は、指示語（あれ・これ）では伝わらない状況をつくって、説明する言葉を引き出すモードです。「かんじを おぼえよう」は、漢字→読み→恐竜の実物を1画面で結びつけ、最後にふりがな付きの漢字かな交じり文を見せます。
+        <b>おうちのかたへ</b>／ことばの色は役割です。<b style="color:var(--r-sub)">青＝だれが</b>・<b style="color:var(--r-par)">きいろ＝は / を / が / の / で</b>・<b style="color:var(--r-mod)">むらさき＝どんな（うしろのことばをくわしくする）</b>・<b style="color:var(--r-wrd)">みどり＝ことば</b>・<b style="color:var(--r-prd)">あか＝おわりのことば</b>。述語は正しい形しか出てこないので、並べるだけで「〜します」「〜です」の型が入ります。「クイズを だそう」は、指示語（あれ・これ）では伝わらない状況をつくって、説明する言葉を引き出すモードです。「かんじを おぼえよう」は、漢字→読み→恐竜の実物を1画面で結びつけ、最後にふりがな付きの漢字かな交じり文を見せます。
       </p>
       <button class="testmode-toggle" id="testmode-btn">テストモードに する</button>
     </div>
@@ -604,6 +623,7 @@ body.testmode .testmode-flag{display:block;}
       <div class="legend">
         <span><i style="background:var(--r-sub)"></i>だれが</span>
         <span><i style="background:var(--r-par)"></i>は・を・が・の</span>
+        <span><i style="background:var(--r-mod)"></i>どんな</span>
         <span><i style="background:var(--r-wrd)"></i>ことば</span>
         <span><i style="background:var(--r-prd)"></i>おわりのことば</span>
       </div>
@@ -774,13 +794,13 @@ var DINOS = [
     [["アンキロサウルス","sub"],["は","par"],["くさ","wrd"],["を","par"],["たべます","prd"]],
     [["アンキロサウルス","sub"],["は","par"],["せなか","wrd"],["が","par"],["かたいです","prd"]],
     [["アンキロサウルス","sub"],["は","par"],["しっぽ","wrd"],["で","par"],["たたかいます","prd"]],
-    [["アンキロサウルス","sub"],["は","par"],["ゆっくり","wrd"],["あるきます","prd"]],
+    [["アンキロサウルス","sub"],["は","par"],["ゆっくり","mod"],["あるきます","prd"]],
     [["アンキロサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["アンキロサウルス","sub"],["は","par"],["ハンマー","wrd"],["を","par"],["もっています","prd"]],
     [["アンキロサウルス","sub"],["の","par"],["せなか","wrd"],["は","par"],["よろい","wrd"],["です","prd"]],
     [["アンキロサウルス","sub"],["は","par"],["みじかい","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
     [["アンキロサウルス","sub"],["は","par"],["のんびりや","wrd"],["だと","par"],["かんがえられています","prd"]],
-    [["アンキロサウルス","sub"],["の","par"],["あし","wrd"],["は","par"],["ながく","wrd"],["ありません","prd"]]
+    [["アンキロサウルス","sub"],["の","par"],["あし","wrd"],["は","par"],["ながく","mod"],["ありません","prd"]]
   ]},
 
  {id:"spino", name:"スピノサウルス", kind:"きょうりゅう", meaning:"「とげの とかげ」",
@@ -816,7 +836,7 @@ var DINOS = [
   sents:[
     [["トリケラトプス","sub"],["は","par"],["くさ","wrd"],["を","par"],["たべます","prd"]],
     [["トリケラトプス","sub"],["の","par"],["つの","wrd"],["は","par"],["するどいです","prd"]],
-    [["トリケラトプス","sub"],["は","par"],["ゆっくり","wrd"],["あるきます","prd"]],
+    [["トリケラトプス","sub"],["は","par"],["ゆっくり","mod"],["あるきます","prd"]],
     [["トリケラトプス","sub"],["の","par"],["えりかざり","wrd"],["は","par"],["おおきいです","prd"]],
     [["トリケラトプス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["トリケラトプス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
@@ -858,10 +878,10 @@ var DINOS = [
   sents:[
     [["イグアノドン","sub"],["は","par"],["はっぱ","wrd"],["を","par"],["たべます","prd"]],
     [["イグアノドン","sub"],["は","par"],["とげ","wrd"],["を","par"],["もっています","prd"]],
-    [["イグアノドン","sub"],["は","par"],["まっすぐ","wrd"],["たちます","prd"]],
+    [["イグアノドン","sub"],["は","par"],["まっすぐ","mod"],["たちます","prd"]],
     [["イグアノドン","sub"],["は","par"],["もり","wrd"],["を","par"],["あるきます","prd"]],
     [["イグアノドン","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
-    [["イグアノドン","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","wrd"],["あるきます","prd"]],
+    [["イグアノドン","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","mod"],["あるきます","prd"]],
     [["イグアノドン","sub"],["の","par"],["おやゆび","wrd"],["は","par"],["とげ","wrd"],["です","prd"]],
     [["イグアノドン","sub"],["は","par"],["2ほんあし","wrd"],["で","par"],["あるきます","prd"]]
   ]},
@@ -905,7 +925,7 @@ var DINOS = [
     [["パラサウロロフス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["パラサウロロフス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
     [["パラサウロロフス","sub"],["は","par"],["おおきな","wrd"],["こえ","wrd"],["で","par"],["なきます","prd"]],
-    [["パラサウロロフス","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","wrd"],["あるきます","prd"]],
+    [["パラサウロロフス","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","mod"],["あるきます","prd"]],
     [["パラサウロロフス","sub"],["は","par"],["ぶき","wrd"],["を","par"],["もっていません","prd"]]
   ]},
 
@@ -939,7 +959,7 @@ var DINOS = [
          move:"2ほんの あしで とても はやく はしります。",
          weapon:"あしの するどい つめで、じぶんの みを まもったり たべものを つかまえたり します。"},
   sents:[
-    [["ヴェロキラプトル","sub"],["は","par"],["はやく","wrd"],["はしります","prd"]],
+    [["ヴェロキラプトル","sub"],["は","par"],["はやく","mod"],["はしります","prd"]],
     [["ヴェロキラプトル","sub"],["の","par"],["つめ","wrd"],["は","par"],["するどいです","prd"]],
     [["ヴェロキラプトル","sub"],["は","par"],["はね","wrd"],["が","par"],["あります","prd"]],
     [["ヴェロキラプトル","sub"],["は","par"],["にく","wrd"],["を","par"],["たべます","prd"]],
@@ -963,7 +983,7 @@ var DINOS = [
     [["ステゴサウルス","sub"],["は","par"],["くさ","wrd"],["を","par"],["たべます","prd"]],
     [["ステゴサウルス","sub"],["の","par"],["いた","wrd"],["は","par"],["おおきいです","prd"]],
     [["ステゴサウルス","sub"],["は","par"],["しっぽ","wrd"],["で","par"],["まもります","prd"]],
-    [["ステゴサウルス","sub"],["は","par"],["ゆっくり","wrd"],["あるきます","prd"]],
+    [["ステゴサウルス","sub"],["は","par"],["ゆっくり","mod"],["あるきます","prd"]],
     [["ステゴサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["ステゴサウルス","sub"],["は","par"],["じゅらき","wrd"],["に","par"],["いました","prd"]],
     [["ステゴサウルス","sub"],["は","par"],["とげ","wrd"],["が","par"],["4ほん","wrd"],["あります","prd"]],
@@ -1006,7 +1026,7 @@ var DINOS = [
     [["ギガノトサウルス","sub"],["は","par"],["きば","wrd"],["が","par"],["するどいです","prd"]],
     [["ギガノトサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["ギガノトサウルス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
-    [["ギガノトサウルス","sub"],["は","par"],["どしどし","wrd"],["あるきます","prd"]],
+    [["ギガノトサウルス","sub"],["は","par"],["どしどし","mod"],["あるきます","prd"]],
     [["ギガノトサウルス","sub"],["は","par"],["ちからづよい","wrd"],["きょうりゅう","wrd"],["です","prd"]]
   ]},
 
@@ -1046,7 +1066,7 @@ var DINOS = [
     [["イー","sub"],["は","par"],["もり","wrd"],["に","par"],["すんでいました","prd"]],
     [["イー","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["イー","sub"],["は","par"],["じゅらき","wrd"],["に","par"],["いました","prd"]],
-    [["イー","sub"],["は","par"],["ふわっと","wrd"],["とびます","prd"]],
+    [["イー","sub"],["は","par"],["ふわっと","mod"],["とびます","prd"]],
     [["イー","sub"],["は","par"],["はね","wrd"],["が","par"],["あります","prd"]]
   ]},
 
@@ -1083,7 +1103,7 @@ var DINOS = [
     [["トロオドン","sub"],["は","par"],["どうぶつ","wrd"],["を","par"],["たべます","prd"]],
     [["トロオドン","sub"],["の","par"],["あたま","wrd"],["は","par"],["いいです","prd"]],
     [["トロオドン","sub"],["は","par"],["め","wrd"],["が","par"],["おおきいです","prd"]],
-    [["トロオドン","sub"],["は","par"],["はやく","wrd"],["はしります","prd"]],
+    [["トロオドン","sub"],["は","par"],["はやく","mod"],["はしります","prd"]],
     [["トロオドン","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["トロオドン","sub"],["は","par"],["きたアメリカ","wrd"],["に","par"],["いました","prd"]],
     [["トロオドン","sub"],["は","par"],["こんちゅう","wrd"],["を","par"],["たべます","prd"]],
@@ -1143,13 +1163,13 @@ var DINOS = [
   sents:[
     [["アルゼンチノサウルス","sub"],["は","par"],["はっぱ","wrd"],["を","par"],["たべます","prd"]],
     [["アルゼンチノサウルス","sub"],["の","par"],["からだ","wrd"],["は","par"],["おおきいです","prd"]],
-    [["アルゼンチノサウルス","sub"],["は","par"],["ゆっくり","wrd"],["あるきます","prd"]],
+    [["アルゼンチノサウルス","sub"],["は","par"],["ゆっくり","mod"],["あるきます","prd"]],
     [["アルゼンチノサウルス","sub"],["は","par"],["しっぽ","wrd"],["で","par"],["まもります","prd"]],
     [["アルゼンチノサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
     [["アルゼンチノサウルス","sub"],["は","par"],["みなみアメリカ","wrd"],["に","par"],["いました","prd"]],
     [["アルゼンチノサウルス","sub"],["は","par"],["4ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
     [["アルゼンチノサウルス","sub"],["の","par"],["あし","wrd"],["は","par"],["ふといです","prd"]],
-    [["アルゼンチノサウルス","sub"],["の","par"],["ほね","wrd"],["は","par"],["すこししか","wrd"],["みつかっていません","prd"]]
+    [["アルゼンチノサウルス","sub"],["の","par"],["ほね","wrd"],["は","par"],["すこししか","mod"],["みつかっていません","prd"]]
   ]},
 
  {id:"brachio", name:"ブラキオサウルス", kind:"きょうりゅう", meaning:"「うでの とかげ」",
@@ -1192,7 +1212,7 @@ var DINOS = [
     [["ディプロドクス","sub"],["は","par"],["アメリカ","wrd"],["に","par"],["いました","prd"]],
     [["ディプロドクス","sub"],["の","par"],["くび","wrd"],["は","par"],["ながいです","prd"]],
     [["ディプロドクス","sub"],["は","par"],["ひくい","wrd"],["はっぱ","wrd"],["を","par"],["たべます","prd"]],
-    [["ディプロドクス","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","wrd"],["あるきます","prd"]]
+    [["ディプロドクス","sub"],["は","par"],["なかま","wrd"],["と","par"],["いっしょに","mod"],["あるきます","prd"]]
   ]},
 
  {id:"allo", name:"アロサウルス", kind:"きょうりゅう", meaning:"「ちがう とかげ」",
@@ -1206,7 +1226,7 @@ var DINOS = [
          weapon:"するどい はと つめが たくさん あります。かむ ちからより、はやい うごきが とくいです。"},
   sents:[
     [["アロサウルス","sub"],["は","par"],["にく","wrd"],["を","par"],["たべます","prd"]],
-    [["アロサウルス","sub"],["は","par"],["はやく","wrd"],["はしります","prd"]],
+    [["アロサウルス","sub"],["は","par"],["はやく","mod"],["はしります","prd"]],
     [["アロサウルス","sub"],["の","par"],["つめ","wrd"],["は","par"],["するどいです","prd"]],
     [["アロサウルス","sub"],["は","par"],["つの","wrd"],["が","par"],["あります","prd"]],
     [["アロサウルス","sub"],["は","par"],["きょうりゅう","wrd"],["です","prd"]],
@@ -1249,7 +1269,7 @@ var DINOS = [
     [["テリジノサウルス","sub"],["は","par"],["はっぱ","wrd"],["を","par"],["たべます","prd"]],
     [["テリジノサウルス","sub"],["の","par"],["つめ","wrd"],["は","par"],["ながいです","prd"]],
     [["テリジノサウルス","sub"],["は","par"],["えだ","wrd"],["を","par"],["ひっぱります","prd"]],
-    [["テリジノサウルス","sub"],["は","par"],["ゆっくり","wrd"],["あるきます","prd"]],
+    [["テリジノサウルス","sub"],["は","par"],["ゆっくり","mod"],["あるきます","prd"]],
     [["テリジノサウルス","sub"],["は","par"],["モンゴル","wrd"],["に","par"],["いました","prd"]],
     [["テリジノサウルス","sub"],["は","par"],["2ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
     [["テリジノサウルス","sub"],["の","par"],["つめ","wrd"],["は","par"],["90センチ","wrd"],["です","prd"]],
@@ -1328,7 +1348,7 @@ var DINOS = [
   sents:[
     [["デイノニクス","sub"],["は","par"],["にく","wrd"],["を","par"],["たべます","prd"]],
     [["デイノニクス","sub"],["の","par"],["つめ","wrd"],["は","par"],["するどいです","prd"]],
-    [["デイノニクス","sub"],["は","par"],["はやく","wrd"],["はしります","prd"]],
+    [["デイノニクス","sub"],["は","par"],["はやく","mod"],["はしります","prd"]],
     [["デイノニクス","sub"],["は","par"],["なかま","wrd"],["と","par"],["こうどうします","prd"]],
     [["デイノニクス","sub"],["は","par"],["アメリカ","wrd"],["に","par"],["いました","prd"]],
     [["デイノニクス","sub"],["は","par"],["おおきな","wrd"],["つめ","wrd"],["が","par"],["あります","prd"]],
@@ -1369,7 +1389,7 @@ var DINOS = [
   sents:[
     [["カルノタウルス","sub"],["は","par"],["にく","wrd"],["を","par"],["たべます","prd"]],
     [["カルノタウルス","sub"],["の","par"],["つの","wrd"],["は","par"],["2ほん","wrd"],["あります","prd"]],
-    [["カルノタウルス","sub"],["は","par"],["はやく","wrd"],["はしります","prd"]],
+    [["カルノタウルス","sub"],["は","par"],["はやく","mod"],["はしります","prd"]],
     [["カルノタウルス","sub"],["の","par"],["まえあし","wrd"],["は","par"],["みじかいです","prd"]],
     [["カルノタウルス","sub"],["は","par"],["アルゼンチン","wrd"],["に","par"],["いました","prd"]],
     [["カルノタウルス","sub"],["は","par"],["はくあき","wrd"],["に","par"],["いました","prd"]],
@@ -1396,7 +1416,7 @@ var DINOS = [
     [["カルカロドントサウルス","sub"],["は","par"],["2ほんの","wrd"],["あし","wrd"],["で","par"],["あるきます","prd"]],
     [["カルカロドントサウルス","sub"],["は","par"],["おおきな","wrd"],["きょうりゅう","wrd"],["です","prd"]],
     [["カルカロドントサウルス","sub"],["は","par"],["しっぽ","wrd"],["が","par"],["ながいです","prd"]],
-    [["カルカロドントサウルス","sub"],["は","par"],["ティラノサウルス","wrd"],["と","par"],["おなじくらい","wrd"],["おおきいです","prd"]]
+    [["カルカロドントサウルス","sub"],["は","par"],["ティラノサウルス","wrd"],["と","par"],["おなじくらい","mod"],["おおきいです","prd"]]
   ]}
 ];
 
@@ -1871,12 +1891,23 @@ var PRD_PRD_CONFLICTS={
    ぶんは [ことば, やくわり] の はいれつ。1ばんめは いつも きょうりゅうの なまえ（sub）。
    ------------------------------------------------------------ */
 var ERA_RANK={"さんじょうき":0,"じゅらき":1,"はくあき":2};
-/* "p:は" "w:もり" "e:たべます" の かたちで かいて、トークンに する。 */
+/* "p:は" "w:もり" "m:ゆっくり" "e:たべます" の かたちで かいて、トークンに する。 */
 function mkSent(d,spec){
-  var role={p:"par",w:"wrd",e:"prd"};
+  var role={p:"par",w:"wrd",m:"mod",e:"prd"};
   return [[d.name,"sub"]].concat(spec.map(function(s){return [s.slice(2),role[s[0]]];}));
 }
 function W(arr){return arr.map(function(x){return "w:"+x;});}
+/* 「おおきな つめ」「2ほんの あし」のように、うしろの ことばを くわしくする ことば（mod）は いろを かえる。
+   ことば（wrd）の すぐ うしろに ことば・なまえが つづくときが そう。
+   「つばさを ひろげると 3メートル」の「ひろげると」は くわしくする ことばでは ないので のぞく。 */
+var NOT_MOD={"ひろげると":1};
+function markMods(toks){
+  toks.forEach(function(t,i){
+    var nx=toks[i+1];
+    if(t[1]==="wrd"&&nx&&(nx[1]==="wrd"||nx[1]==="sub")&&!NOT_MOD[t[0]])t[1]="mod";
+  });
+  return toks;
+}
 
 var TEMPLATES={
   size:function(d,f){
@@ -1953,8 +1984,8 @@ var TEMPLATES={
       else if(f.len&&g.len&&!f.wing&&!g.wing){if(f.len>=g.len*1.5)big=true;else if(g.len>=f.len*1.5)big=false;}
       if(big!==null)r.push(mkSent(d,["p:は","w:"+o.name,"p:より","e:"+(big?"おおきいです":"ちいさいです")]));
       if(f.kg&&g.kg&&!f.wing&&!g.wing&&Math.max(f.kg,g.kg)<=Math.min(f.kg,g.kg)*1.25){
-        if(f.kg>=1000&&g.kg>=1000)r.push(mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじくらい","e:おおきいです"]));
-        if(f.kg<100&&g.kg<100)r.push(mkSent(d,["p:は","w:"+o.name,"p:と","w:おなじくらい","e:ちいさいです"]));
+        if(f.kg>=1000&&g.kg>=1000)r.push(mkSent(d,["p:は","w:"+o.name,"p:と","m:おなじくらい","e:おおきいです"]));
+        if(f.kg<100&&g.kg<100)r.push(mkSent(d,["p:は","w:"+o.name,"p:と","m:おなじくらい","e:ちいさいです"]));
       }
       if(f.len&&g.len&&!f.wing&&!g.wing&&f.len>=g.len*1.5)
         r.push(mkSent(d,["p:は","w:"+o.name,"p:より","e:ながいです"]));
@@ -2034,6 +2065,7 @@ function newSentence(){
   }
   slotPos=0;
   curCands=[curTokens].concat(curTokens.alts||[]);
+  curCands.forEach(markMods);
 
   stage.classList.remove("bounce");
 
@@ -2856,12 +2888,14 @@ function startBattle(){
   bRun++;
   bs={f:bPick.map(function(d){var st=bStat(d),mx=30+st.p*3;return {d:d,st:st,hp:mx,max:mx,defended:false};}),
       round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0};
-  $("#bstage").innerHTML=bs.f.map(function(F,i){
-    return '<div class="fighter f'+i+'" id="bf'+i+'">'+
-      '<div class="hp"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>'+
-      '<div class="fbody">'+bFace(i,F.d.id,' style="--s:'+bScale(F.d.id)+'"')+'</div></div>'+
-      (i===0?'<span class="vs">VS</span>':'');
-  }).join("");
+  $("#bstage").innerHTML=
+    '<div class="bhp">'+bs.f.map(function(F,i){
+      return '<div class="hp h'+i+'" id="bh'+i+'"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>';
+    }).join('<span class="vs">VS</span>')+'</div>'+
+    '<div class="bfight">'+bs.f.map(function(F,i){
+      return '<div class="fighter f'+i+'" id="bf'+i+'">'+
+        '<div class="fbody">'+bFace(i,F.d.id,' style="--s:'+bScale(F.d.id)+'"')+'</div></div>';
+    }).join("")+'</div>';
   setHP(0);setHP(1);
   go("battle");
   bClearPlay();
@@ -2873,7 +2907,7 @@ function startBattle(){
   bLater(nextRound,2600);
 }
 function setHP(i){
-  var F=bs.f[i],el=$("#bf"+i),fill=$(".hpfill",el);
+  var F=bs.f[i],el=$("#bh"+i),fill=$(".hpfill",el);
   fill.style.width=Math.round(F.hp/F.max*100)+"%";
   fill.classList.toggle("low",F.hp/F.max<.35);
   $(".hpnum",el).textContent=F.hp;
@@ -2918,7 +2952,7 @@ function bSentence(ev){
         [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].fx!==v.fx&&mine.indexOf(x)<0;})),"prd"]];
     }
   }else if(ev.type==="dodge"){
-    toks=[S(D.name),["が","par"],["さっと","wrd"],["よけました","prd"]];
+    toks=[S(D.name),["が","par"],["さっと","mod"],["よけました","prd"]];
     extras=[S(A.name),[pick(["を","に"]),"par"],["たおれました","prd"]];
   }else if(ev.type==="guard"){
     toks=[S(D.name),["が","par"],[ev.w,"wrd"],["で","par"],["まもりました","prd"]];
@@ -2991,6 +3025,7 @@ $("#b-replay").addEventListener("click",function(){
 });
 
 function bRenderSentence(toks,extras){
+  markMods(toks);
   bs.toks=toks;bs.pos=0;
   var slots=$("#b-slots");slots.innerHTML="";
   toks.forEach(function(t,i){
