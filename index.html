@@ -2650,7 +2650,11 @@ var BVERBS={
   "つつきました":{obj:"を",fx:"🎯"},
   "たいあたりしました":{obj:"に",fx:"💨"},
   "ずつきしました":{obj:"に",fx:"💫"},
-  "おどかしました":{obj:"を",fx:"📢"}
+  "おどかしました":{obj:"を",fx:"📢"},
+  "のしかかりました":{obj:"に",fx:"⬇️"},
+  /* sp＝すむ ばしょの とくべつな わざ。ぶんの かたちが ちがうので ダミーには ださない */
+  "きょうしゅうしました":{obj:"を",fx:"🦅",sp:1},
+  "ひきずりこみました":{obj:"を",fx:"🌊",sp:1}
 };
 /* 「〇〇で 〜ました」で ありえる どうし。ダミーに ださない（「つめで けりました」も ただしそうなので）。 */
 var BPLAUS={
@@ -2660,45 +2664,59 @@ var BPLAUS={
   "とげ":["つきました","たたきました"],"ハンマー":["たたきました"],"しっぽ":["たたきました","ふみつけました"],
   "つの":["つきました","ずつきしました","たいあたりしました"],
   "あたま":["ずつきしました","たいあたりしました"],
-  "こえ":["おどかしました"],"あし":["ふみつけました","けりました"]
+  "こえ":["おどかしました"],"あし":["ふみつけました","けりました"],
+  "からだ":["のしかかりました","たいあたりしました"]
 };
 /* p＝つよさ(1〜10)、m＝わざ（w＝なにで、v＝どうし。w が からなら「〇〇に」の ぶんだけ）、
    d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ） */
 function MV(w,v){return {w:w,v:v};}
+/* すむ ばしょの とくべつな わざ。s＝ぶんの かたち
+   （sky:「A が そら から D を きょうしゅうしました」／sea:「A が D を うみ に ひきずりこみました」） */
+var SKY={w:[],v:"きょうしゅうしました",s:"sky"},SEA={w:[],v:"ひきずりこみました",s:"sea"};
 var BATTLE={
   tyranno:{p:10,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")]},
   ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"たたきました")],d:{t:"guard",w:"よろい",r:.35}},
   spino:{p:9,m:[MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました")]},
   tricera:{p:8,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
-  ptera:{p:3,m:[MV(["くちばし"],"つつきました")],d:{t:"fly",r:.35}},
+  ptera:{p:3,m:[MV(["くちばし"],"つつきました"),SKY],d:{t:"fly",r:.35}},
   iguano:{p:5,m:[MV(["おやゆびの","とげ"],"つきました"),MV(["しっぽ"],"たたきました")]},
   pachy:{p:4,m:[MV(["かたい","あたま"],"ずつきしました")],d:{t:"dodge",r:.15}},
   parasaur:{p:4,m:[MV(["おおきな","こえ"],"おどかしました"),MV(["しっぽ"],"たたきました")],d:{t:"dodge",r:.15}},
-  mosa:{p:9,m:[MV(["おおきな","くち"],"かみつきました")],d:{t:"dive",r:.3}},
+  mosa:{p:9,m:[MV(["おおきな","くち"],"かみつきました"),SEA],d:{t:"dive",r:.3}},
   raptor:{p:3,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました")],d:{t:"dodge",r:.35}},
   stego:{p:7,m:[MV(["しっぽの","とげ"],"たたきました")]},
-  ampelo:{p:6,m:[MV(["ながい","しっぽ"],"たたきました"),MV(["あし"],"ふみつけました")],d:{t:"guard",w:"よろい",r:.3}},
+  ampelo:{p:6,m:[MV(["ながい","しっぽ"],"たたきました")],d:{t:"guard",w:"よろい",r:.3}},
   giganto:{p:9,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")]},
-  quetz:{p:5,m:[MV(["くちばし"],"つつきました")],d:{t:"fly",r:.3}},
+  quetz:{p:5,m:[MV(["くちばし"],"つつきました"),SKY],d:{t:"fly",r:.3}},
   yi:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"fly",r:.35}},
   kentro:{p:5,m:[MV(["しっぽの","とげ"],"つきました")]},
   troodon:{p:3,m:[MV(["つめ"],"ひっかきました"),MV([],"かみつきました")],d:{t:"dodge",r:.35}},
   yuty:{p:7,m:[MV(["きば"],"かみつきました")]},
   archaeo:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"dodge",r:.3}},
-  argentino:{p:8,m:[MV(["おおきな","あし"],"ふみつけました"),MV(["ながい","しっぽ"],"たたきました")],d:{t:"dodge",r:.04}},
-  brachio:{p:7,m:[MV(["おおきな","あし"],"ふみつけました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.04}},
-  diplo:{p:7,m:[MV(["ながい","しっぽ"],"たたきました"),MV(["あし"],"ふみつけました")],d:{t:"dodge",r:.05}},
+  argentino:{p:8,m:[MV(["ながい","しっぽ"],"たたきました")],d:{t:"dodge",r:.04}},
+  brachio:{p:7,m:[MV([],"たいあたりしました")],d:{t:"dodge",r:.04}},
+  diplo:{p:7,m:[MV(["ながい","しっぽ"],"たたきました")],d:{t:"dodge",r:.05}},
   allo:{p:8,m:[MV(["きば"],"かみつきました"),MV(["つめ"],"ひっかきました")]},
   psitta:{p:2,m:[MV(["くちばし"],"かみつきました")],d:{t:"dodge",r:.25}},
   therizino:{p:7,m:[MV(["ながい","つめ"],"ひっかきました")]},
   shantungo:{p:7,m:[MV(["しっぽ"],"たたきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.05}},
   styraco:{p:6,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
-  elasmo:{p:5,m:[MV([],"かみつきました")],d:{t:"dive",r:.3}},
+  elasmo:{p:5,m:[MV([],"かみつきました"),SEA],d:{t:"dive",r:.3}},
   deino:{p:4,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました")],d:{t:"dodge",r:.3}},
   proto:{p:3,m:[MV(["くちばし"],"つつきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.15}},
   carno:{p:6,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.2}},
   carcharo:{p:9,m:[MV(["きば"],"かみつきました")]}
 };
+/* りくの いきものは、あいての 3ばい いじょう おもい ときだけ ふみつけ・のしかかりが つかえる */
+var BIG_RATIO=3;
+/* ずかんに たいじゅうが ない なかまの めやす（kg） */
+var BKG={mosa:10000,elasmo:2000,ampelo:8000,proto:180};
+function bKg(id){var f=FACTS[id]||{};return f.kg||BKG[id]||0;}
+function bBig(A,D){
+  var a=bKg(A.d.id),b=bKg(D.d.id),mv=(FACTS[A.d.id]||{}).move;
+  if(mv==="fly"||mv==="swim"||!a||!b||a<b*BIG_RATIO)return [];
+  return [MV(["おおきな","あし"],"ふみつけました"),MV(["おもい","からだ"],"のしかかりました")];
+}
 /* バトルの うごきは Web Animations で うごかす。Windows の「アニメーション効果」が オフ
    （prefers-reduced-motion）だと CSS アニメは ぜんぶ とまるが、だれが なにを したかを
    きょうりゅうの うごきで みて ぶんを つくる モードなので、ここの うごきは とめない。
@@ -2740,7 +2758,13 @@ var BATK={
   /* ずつき：あたまを さげて ゴツン、はねかえる */
   headbutt:[[0],[.2,{X:-12,R:-10}],[.3,{X:-12,R:16}],[.46,{X:50,R:16}],[.54,{X:38,Y:-6,R:-6}],[.75,{X:14}],[1]],
   /* おどかす：その ばで のけぞって おおきく なって ブルブル（さわらない） */
-  roar:[[0],[.2,{R:-14,S:1.12}],[.3,{X:4,R:-14,S:1.2}],[.36,{X:-2,R:-14,S:1.2}],[.42,{X:4,R:-14,S:1.2}],[.48,{X:-2,R:-14,S:1.2}],[.54,{X:4,R:-14,S:1.2}],[.6,{X:-2,R:-14,S:1.2}],[.8,{S:1.05}],[1]]
+  roar:[[0],[.2,{R:-14,S:1.12}],[.3,{X:4,R:-14,S:1.2}],[.36,{X:-2,R:-14,S:1.2}],[.42,{X:4,R:-14,S:1.2}],[.48,{X:-2,R:-14,S:1.2}],[.54,{X:4,R:-14,S:1.2}],[.6,{X:-2,R:-14,S:1.2}],[.8,{S:1.05}],[1]],
+  /* のしかかる：たかく とびあがって、うえから からだごと ドスン */
+  press:[[0],[.15,{X:6,SX:1.08,SY:.88}],[.32,{X:30,Y:-50,R:-6}],[.46,{X:42,Y:-4,R:6,SX:1.12,SY:.86}],[.56,{X:42,SX:.96,SY:1.06}],[.7,{X:40}],[1]],
+  /* そらから きょうしゅう：たかく まいあがって、ななめに いっきに おそいかかる */
+  swoop:[[0],[.18,{X:-4,Y:-60,S:.85}],[.32,{X:6,Y:-95,S:.8,R:-10}],[.46,{X:48,Y:-8,R:22}],[.56,{X:42,Y:-18,R:-4}],[.8,{X:16,Y:-40,S:.9}],[1]],
+  /* うみに ひきずりこむ：とびかかって くわえ、いっしょに しずむ */
+  drag:[[0],[.25,{X:36,Y:-4}],[.42,{X:48,R:12}],[.6,{X:36,Y:30,R:8,O:.4}],[.75,{X:28,Y:40,O:.2}],[.9,{X:10,Y:15,O:.7}],[1]]
 };
 /* こうげきを うけた がわの うごき（d は おされる ほうこう） */
 var BHURT={
@@ -2751,7 +2775,9 @@ var BHURT={
   /* ぺちゃんこ */
   squash:[[0],[.15,{SX:1.15,SY:.65,F:1.9}],[.35,{SX:1.1,SY:.72,F:1.3}],[.55,{SX:1.08,SY:.8}],[.8,{SX:.97,SY:1.04}],[1]],
   /* こわくて ちぢこまって ブルブル */
-  shiver:[[0],[.12,{X:8,S:.86}],[.2,{X:12,S:.86}],[.28,{X:8,S:.86}],[.36,{X:12,S:.86}],[.44,{X:8,S:.86}],[.52,{X:12,S:.86}],[.6,{X:8,S:.86}],[.8,{X:4,S:.95}],[1]]
+  shiver:[[0],[.12,{X:8,S:.86}],[.2,{X:12,S:.86}],[.28,{X:8,S:.86}],[.36,{X:12,S:.86}],[.44,{X:8,S:.86}],[.52,{X:12,S:.86}],[.6,{X:8,S:.86}],[.8,{X:4,S:.95}],[1]],
+  /* あいての ほうへ ひっぱられて、みずの なかへ ぶくぶく */
+  sink:[[0],[.1,{X:-4,F:1.9}],[.3,{X:-12,Y:20,R:10,O:.6}],[.5,{X:-12,Y:45,R:14,O:.15}],[.75,{X:-6,Y:45,O:.15}],[1]]
 };
 /* まもる がわの うごき */
 var BDEF={
@@ -2771,7 +2797,8 @@ var BMOVE={
   "かみつきました":["bite","hit"],"ひっかきました":["scratch","hit"],"けりました":["kick","knock"],
   "たたきました":["tail","knock"],"つきました":["stab","hit"],"ふみつけました":["stomp","squash"],
   "つつきました":["peck","hit"],"たいあたりしました":["tackle","knock"],"ずつきしました":["headbutt","knock"],
-  "おどかしました":["roar","shiver"]
+  "おどかしました":["roar","shiver"],"のしかかりました":["press","squash"],
+  "きょうしゅうしました":["swoop","knock"],"ひきずりこみました":["drag","sink"]
 };
 /* まもりの うごきを はじめる じかん（ms）と ながさ */
 var BDEF_T={dodge:[250,800],guard:[280,700],fly:[220,1300],dive:[220,1300]};
@@ -2856,6 +2883,7 @@ function startBattle(){
   bRun++;
   bs={f:bPick.map(function(d){var st=bStat(d),mx=30+st.p*3;return {d:d,st:st,hp:mx,max:mx,defended:false};}),
       round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0};
+  bs.f.forEach(function(F,i){F.big=bBig(F,bs.f[1-i]);});
   $("#bstage").innerHTML=bs.f.map(function(F,i){
     return '<div class="fighter f'+i+'" id="bf'+i+'">'+
       '<div class="hp"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>'+
@@ -2901,7 +2929,16 @@ function bFx(i,txt,cls){
 function bSentence(ev){
   var A=bs.f[ev.ai].d,D=bs.f[ev.di].d,toks,extras,v,head;
   var S=function(n){return [n,"sub"];};
-  if(ev.type==="hit"){
+  var mine=bs.f[ev.ai].st.m.concat(bs.f[ev.ai].big).map(function(m){return m.v;});
+  /* ダミーの どうし（とくべつな わざと、じぶんの わざは ださない） */
+  var fake=function(f){return pick(Object.keys(BVERBS).filter(function(x){return !BVERBS[x].sp&&mine.indexOf(x)<0&&f(x);}));};
+  if(ev.type==="hit"&&ev.move.s==="sky"){
+    toks=[S(A.name),["が","par"],["そら","wrd"],["から","par"],S(D.name),["を","par"],[ev.move.v,"prd"]];
+    extras=[["うみ","wrd"],["に","par"],[fake(function(){return true;}),"prd"]];
+  }else if(ev.type==="hit"&&ev.move.s==="sea"){
+    toks=[S(A.name),["が","par"],S(D.name),["を","par"],["うみ","wrd"],["に","par"],[ev.move.v,"prd"]];
+    extras=[["そら","wrd"],["から","par"],[fake(function(){return true;}),"prd"]];
+  }else if(ev.type==="hit"){
     v=BVERBS[ev.move.v];
     if(ev.move.w.length&&Math.random()<.6){
       /* 「A が きば で かみつきました」 */
@@ -2909,13 +2946,12 @@ function bSentence(ev){
       toks=[S(A.name),["が","par"]].concat(ev.move.w.map(function(w){return [w,"wrd"];}),[["で","par"],[ev.move.v,"prd"]]);
       var ok=BPLAUS[head]||[];
       extras=[S(D.name),[pick(["を","に","の","と"]),"par"],
-        [pick(Object.keys(BVERBS).filter(function(x){return x!==ev.move.v&&ok.indexOf(x)<0;})),"prd"]];
+        [fake(function(x){return ok.indexOf(x)<0;}),"prd"]];
     }else{
       /* 「A が D に かみつきました」「A が D を けりました」：に と を の つかいわけ */
       toks=[S(A.name),["が","par"],S(D.name),[v.obj,"par"],[ev.move.v,"prd"]];
-      var mine=bs.f[ev.ai].st.m.map(function(m){return m.v;});
       extras=[[v.obj==="に"?"を":"に","par"],
-        [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].fx!==v.fx&&mine.indexOf(x)<0;})),"prd"]];
+        [fake(function(x){return BVERBS[x].fx!==v.fx;}),"prd"]];
     }
   }else if(ev.type==="dodge"){
     toks=[S(D.name),["が","par"],["さっと","wrd"],["よけました","prd"]];
@@ -2941,7 +2977,8 @@ function nextRound(){
   var r=bs.round++;
   var ai=r===1?1-bs.subj1:(Math.random()<.5?0:1),di=1-ai;
   var A=bs.f[ai],D=bs.f[di];
-  var ev={ai:ai,di:di,move:pick(A.st.m)};
+  /* たいじゅうの さが あれば、2かいに 1かいは ふみつけ か のしかかり */
+  var ev={ai:ai,di:di,move:A.big.length&&Math.random()<.5?pick(A.big):pick(A.st.m)};
   var def=D.st.d||{t:"dodge",r:.08};
   /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
   if(r!==1&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
