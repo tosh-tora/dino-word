@@ -475,6 +475,13 @@ body.testmode .testmode-flag{display:block;}
 .bgrid .zcard{padding:10px 8px 10px;}
 .bgrid .zcard.sel0{box-shadow:0 0 0 4px var(--r-prd);}
 .bgrid .zcard.sel1{box-shadow:0 0 0 4px var(--r-sub);}
+/* いま えらんでいる コーナーを めだたせる */
+.corner.act{box-shadow:0 0 0 4px var(--cc);}
+.corner .who{font-size:clamp(11px,1.4vw,14px);color:var(--cc);}
+.bpick-hint{
+  margin:0;text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:700;
+  font-size:clamp(14px,1.8vw,18px);color:var(--muted);
+}
 
 .fimg{display:flex;align-items:flex-end;justify-content:center;}
 .fimg img,.fimg svg{width:100%;height:100%;min-width:0;min-height:0;object-fit:contain;object-position:center bottom;display:block;}
@@ -754,6 +761,7 @@ body.testmode .testmode-flag{display:block;}
         <span class="vs">VS</span>
         <button class="corner c1" id="corner1"></button>
       </div>
+      <p class="bpick-hint" id="bpick-hint"></p>
       <div class="bpick-btns">
         <button class="ghost" id="b-random">🎲 おまかせ</button>
         <button class="big" id="b-start" disabled>バトル スタート！</button>
@@ -2895,43 +2903,66 @@ function bFace(i,id,extra){
 }
 
 /* ---------- たいせんを えらぶ ---------- */
-var bPick=[null,null];
+/* bPick[0]＝じぶん（ずかんに いる きょうりゅう だけ）、bPick[1]＝あいて（どの きょうりゅうでも）。
+   bAct は いま えらんでいる コーナー */
+var bPick=[null,null],bAct=0;
 function renderPick(){
+  if(bPick[0]&&!got[bPick[0].id])bPick[0]=null;
+  if(!bPick[0])bAct=0;
+  renderCorners();
+}
+function renderPickGrid(){
   var g=$("#bpick-grid");g.innerHTML="";
   DINOS.forEach(function(d){
     var b=document.createElement("button");
-    b.className="zcard";b.dataset.id=d.id;
-    b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
-    b.addEventListener("click",function(){pickFighter(d);});
+    b.dataset.id=d.id;
+    if(bAct===0&&!got[d.id]){
+      b.className="zcard locked";
+      b.innerHTML=dinoSVG(d.id,"mystery")+'<b>？？？</b>';
+      b.addEventListener("click",function(){speak("まだ ずかんに いないよ",0.9);});
+    }else{
+      b.className="zcard";
+      b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
+      b.addEventListener("click",function(){pickFighter(d);});
+    }
     g.appendChild(b);
   });
-  renderCorners();
 }
 function pickFighter(d){
   var i;
-  for(i=0;i<2;i++)if(bPick[i]&&bPick[i].id===d.id){bPick[i]=null;renderCorners();return;}
-  bPick[bPick[0]?1:0]=d;
+  for(i=0;i<2;i++)if(bPick[i]&&bPick[i].id===d.id){bPick[i]=null;bAct=i;renderCorners();return;}
+  bPick[bAct]=d;
   speak(d.name,0.9);
+  if(!bPick[1-bAct])bAct=1-bAct;
   renderCorners();
 }
 function renderCorners(){
   [0,1].forEach(function(i){
-    var c=$("#corner"+i),d=bPick[i];
-    c.innerHTML=d?bFace(i,d.id)+'<b>'+d.name+'</b>':'<span>'+(i?"あお":"あか")+' コーナー</span>';
+    var c=$("#corner"+i),d=bPick[i],who=i?"あいて":"じぶん";
+    c.innerHTML=d?'<span class="who">'+who+'</span>'+bFace(i,d.id)+'<b>'+d.name+'</b>':'<span>'+who+'</span>';
     c.classList.toggle("filled",!!d);
+    c.classList.toggle("act",bAct===i);
   });
+  $("#bpick-hint").textContent=bAct===0?
+    (gotCount()?"じぶんの きょうりゅうを えらぼう（ずかんに いる きょうりゅう だけ）":
+      "まだ ずかんに きょうりゅうが いないよ。「ぶんを つくろう」で ゲットしよう"):
+    "あいての きょうりゅうを えらぼう";
+  renderPickGrid();
   $$("#bpick-grid .zcard").forEach(function(b){
     b.classList.toggle("sel0",!!bPick[0]&&bPick[0].id===b.dataset.id);
     b.classList.toggle("sel1",!!bPick[1]&&bPick[1].id===b.dataset.id);
   });
   $("#b-start").disabled=!(bPick[0]&&bPick[1]);
 }
-[0,1].forEach(function(i){$("#corner"+i).addEventListener("click",function(){bPick[i]=null;renderCorners();});});
+/* コーナーを おすと そこを えらびなおす */
+[0,1].forEach(function(i){$("#corner"+i).addEventListener("click",function(){bPick[i]=null;bAct=i;renderCorners();});});
 $("#b-random").addEventListener("click",function(){
-  var two=shuffle(DINOS).slice(0,2);
-  bPick=[two[0],two[1]];
+  var mine=DINOS.filter(function(d){return got[d.id];});
+  if(!mine.length){speak("まだ ずかんに きょうりゅうが いないよ",0.9);return;}
+  var me=shuffle(mine)[0],foe=shuffle(DINOS.filter(function(d){return d.id!==me.id;}))[0];
+  bPick=[me,foe];bAct=1;
   renderCorners();
-  speak(two[0].name+" たい "+two[1].name,0.9);
+  speak(me.name+" たい "+foe.name,0.9);
 });
 $("#b-start").addEventListener("click",startBattle);
 
