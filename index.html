@@ -2993,7 +2993,7 @@ function startBattle(){
   if(!(bPick[0]&&bPick[1]))return;
   bRun++;
   var mode=bSet.add&&bSet.sub?(Math.random()<.5?"add":"sub"):(bSet.add?"add":"sub");
-  bs={f:bPick.map(function(d){var st=bStat(d),mx=bMaxHP(st.p,bSet.od);return {d:d,st:st,hp:mx,max:mx,acc:0,defended:false};}),
+  bs={f:bPick.map(function(d){var st=bStat(d),mx=bMaxHP(st.p,bSet.od,bSet.dd,mode,bSet.carry);return {d:d,st:st,hp:mx,max:mx,acc:0,hits:0,defended:false};}),
       round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0,
       mode:mode,od:bSet.od,dd:bSet.dd,carry:bSet.carry};
   bs.f.forEach(function(F,i){F.big=bBig(F,bs.f[1-i]);});
@@ -3017,11 +3017,29 @@ function startBattle(){
   speak("さあ、"+bs.f[0].d.name+" たい "+bs.f[1].d.name+"！ "+(bSet.on?mname:"バトル スタート")+"！",0.95,1.2);
   bLater(nextRound,2600);
 }
-/* もとの かずの けたに あわせた さいだい たいりょく（2けたは いままで どおり） */
-function bMaxHP(p,od){
-  if(od===1)return 5+Math.round(p*.4);
-  if(od===3)return 100+10*p+Math.floor(Math.random()*50);
-  return 30+p*3;
+/* さいだい たいりょく。もとの かずの けた（od）は まもりつつ、ダメージの けた（dd）に あわせて
+   2〜3かい あたると へる くらいに する（3けた−1けたは どう しても おおきいので、さいごは とどめ）。
+   くりさがり なしの ひきざんで、さいしょから ひける かずが ない たいりょくは えらばない */
+function bMaxHP(p,od,dd,mode,carry){
+  var lo=Math.pow(10,od-1),hi=Math.pow(10,od)-1,mx,n=0;
+  do{
+    if(od===dd){
+      if(od===1)mx=5+Math.round(p*.4);
+      else if(od===3)mx=100+10*p+Math.floor(Math.random()*50);
+      else mx=30+p*3;
+    }else{
+      mx=Math.round((Math.pow(10,dd)-1)*(1.6+.1*p+Math.random()*.3));
+      if(mx<lo)mx=lo+p+Math.floor(Math.random()*lo*.3);
+    }
+    mx=Math.max(lo,Math.min(hi,mx));
+  }while(!carry&&mode==="sub"&&!bCanHit(mx,dd)&&++n<30);
+  return mx;
+}
+/* くりさがり なしで dd けたの かずを ひけるか（ひく かずの けたに 0 が ないか） */
+function bCanHit(cur,dd){
+  var x=bDigits(cur);
+  if(x.length<dd)return false;
+  return x[dd-1]>0;
 }
 /* たしざん バトルは ダメージが たまって いき、さいだい たいりょくに とどいたら まけ */
 function setHP(i){
@@ -3055,8 +3073,8 @@ function bDamage(A,D,r){
   var all=[];
   for(var n=lo;n<=hi;n++)if(bs.carry||!bCarries(cur,n,add))all.push(n);
   if(!all.length)return null;
-  /* さいしょの かいは たおれない */
-  var c=r===0?all.filter(function(n){return n<D.hp;}):all;
+  /* さいしょの 2かいは たおれない */
+  var c=r<2?all.filter(function(n){return n<D.hp;}):all;
   if(!c.length)c=all;
   c.sort(function(x,y){return Math.abs(x-t)-Math.abs(y-t);});
   return pick(c.slice(0,5));
@@ -3125,6 +3143,8 @@ function bSentence(ev){
   return {toks:toks,extras:extras};
 }
 
+/* BLAST＝さいごの かい（0 から かぞえる）、BHITS＝なんかい あたったら たおれるか */
+var BLAST=4,BHITS=3;
 function nextRound(){
   bClearPlay();
   /* こうげきする ほうは まいかい ランダム（こうたいだと さきに こうげきした ほうが ゆうりすぎる）。
@@ -3137,13 +3157,16 @@ function nextRound(){
   var ev={ai:ai,di:di,move:A.big.length&&Math.random()<.5?pick(A.big):pick(A.st.m)};
   var def=D.st.d||{t:"dodge",r:.08};
   /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
-  if(r!==1&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
+  /* 3〜5かいで しょうぶが つく ように：5かいめは かならず あたって とどめ、
+     3かいめに あたっても とどめ、それまでも たいりょくが なくなれば たおれる */
+  if(r!==1&&r<BLAST&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
   else{
     D.defended=false;
     ev.type="hit";
     var dm=bDamage(A,D,r);
-    ev.dmg=dm===null?D.hp:dm;
-    ev.ko=ev.dmg>=D.hp;
+    ev.ko=dm===null||dm>=D.hp||r>=BLAST||D.hits>=BHITS-1;
+    ev.dmg=ev.ko?D.hp:dm;
+    D.hits++;
   }
   /* ぶんの しゅごは、あたれば こうげきした ほう、まもったら まもった ほう */
   if(r===0)bs.subj1=ev.type==="hit"?ai:di;
