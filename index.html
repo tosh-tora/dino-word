@@ -474,7 +474,10 @@ body.testmode .testmode-flag{display:block;}
 .big:disabled{opacity:.35;pointer-events:none;}
 .bgrid .zcard{padding:10px 8px 10px;}
 .bgrid .zcard.sel0{box-shadow:0 0 0 4px var(--r-prd);}
-.bgrid .zcard.sel1{box-shadow:0 0 0 4px var(--r-sub);}
+.bpick-none{
+  flex:0 0 auto;margin:0 clamp(12px,3vw,28px) 12px;text-align:center;color:var(--muted);
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:clamp(14px,1.8vw,18px);
+}
 
 .fimg{display:flex;align-items:flex-end;justify-content:center;}
 .fimg img,.fimg svg{width:100%;height:100%;min-width:0;min-height:0;object-fit:contain;object-position:center bottom;display:block;}
@@ -759,6 +762,7 @@ body.testmode .testmode-flag{display:block;}
         <button class="big" id="b-start" disabled>バトル スタート！</button>
       </div>
     </div>
+    <p class="bpick-none" id="bpick-none">ぶんを つくって きょうりゅうを ゲットすると、バトルに だせるよ！</p>
     <div class="zukan bgrid" id="bpick-grid"></div>
   </section>
 
@@ -2894,46 +2898,90 @@ function bFace(i,id,extra){
   return '<div class="fimg'+(flip?" flip":"")+'"'+(extra||"")+'>'+dinoSVG(id)+'</div>';
 }
 
-/* ---------- たいせんを えらぶ ---------- */
-var bPick=[null,null];
+/* ---------- たいせんを えらぶ ----------
+   じぶん（あか）は ゲットした きょうりゅうから えらぶ。あいて（あお）は スタートを おすと
+   ルーレットで きまる（まだ ゲットして いない きょうりゅうも でる） */
+var bPick=[null,null],bRolling=false;
+function bMine(){return DINOS.filter(function(d){return testMode||got[d.id];});}
 function renderPick(){
   var g=$("#bpick-grid");g.innerHTML="";
+  /* とちゅうの ルーレットは とめる */
+  bRun++;bRolling=false;
+  if(bPick[0]&&!(testMode||got[bPick[0].id]))bPick[0]=null;
   DINOS.forEach(function(d){
     var b=document.createElement("button");
-    b.className="zcard";b.dataset.id=d.id;
-    b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
-    b.addEventListener("click",function(){pickFighter(d);});
+    b.dataset.id=d.id;
+    if(testMode||got[d.id]){
+      b.className="zcard";
+      b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
+      b.addEventListener("click",function(){pickFighter(d);});
+    }else{
+      b.className="zcard locked";
+      b.innerHTML=dinoSVG(d.id,"mystery")+'<b>？？？</b>';
+      b.addEventListener("click",openLockedSheet);
+    }
     g.appendChild(b);
   });
+  $("#bpick-none").style.display=bMine().length?"none":"";
+  $("#b-random").disabled=!bMine().length;
   renderCorners();
 }
 function pickFighter(d){
-  var i;
-  for(i=0;i<2;i++)if(bPick[i]&&bPick[i].id===d.id){bPick[i]=null;renderCorners();return;}
-  bPick[bPick[0]?1:0]=d;
+  if(bRolling)return;
+  if(bPick[0]&&bPick[0].id===d.id){bPick[0]=null;renderCorners();return;}
+  bPick[0]=d;
   speak(d.name,0.9);
   renderCorners();
 }
 function renderCorners(){
-  [0,1].forEach(function(i){
-    var c=$("#corner"+i),d=bPick[i];
-    c.innerHTML=d?bFace(i,d.id)+'<b>'+d.name+'</b>':'<span>'+(i?"あお":"あか")+' コーナー</span>';
+  var c=$("#corner0"),d=bPick[0];
+  c.innerHTML=d?bFace(0,d.id)+'<b>'+d.name+'</b>':'<span>じぶんを えらんでね</span>';
+  c.classList.toggle("filled",!!d);
+  c=$("#corner1");d=bPick[1];
+  if(!bRolling){
+    c.innerHTML=d?bFace(1,d.id)+'<b>'+d.name+'</b>':'<span>❓<br>あいては<br>スタートで きまるよ</span>';
     c.classList.toggle("filled",!!d);
-  });
+  }
   $$("#bpick-grid .zcard").forEach(function(b){
     b.classList.toggle("sel0",!!bPick[0]&&bPick[0].id===b.dataset.id);
-    b.classList.toggle("sel1",!!bPick[1]&&bPick[1].id===b.dataset.id);
   });
-  $("#b-start").disabled=!(bPick[0]&&bPick[1]);
+  $("#b-start").disabled=!bPick[0]||bRolling;
 }
-[0,1].forEach(function(i){$("#corner"+i).addEventListener("click",function(){bPick[i]=null;renderCorners();});});
+$("#corner0").addEventListener("click",function(){if(bRolling)return;bPick[0]=null;renderCorners();});
 $("#b-random").addEventListener("click",function(){
-  var two=shuffle(DINOS).slice(0,2);
-  bPick=[two[0],two[1]];
-  renderCorners();
-  speak(two[0].name+" たい "+two[1].name,0.9);
+  var mine=bMine();
+  if(bRolling||!mine.length)return;
+  pickFighter(pick(mine.length>1&&bPick[0]?mine.filter(function(d){return d.id!==bPick[0].id;}):mine));
 });
-$("#b-start").addEventListener("click",startBattle);
+/* あいての ルーレット：え と なまえを だんだん ゆっくり きりかえて、さいごに とまった きょうりゅうが あいて */
+function bRoulette(){
+  if(!bPick[0]||bRolling)return;
+  var run=++bRun,me=bPick[0];
+  var pool=DINOS.filter(function(d){return d.id!==me.id;}),foe=pick(pool);
+  var c=$("#corner1"),i=0,delays=[],t=60;
+  while(t<320){delays.push(t);t=Math.round(t*1.15);}
+  var order=shuffle(pool);
+  bRolling=true;bPick[1]=null;
+  c.classList.add("filled");
+  renderCorners();
+  /* とちゅうで がめんを はなれたら（ホームへ もどる など）とめる */
+  var here=function(){return run===bRun&&$("#s-bpick").classList.contains("on");};
+  var tick=function(){
+    if(!here()){bRolling=false;return;}
+    if(i<delays.length){
+      var d=order[i%order.length];
+      c.innerHTML=bFace(1,d.id)+'<b>'+d.name+'</b>';
+      setTimeout(tick,delays[i++]);
+      return;
+    }
+    bPick[1]=foe;bRolling=false;
+    renderCorners();
+    speak(me.name+" たい "+foe.name+"！",0.9);
+    setTimeout(function(){if(here())startBattle();},1400);
+  };
+  tick();
+}
+$("#b-start").addEventListener("click",bRoulette);
 
 /* ---------- バトル ---------- */
 var bs=null,bRun=0;
@@ -3364,8 +3412,9 @@ function fitBBar(){
 }
 window.addEventListener("resize",fitBBar);
 $("#b-again").addEventListener("click",startBattle);
-$("#b-other").addEventListener("click",function(){bRun++;go("bpick");});
-$("#b-back").addEventListener("click",function(){bRun++;try{window.speechSynthesis.cancel();}catch(e){}go("bpick");});
+/* ほかの あいて・もどる：つぎは また ルーレットで あいてを きめる */
+$("#b-other").addEventListener("click",function(){bRun++;bPick[1]=null;go("bpick");});
+$("#b-back").addEventListener("click",function(){bRun++;bPick[1]=null;try{window.speechSynthesis.cancel();}catch(e){}go("bpick");});
 
 /* ============================================================
    スタート
