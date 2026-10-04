@@ -2732,7 +2732,7 @@ var BVERBS={
   "ずつきしました":{obj:"に",fx:"💫"},
   "おどかしました":{obj:"を",fx:"📢"},
   "のしかかりました":{obj:"に",fx:"⬇️"},
-  /* はんげき：こうげきされた ほうが とげで やりかえす（ダミーには ださない） */
+  /* はんげき：とびかかって きた あいてに とげで やりかえす（ダミーには ださない） */
   "はんげきしました":{obj:"に",fx:"🌵",sp:1},
   /* sp＝すむ ばしょの とくべつな わざ。ぶんの かたちが ちがうので ダミーには ださない */
   "きょうしゅうしました":{obj:"を",fx:"🦅",sp:1},
@@ -2752,7 +2752,7 @@ var BPLAUS={
 /* p＝つよさ(1〜10)、m＝わざ（w＝なにで、v＝どうし。w が からなら「〇〇に」の ぶんだけ。
    full＝いつも「A が D を W で V」の かたち）、
    d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ）、
-   c＝とげで はんげきする かくりつ（こうげきした ほうが ダメージを うける） */
+   c＝じぶんの こうげきの かいに「とげで はんげき」を つかう かくりつ */
 function MV(w,v,full){return {w:w,v:v,full:!!full};}
 /* すむ ばしょの とくべつな わざ。s＝ぶんの かたち
    （sky:「A が そら から D を きょうしゅうしました」／sea:「A が D を うみ に ひきずりこみました」） */
@@ -3250,20 +3250,18 @@ function nextRound(){
   /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
   /* 3〜6かいで しょうぶが つく ように：1かいに たいりょくの 1/4〜1/3 くらい へらす
      （けいさんの かず＋さらに ダメージ）。6かいめは かならず あたって とどめ */
-  /* とげの ある なかまは、ときどき とげで はんげき（こうげきした ほうが ダメージを うける）。
-     2かいめ（しゅごを かえる かい）と さいごの かいは しない */
-  var x=Math.random(),can=r!==1&&r<BLAST&&!D.defended;
-  if(can&&x<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
-  else if(can&&D.st.c&&x<def.r+D.st.c){
-    D.defended=true;
-    ev.counter=true;ev.atk=ev.move;
-    ev.ai=di;ev.di=ai;ev.move={w:["とげ"],v:"はんげきしました"};
-    bHit(ev,D,A,r);
-  }else{
+  /* とげの ある なかまは、じぶんの こうげきの かいに ときどき「はんげき」：
+     あいてに とびかからせて、とげで やりかえす（よけたり まもったり できない） */
+  if(A.st.c&&Math.random()<A.st.c){
+    ev.counter=true;ev.atk=pick(D.st.m.filter(function(m){return !m.s;}).concat([MV([],"たいあたりしました")]));ev.move={w:["とげ"],v:"はんげきしました"};
+    D.defended=false;
+    bHit(ev,A,D,r);
+  }else if(r!==1&&r<BLAST&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
+  else{
     D.defended=false;
     bHit(ev,A,D,r);
   }
-  /* ぶんの しゅごは、あたれば こうげきした ほう（はんげきは とげの ほう）、まもったら まもった ほう */
+  /* ぶんの しゅごは、あたれば こうげきした ほう、まもったら まもった ほう */
   if(r===0)bs.subj1=ev.type==="hit"?ev.ai:ev.di;
   bs.ev=ev;bs.phase="round";
   var sn=bSentence(ev);
@@ -3299,8 +3297,8 @@ function bMotion(ev){
     if(ev.type==="guard")bLater(function(){bAnim(ab,bKF(d,BRECOIL),550);},470);
   }
 }
-/* はんげき：こうげきした ほう（ev.di）が とびかかり、とげの ほう（ev.ai）が ふんばって ピカッ、
-   こうげきした ほうが はねかえされて いたがる */
+/* はんげき：あいて（ev.di）が とびかかり、とげの ほう（ev.ai）が ふんばって ピカッ、
+   あいてが はねかえされて いたがる */
 function bCounterMotion(ev){
   var sp=$("#bf"+ev.ai+" .fbody"),at=$("#bf"+ev.di+" .fbody");
   var d=ev.di===0?1:-1,mv=BMOVE[ev.atk.v]||["tackle","knock"];
