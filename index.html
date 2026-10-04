@@ -2752,14 +2752,14 @@ var BPLAUS={
 /* p＝つよさ(1〜10)、m＝わざ（w＝なにで、v＝どうし。w が からなら「〇〇に」の ぶんだけ。
    full＝いつも「A が D を W で V」の かたち）、
    d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ）、
-   c＝じぶんの こうげきの かいに「とげで はんげき」を つかう かくりつ */
+   c＝じぶんの こうげきの かいに「とげで はんげき」を つかう かくりつ、cw＝はんげきに つかう もの（なければ とげ） */
 function MV(w,v,full){return {w:w,v:v,full:!!full};}
 /* すむ ばしょの とくべつな わざ。s＝ぶんの かたち
    （sky:「A が そら から D を きょうしゅうしました」／sea:「A が D を うみ に ひきずりこみました」） */
 var SKY={w:[],v:"きょうしゅうしました",s:"sky"},SEA={w:[],v:"ひきずりこみました",s:"sea"};
 var BATTLE={
   tyranno:{p:10,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")]},
-  ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"うちつけました")],d:{t:"guard",w:"よろい",r:.35},c:.2},
+  ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"うちつけました")],d:{t:"guard",w:"よろい",r:.35},c:.2,cw:[["とげ"],["しっぽの","ハンマー"]]},
   spino:{p:9,m:[MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
   tricera:{p:8,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
   ptera:{p:3,m:[MV(["くちばし"],"つつきました",1),SKY],d:{t:"fly",r:.35}},
@@ -3177,9 +3177,11 @@ function bSentence(ev){
     toks=[S(A.name),["が","par"],S(D.name),["を","par"],["うみ","wrd"],["に","par"],[ev.move.v,"prd"]];
     extras=[["そら","wrd"],["から","par"],[fake(function(){return true;}),"prd"]];
   }else if(ev.type==="hit"&&ev.counter){
-    /* 「D が A に とげ で はんげきしました」（ここでは A＝とげの ほう） */
-    toks=[S(A.name),["が","par"],S(D.name),["に","par"],["とげ","wrd"],["で","par"],[ev.move.v,"prd"]];
-    extras=[["を","par"],[fake(function(x){return (BPLAUS["とげ"]||[]).indexOf(x)<0;}),"prd"]];
+    /* 「A が D に とげ で はんげきしました」（A＝とげの ほう。アンキロは「しっぽの ハンマー で」も） */
+    head=ev.move.w[ev.move.w.length-1];
+    var okc=BPLAUS[head]||[];
+    toks=[S(A.name),["が","par"],S(D.name),["に","par"]].concat(ev.move.w.map(function(w){return [w,"wrd"];}),[["で","par"],[ev.move.v,"prd"]]);
+    extras=[["を","par"],[fake(function(x){return okc.indexOf(x)<0;}),"prd"]];
   }else if(ev.type==="hit"){
     v=BVERBS[ev.move.v];
     if(v.wo){
@@ -3253,7 +3255,7 @@ function nextRound(){
   /* とげの ある なかまは、じぶんの こうげきの かいに ときどき「はんげき」：
      あいてに とびかからせて、とげで やりかえす（よけたり まもったり できない） */
   if(A.st.c&&Math.random()<A.st.c){
-    ev.counter=true;ev.atk=pick(D.st.m.filter(function(m){return !m.s;}).concat([MV([],"たいあたりしました")]));ev.move={w:["とげ"],v:"はんげきしました"};
+    ev.counter=true;ev.atk=pick(D.st.m.filter(function(m){return !m.s;}).concat([MV([],"たいあたりしました")]));ev.move={w:pick(A.st.cw||[["とげ"]]),v:"はんげきしました"};
     D.defended=false;
     bHit(ev,A,D,r);
   }else if(r!==1&&r<BLAST&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
@@ -3303,7 +3305,9 @@ function bCounterMotion(ev){
   var sp=$("#bf"+ev.ai+" .fbody"),at=$("#bf"+ev.di+" .fbody");
   var d=ev.di===0?1:-1,mv=BMOVE[ev.atk.v]||["tackle","knock"];
   bAnim(at,bKF(d,BATK[mv[0]]),1000);
-  bLater(function(){bAnim(sp,bKF(d,BDEF.guard),700);},280);
+  /* しっぽの ハンマーなら くるっと ふりまわす、とげなら ふんばって ピカッ */
+  var tail=ev.move.w.indexOf("ハンマー")>=0;
+  bLater(function(){bAnim(sp,tail?bKF(-d,BATK.tail):bKF(d,BDEF.guard),tail?800:700);},tail?200:280);
   bLater(function(){bAnim(at,bKF(d,BRECOIL),550);},470);
   bLater(function(){bAnim(at,bKF(-d,BHURT.hit),650);},1020);
 }
