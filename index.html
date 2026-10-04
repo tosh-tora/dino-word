@@ -2759,7 +2759,7 @@ function MV(w,v,full){return {w:w,v:v,full:!!full};}
 var SKY={w:[],v:"きょうしゅうしました",s:"sky"},SEA={w:[],v:"ひきずりこみました",s:"sea"};
 var BATTLE={
   tyranno:{p:10,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")]},
-  ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"うちつけました")],d:{t:"guard",w:"よろい",r:.35},c:.2,cw:[["とげ"],["しっぽの","ハンマー"]]},
+  ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"うちつけました")],d:{t:"guard",w:"よろい",r:.35},c:.2,cw:[["しっぽの","ハンマー"]]},
   spino:{p:9,m:[MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
   tricera:{p:8,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
   ptera:{p:3,m:[MV(["くちばし"],"つつきました",1),SKY],d:{t:"fly",r:.35}},
@@ -3177,7 +3177,7 @@ function bSentence(ev){
     toks=[S(A.name),["が","par"],S(D.name),["を","par"],["うみ","wrd"],["に","par"],[ev.move.v,"prd"]];
     extras=[["そら","wrd"],["から","par"],[fake(function(){return true;}),"prd"]];
   }else if(ev.type==="hit"&&ev.counter){
-    /* 「A が D に とげ で はんげきしました」（A＝とげの ほう。アンキロは「しっぽの ハンマー で」も） */
+    /* 「A が D に とげ で はんげきしました」（A＝とげの ほう。アンキロは「しっぽの ハンマー で」） */
     head=ev.move.w[ev.move.w.length-1];
     var okc=BPLAUS[head]||[];
     toks=[S(A.name),["が","par"],S(D.name),["に","par"]].concat(ev.move.w.map(function(w){return [w,"wrd"];}),[["で","par"],[ev.move.v,"prd"]]);
