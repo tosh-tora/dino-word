@@ -682,7 +682,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-3</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-4</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3797,7 +3797,7 @@ function rReady(){
   if(!rs||rs.over)return;
   rTally();
   var tok=++rs.tok;
-  rs.phase="wait";rs.sigT=0;rs.kidT=null;rs.otherT=null;rs.kidFoul=false;
+  rs.phase="wait";rs.sigT=0;rs.kidT=null;rs.otherT=null;rs.kidFoul=false;rs.kidBest=false;
   $$("#rzones .rzone").forEach(function(z){z.classList.remove("press","foul");});
   $("#rt0").innerHTML="";$("#rt1").innerHTML="";
   $$("#rstage .fighter").forEach(function(f){f.classList.remove("turn");});
@@ -3867,6 +3867,8 @@ function rTap(i){
   if(i===rs.k){
     if(rs.kidT!=null||rt>2500)return;
     rs.kidT=rt;
+    /* いままでの ベスト（この バトルの ぶんも ふくむ）より はやければ「はやい！」と いう */
+    rs.kidBest=rt<Math.min.apply(null,rs.times.concat([rs.rec.best||Infinity]));
     $("#rt"+i).innerHTML=rSec(rt)+'<small>びょう</small>';
   }else{
     if(rs.otherT!=null)return;
@@ -3885,8 +3887,7 @@ function rDecide(w){
   if(rs.cpu)rec.cpu=rClamp(rec.cpu+(kidWon?-30:45),280,1400);
   else if(rSet.handi==="auto")rec.h=rClamp(rec.h+(kidWon?-40:60),0,900);
   rSig("","");
-  if(!kidWon)$("#rt"+w).innerHTML="はやい！";
-  rAttack(w,1-w,kidWon?"はやい！ ":"");
+  rAttack(w,1-w,kidWon&&rs.kidBest?"はやい！ ":"");
 }
 function rFoul(i){
   rs.phase="res";rs.tally=true;
