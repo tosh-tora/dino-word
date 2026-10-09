@@ -682,7 +682,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-5</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-6</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3946,11 +3946,12 @@ function rEnd(w){
     rs.times.forEach(function(t){e.n++;e.sum+=Math.round(t);});
     if(!e.best||best<e.best)e.best=best;
     today=e.best;
-    if(!rec.best||best<rec.best){newBest=!!rec.best;rec.best=best;}
+    if(!rec.best||best<rec.best){newBest=!testMode&&!!rec.best;rec.best=best;}
     var keys=Object.keys(rec.days).sort();
     while(keys.length>60)delete rec.days[keys.shift()];
   }
-  if(rSet.lv==="auto"&&rec.lv<3&&rec.streak>=R_LVUP[rec.lv]){rec.lv++;rec.streak=0;lvup=rec.lv;}
+  /* テストモードでは レベルも じこベストも すすまない（ほしは addStar が ださない） */
+  if(!testMode&&rSet.lv==="auto"&&rec.lv<3&&rec.streak>=R_LVUP[rec.lv]){rec.lv++;rec.streak=0;lvup=rec.lv;}
   saveRRec();
   if(kidWon)addStar();
   if(newBest)addStar();
@@ -3966,7 +3967,8 @@ function rEnd(w){
     if(best){
       html+='<div class="best">いちばん はやい タッチ <em>'+rSec(best)+'</em> びょう</div>';
       html+=newBest?'<div class="best">🎉 いままでで いちばん はやい！</div>':
-        '<div class="msg">きょうの ベスト '+rSec(today)+' びょう ／ いままでの ベスト '+rSec(rec.best)+' びょう</div>';
+        (testMode?'<div class="msg">テストモードなので きろくは のこらないよ</div>':
+        '<div class="msg">きょうの ベスト '+rSec(today)+' びょう ／ いままでの ベスト '+rSec(rec.best)+' びょう</div>');
     }else html+='<div class="msg">こんかいは タッチの はやさが はかれなかったよ</div>';
     if(rs.fouls)html+='<div class="msg">おてつき '+rs.fouls+'かい</div>';
     if(lvup)html+='<div class="best">⬆️ レベル '+lvup+' に アップ！</div><div class="msg">'+
