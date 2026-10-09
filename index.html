@@ -682,7 +682,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-4</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-5</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3613,7 +3613,7 @@ $("#b-back").addEventListener("click",function(){bRun++;bPick[1]=null;try{window
    レベル2 から はっぱ・とり・「ガ…」の フェイント、レベル3 から 🦴（ほね だけ）の にせの あいずが でる。
    パパの タッチは ハンデの ぶん おそく かぞえる（おまかせ なら こどもの かちが 6わり くらいに なるよう かわる）。
    ============================================================ */
-var R_HP=100,R_LAST=4,R_MIN_RT=120,R_TIMEOUT=4000,R_LVUP=[0,8,10];
+var R_HP=100,R_MIN_RT=120,R_TIMEOUT=4000,R_LVUP=[0,8,10];
 var rSet={who:"papa",side:"L",handi:"auto",lv:"auto"};
 /* best・days は こどもの タッチの はやさ（ms）。h＝おまかせ ハンデ、cpu＝コンピュータの はやさ、
    streak＝おてつき なしで タッチできた かいすう（レベルアップに つかう） */
@@ -3906,11 +3906,12 @@ function rNoTap(tok){
   speak("あれれ？ ガオーが でたら タッチしてね",0.95,1.15);
   rAt(tok,2800,rReady);
 }
-/* こうげき。5かいめ（R_LAST）からは とどめ、さいしょの 2かいは たおれない → 3〜5かいで しょうぶが つく */
+/* こうげき。ダメージは つよさで きまり、むりに とどめを ささない（HP が なくなるまで つづく）。
+   さいしょの 2かいは たおれない */
 function rAttack(ai,di,pre){
   var A=rs.f[ai],D=rs.f[di],r=rs.round++,tok=rs.tok;
   var move=pick(A.st.m),mv=BMOVE[move.v]||["tackle","knock"],d=ai===0?1:-1;
-  var dmg=r>=R_LAST?D.hp:Math.round(20+A.st.p*2+Math.random()*8);
+  var dmg=Math.round(20+A.st.p*2+Math.random()*8);
   if(r<2)dmg=Math.min(dmg,D.hp-1);
   dmg=Math.min(dmg,D.hp);
   var ko=dmg>=D.hp;
