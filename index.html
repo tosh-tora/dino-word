@@ -610,8 +610,6 @@ body.testmode .testmode-flag{display:block;}
 /* したの タッチパッドに かからない ように、きょうりゅうを うえに よせる */
 .rstage{padding-bottom:calc(var(--padh) + 22px);}
 #s-react{--padh:clamp(64px,15vh,108px);}
-.rflash{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:var(--r-prd);}
-.rflash.on{opacity:.28;}
 .rzones{position:absolute;left:0;right:0;bottom:0;top:var(--rtop,56px);z-index:4;display:flex;}
 .rzone{
   flex:1 1 0;min-width:0;position:relative;
@@ -686,7 +684,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-1</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-2</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -894,7 +892,6 @@ body.testmode .testmode-flag{display:block;}
       <div class="hp h1" id="rh1"></div>
     </div>
     <div class="bstage rstage" id="rstage"></div>
-    <div class="rflash" id="rflash"></div>
     <div class="rzones" id="rzones">
       <div class="rzone z0" data-i="0"><div class="rtime" id="rt0"></div><div class="rpad" id="rp0"></div></div>
       <div class="rzone z1" data-i="1"><div class="rtime" id="rt1"></div><div class="rpad" id="rp1"></div></div>
@@ -3650,6 +3647,8 @@ $("#rp-who").addEventListener("click",function(){
 /* おと。iOS は タップの なかで AudioContext を うごかして おかないと ならない */
 function rUnlock(){
   try{
+    /* iPhone の マナーモードでも おとが でる ように（Safari 16.4 から） */
+    if(navigator.audioSession&&navigator.audioSession.type!=="playback")navigator.audioSession.type="playback";
     var AC=window.AudioContext||window.webkitAudioContext;
     if(!AC)return;
     if(!audioCtx)audioCtx=new AC();
@@ -3672,11 +3671,42 @@ function rSnd(kind){
       o.connect(g);g.connect(audioCtx.destination);
       o.start(t0+st);o.stop(t0+st+dur+.02);
     };
-    if(kind==="roar"){tone("sawtooth",260,90,0,.5,.3);tone("square",130,60,0,.5,.12);}
+    if(kind==="roar")rRoar(t0);
     else if(kind==="chirp"){tone("sine",1800,2600,0,.08,.12);tone("sine",1900,2700,.13,.08,.12);}
     else if(kind==="pop"){tone("triangle",520,260,0,.14,.2);}
-    else if(kind==="hit"){tone("triangle",170,50,0,.28,.4);}
+    else if(kind==="hit"){tone("square",420,140,0,.22,.25);tone("triangle",300,90,0,.3,.4);}
   }catch(e){}
+}
+
+/* 「ガオー！」の おと。iPhone の スピーカーは ひくい おとが ほとんど でないので、
+   400〜900Hz くらいの ざらざらした うなりごえ（2ほんの のこぎりなみを ずらして かさね、ブルブル ゆらす）に する */
+function rRoar(t0){
+  var dur=.75,out=audioCtx.createGain(),lp=audioCtx.createBiquadFilter(),trem=audioCtx.createGain();
+  lp.type="lowpass";lp.frequency.value=2600;
+  out.gain.setValueAtTime(0.0001,t0);
+  out.gain.exponentialRampToValueAtTime(.42,t0+.04);
+  out.gain.setValueAtTime(.42,t0+dur*.55);
+  out.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  trem.gain.value=.7;
+  var lfo=audioCtx.createOscillator(),lg=audioCtx.createGain();
+  lfo.frequency.value=32;lg.gain.value=.3;
+  lfo.connect(lg);lg.connect(trem.gain);
+  [[620,880,300],[633,860,290]].forEach(function(f){
+    var o=audioCtx.createOscillator();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(f[0],t0);
+    o.frequency.linearRampToValueAtTime(f[1],t0+.12);
+    o.frequency.exponentialRampToValueAtTime(f[2],t0+dur);
+    o.connect(trem);o.start(t0);o.stop(t0+dur+.02);
+  });
+  /* いきの ざらざら（ノイズ） */
+  var n=Math.floor(audioCtx.sampleRate*dur),buf=audioCtx.createBuffer(1,n,audioCtx.sampleRate),ch=buf.getChannelData(0);
+  for(var i=0;i<n;i++)ch[i]=Math.random()*2-1;
+  var src=audioCtx.createBufferSource(),bp=audioCtx.createBiquadFilter(),ng=audioCtx.createGain();
+  src.buffer=buf;bp.type="bandpass";bp.frequency.value=1200;bp.Q.value=.8;ng.gain.value=.35;
+  src.connect(bp);bp.connect(ng);ng.connect(trem);
+  trem.connect(lp);lp.connect(out);out.connect(audioCtx.destination);
+  lfo.start(t0);lfo.stop(t0+dur+.02);src.start(t0);
 }
 
 var rs=null;
@@ -3734,7 +3764,6 @@ function startReact(){
     rSetHP(i);
   });
   $("#rend").style.display="none";
-  $("#rflash").classList.remove("on");
   $("#react-confetti").innerHTML="";
   hideBadge($("#react-badge"));
   go("react");
@@ -3762,7 +3791,6 @@ function rReady(){
   $$("#rzones .rzone").forEach(function(z){z.classList.remove("press","foul");});
   $("#rt0").innerHTML="";$("#rt1").innerHTML="";
   $$("#rstage .fighter").forEach(function(f){f.classList.remove("turn");});
-  $("#rflash").classList.remove("on");
   rSig("ready",'<div class="tx">よーい…</div>');
   /* フェイントは レベル2 から。レベル3 は ほねの にせ あいずも まざる */
   var feints=[],n=0;
@@ -3813,7 +3841,6 @@ function rGo(tok){
   if(rs.phase!=="wait")return;
   rs.phase="go";rs.sigT=performance.now();
   rSig("go",'<div class="ic">🍖</div><div class="tx">ガオー！</div>');
-  $("#rflash").classList.add("on");
   rSnd("roar");
   /* じっさいに がめんに でた じかんから はかる */
   requestAnimationFrame(function(ts){
@@ -3855,7 +3882,6 @@ function rTap(i){
 }
 function rDecide(w){
   rs.phase="res";rs.tally=true;
-  $("#rflash").classList.remove("on");
   var kidWon=w===rs.k,rec=rs.rec;
   if(rs.cpu)rec.cpu=rClamp(rec.cpu+(kidWon?-30:45),280,1400);
   else if(rSet.handi==="auto")rec.h=rClamp(rec.h+(kidWon?-40:60),0,900);
@@ -3865,7 +3891,6 @@ function rDecide(w){
 }
 function rFoul(i){
   rs.phase="res";rs.tally=true;
-  $("#rflash").classList.remove("on");
   $("#rzones .z"+i).classList.add("foul");
   playMissSound();
   if(i===rs.k){rs.kidFoul=true;rs.fouls++;}
@@ -3877,7 +3902,6 @@ function rFoul(i){
 }
 function rNoTap(tok){
   rs.phase="res";
-  $("#rflash").classList.remove("on");
   rSig("ready",'<div class="ic">🤔</div><div class="tx">あれれ？</div><div class="sub">ガオー！が でたら タッチしてね</div>');
   speak("あれれ？ ガオーが でたら タッチしてね",0.95,1.15);
   rAt(tok,2800,rReady);
