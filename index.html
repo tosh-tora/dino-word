@@ -682,7 +682,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-5</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-7</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3626,6 +3626,15 @@ try{
 }catch(e){}
 function saveRSet(){try{localStorage.setItem("dinolab_rset",JSON.stringify(rSet));}catch(e){}}
 function saveRRec(){if(testMode)return;try{localStorage.setItem("dinolab_rrec",JSON.stringify(rRec));}catch(e){}}
+/* テストモードの あいだは きろくの コピー（rTest）で あそぶ。レベルアップも ベストも ふつうに すすむが、
+   ほぞんは しないので、テストモードを おわる・よみこみなおすと すてて もとの きろくに もどる */
+var rTest=null;
+function rCur(){
+  if(!testMode){rTest=null;return rRec;}
+  if(!rTest)rTest=JSON.parse(JSON.stringify(rRec));
+  return rTest;
+}
+$("#testmode-btn").addEventListener("click",function(){rTest=null;});
 function rClamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
 function rSec(ms){return (ms/1000).toFixed(2);}
 function rToday(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
@@ -3746,8 +3755,7 @@ try{rRulesSeen=JSON.parse(localStorage.getItem("dinolab_rrules")||"{}")||{};}cat
 function startReact(){
   if(!(bPick[0]&&bPick[1]))return;
   bRun++;
-  /* テストモードでは きろくも ハンデも かわらない ように コピーを つかう */
-  var k=rSet.side==="R"?1:0,rec=testMode?JSON.parse(JSON.stringify(rRec)):rRec;
+  var k=rSet.side==="R"?1:0,rec=rCur();
   var ds=k===0?[bPick[0],bPick[1]]:[bPick[1],bPick[0]];
   rs={f:ds.map(function(d){return {d:d,st:bStat(d),hp:R_HP,max:R_HP};}),k:k,cpu:rSet.who==="cpu",rec:rec,
       lv:rSet.lv==="auto"?rec.lv:+rSet.lv,round:0,phase:"intro",tok:0,times:[],fouls:0,over:false};
@@ -3996,10 +4004,11 @@ $("#r-back").addEventListener("click",function(){
 /* ---------- せってい（えらぶ がめんの ⚙️） ---------- */
 /* おうちのかた むけ：1にちの へいきんの はやさ（さいきんの 14にち） */
 function rChart(){
-  var keys=Object.keys(rRec.days).sort().slice(-14);
+  var R=rCur();
+  var keys=Object.keys(R.days).sort().slice(-14);
   if(!keys.length)return '<p class="rchart-none">まだ きろくが ないよ。たいけつ すると ここに 1にちの へいきんが でるよ</p>';
   var W=480,H=150,L=34,B=22,T=16,pw=W-L-8,ph=H-B-T;
-  var avg=keys.map(function(k){var e=rRec.days[k];return e.sum/e.n/1000;});
+  var avg=keys.map(function(k){var e=R.days[k];return e.sum/e.n/1000;});
   var top=Math.max(.2,Math.ceil(Math.max.apply(null,avg)/.2)*.2);
   var step=pw/keys.length,bw=Math.min(28,step-6);
   var y=function(v){return T+ph-ph*v/top;};
@@ -4010,7 +4019,7 @@ function rChart(){
   }
   keys.forEach(function(k,i){
     var v=avg[i],x=L+step*i+(step-bw)/2,yt=y(v),yb=y(0),r=Math.min(4,bw/2,yb-yt);
-    var e=rRec.days[k],md=(+k.slice(5,7))+"/"+(+k.slice(8));
+    var e=R.days[k],md=(+k.slice(5,7))+"/"+(+k.slice(8));
     svg+='<path class="bar" d="M'+x+','+yb+'V'+(yt+r)+'Q'+x+','+yt+' '+(x+r)+','+yt+'H'+(x+bw-r)+'Q'+(x+bw)+','+yt+' '+(x+bw)+','+(yt+r)+'V'+yb+'Z">'+
       '<title>'+md+'：へいきん '+v.toFixed(2)+'びょう（'+e.n+'かい）・ベスト '+rSec(e.best)+'びょう</title></path>';
     if(keys.length<=7||(keys.length-1-i)%2===0)
@@ -4020,23 +4029,24 @@ function rChart(){
   return '<div class="rchart">'+svg+'</svg></div>';
 }
 function openRSet(){
+  var R=rCur();
   var seg=function(key,opts){
     return '<div class="seg">'+opts.map(function(o){
       return '<button data-k="'+key+'" data-v="'+o[0]+'"'+(String(rSet[key])===String(o[0])?' class="on"':'')+'>'+o[1]+'</button>';
     }).join("")+'</div>';
   };
-  var nx=rRec.lv<3?'（あと '+Math.max(0,R_LVUP[rRec.lv]-rRec.streak)+'かい おてつき なしで タッチできたら アップ）':'（さいこう レベル）';
+  var nx=R.lv<3?'（あと '+Math.max(0,R_LVUP[R.lv]-R.streak)+'かい おてつき なしで タッチできたら アップ）':'（さいこう レベル）';
   $("#sheet-inner").innerHTML=
    '<div class="bset'+(rSet.who==="cpu"?" dim":"")+'"><h2>⚙️ はやうち たいけつの せってい</h2>'+
    '<div class="bset-row"><span>あいて</span>'+seg("who",[["papa","👨 パパ"],["cpu","🤖 コンピュータ"]])+'</div>'+
    '<div class="bset-row"><span>こどもが すわる がわ</span>'+seg("side",[["L","⬅️ ひだり"],["R","みぎ ➡️"]])+'</div>'+
    '<div class="bset-row calc"><span>パパの ハンデ（パパの タッチを おそく かぞえる）</span>'+
      seg("handi",[["auto","おまかせ"],["0","なし"],["200","0.2びょう"],["400","0.4びょう"],["600","0.6びょう"]])+
-     '<span class="bset-now">おまかせの いま：'+rSec(rRec.h)+'びょう（こどもが 6わり くらい かてるように かわる）</span></div>'+
+     '<span class="bset-now">おまかせの いま：'+rSec(R.h)+'びょう（こどもが 6わり くらい かてるように かわる）</span></div>'+
    '<div class="bset-row"><span>レベル</span>'+seg("lv",[["auto","おまかせ"],["1","1"],["2","2"],["3","3"]])+
-     '<span class="bset-now">おまかせの いま：レベル '+rRec.lv+nx+'<br>1＝ガオーだけ ／ 2＝ほかの たべもの・「ガ…」の フェイント ／ 3＝🍗・🦴 の そっくりさん（ガオーの こえつき）</span></div>'+
+     '<span class="bset-now">おまかせの いま：レベル '+R.lv+nx+'<br>1＝ガオーだけ ／ 2＝ほかの たべもの・「ガ…」の フェイント ／ 3＝🍗・🦴 の そっくりさん（ガオーの こえつき）</span></div>'+
    '<div class="bset-row"><span>📈 おうちのかたへ：1にちの へいきんの はやさ（びょう・ひくいほど はやい）</span>'+rChart()+
-     (rRec.best?'<span class="bset-now">いままでの ベスト '+rSec(rRec.best)+'びょう</span>':'')+'</div>'+
+     (R.best?'<span class="bset-now">いままでの ベスト '+rSec(R.best)+'びょう</span>':'')+'</div>'+
    '<div class="sheet-actions"><button class="big" id="sheet-close">とじる</button></div></div>';
   $$("#sheet-inner .seg button").forEach(function(b){
     b.addEventListener("click",function(){
