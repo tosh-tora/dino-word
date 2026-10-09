@@ -136,9 +136,11 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .home-art svg,.home-art img{width:100%;height:100%;max-height:28dvh;object-fit:contain;}
 .modes{
   display:grid;gap:clamp(10px,1.6vw,18px);width:min(94vw,1080px);
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(4,1fr);
 }
-@media (max-width:1000px){.modes{grid-template-columns:repeat(2,1fr);}.mode.wide{grid-column:1/-1;}}
+/* バトルは 2つ ならべて、それぞれ 2れつ ぶんの はばに する */
+.mode.wide{grid-column:span 2;}
+@media (max-width:1000px){.modes{grid-template-columns:repeat(2,1fr);}.mode.wide{grid-column:auto;}}
 @media (max-width:560px){.modes{grid-template-columns:1fr;}}
 .mode{
   display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
@@ -590,6 +592,90 @@ body.testmode .testmode-flag{display:block;}
   #s-battle .play.math #b-q,#s-battle .play.math #b-slots{display:none;}
 }
 
+/* ---------- はやうち たいけつ ---------- */
+.bpick-mode{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--accent-deep);
+  font-size:clamp(16px,2.2vw,22px);
+}
+#s-react{position:relative;overflow:hidden;}
+/* がめんの どこを さわっても ずれたり ひろがったり しない（タッチの はやさを はかるため） */
+#s-react,#s-react *{touch-action:none;-webkit-touch-callout:none;}
+.rtop{
+  flex:0 0 auto;position:relative;z-index:8;
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;
+  gap:clamp(8px,2vw,20px);padding:8px clamp(10px,3vw,30px) 4px;
+}
+.rtop .hp b{color:var(--pc);}
+.rtop .iconbtn{padding:8px 14px;}
+/* したの タッチパッドに かからない ように、きょうりゅうを うえに よせる */
+.rstage{padding-bottom:calc(var(--padh) + 22px);}
+#s-react{--padh:clamp(64px,15vh,108px);}
+.rflash{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;background:var(--r-prd);}
+.rflash.on{opacity:.28;}
+.rzones{position:absolute;left:0;right:0;bottom:0;top:var(--rtop,56px);z-index:4;display:flex;}
+.rzone{
+  flex:1 1 0;min-width:0;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding:0 8px calc(10px + env(safe-area-inset-bottom));
+}
+.rzone.z0{border-right:2px dashed var(--line);}
+.rpad{
+  min-width:calc(var(--padh) * 1.9);max-width:96%;padding:0 18px;height:var(--padh);border-radius:999px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--panel);box-shadow:0 5px 0 var(--pc),inset 0 0 0 3px var(--pc);
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--pc);
+  font-size:clamp(17px,2.6vw,26px);white-space:nowrap;
+}
+.rpad i{font-style:normal;font-size:1.5em;}
+.rzone.press .rpad{transform:translateY(5px);box-shadow:inset 0 0 0 3px var(--pc);background:var(--pc);color:var(--chip-text);}
+.rzone.foul .rpad{background:var(--slot-empty);box-shadow:inset 0 0 0 3px var(--miss);color:var(--miss);}
+.rtime{
+  min-height:1.3em;margin-bottom:6px;text-align:center;
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-variant-numeric:tabular-nums;
+  font-size:clamp(18px,3vw,30px);color:var(--ink);text-shadow:0 0 6px var(--bg);
+}
+.rtime small{display:block;font-size:.6em;color:var(--muted);}
+.rsig{
+  position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
+}
+.rsig:empty{display:none;}
+.rsig .ic{font-size:clamp(64px,14vmin,130px);line-height:1;}
+.rsig .tx{font-size:clamp(30px,7vmin,64px);line-height:1.1;text-shadow:0 0 6px var(--panel),0 0 12px var(--panel),0 2px 0 var(--panel);}
+.rsig .sub{font-size:clamp(14px,2.6vmin,20px);color:var(--muted);font-weight:700;}
+.rsig.go .tx{color:var(--miss);}
+.rsig.card{
+  top:52%;
+  background:var(--panel);border-radius:24px;padding:14px 22px;box-shadow:0 8px 24px var(--shadow);
+  width:min(86vw,460px);
+}
+.rsig.card .rule{display:flex;align-items:center;gap:10px;font-size:clamp(16px,3vmin,22px);text-align:left;}
+.rsig.card .rule i{font-style:normal;font-size:1.8em;}
+.rsig.ready .tx{color:var(--muted);}
+.rsig.foul .tx{color:var(--miss);}
+/* フェイントの はっぱ や とり（がめんを よこぎる） */
+.rfly{position:absolute;z-index:5;pointer-events:none;font-size:clamp(40px,9vmin,80px);line-height:1;}
+.rend{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+  background:var(--panel);border-radius:26px;padding:clamp(14px,2.4vw,24px);
+  box-shadow:0 10px 30px var(--shadow);width:min(92vw,520px);max-height:90%;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
+}
+.rend h2{margin:0;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(22px,4vw,32px);}
+.rend .best{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(18px,3vw,26px);}
+.rend .best em{font-style:normal;color:var(--accent-deep);font-variant-numeric:tabular-nums;}
+.rend .msg{color:var(--muted);font-weight:700;font-size:clamp(14px,2vw,17px);}
+.rend .done{margin-top:4px;}
+.rchart{width:100%;}
+.rchart svg{width:100%;height:auto;display:block;overflow:visible;}
+.rchart .bar{fill:var(--accent);}
+.rchart .bar:hover{fill:var(--accent-deep);}
+.rchart text{fill:var(--muted);font-size:11px;font-family:inherit;}
+.rchart .grid{stroke:var(--line);stroke-width:1;}
+.rchart-none{color:var(--muted);font-size:14px;margin:6px 0;}
+.bset-now{color:var(--muted);font-size:13px;}
+
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important;transition:none !important;}
   /* うごきを へらす せっていの ときも、バッジは JS が じかに
@@ -600,7 +686,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-17</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-1</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -634,9 +720,13 @@ body.testmode .testmode-flag{display:block;}
           <span class="badge">📖</span>
           <span><b>ずかんを みる</b><span id="zukan-sub">ぶんを つくって きょうりゅうを ゲットしよう</span></span>
         </button>
-        <button class="mode wide" data-go="bpick">
+        <button class="mode wide" id="go-talk">
           <span class="badge">🎙️</span>
           <span><b>バトルを じっきょう</b><span>きょうりゅうの たたかいを アナウンサーに なって つたえよう</span></span>
+        </button>
+        <button class="mode wide" id="go-react">
+          <span class="badge">⚡</span>
+          <span><b>はやうち たいけつ</b><span>「ガオー！」が でたら すばやく タッチ！ パパと たいせん</span></span>
         </button>
       </div>
       <details class="credits" id="credits">
@@ -752,12 +842,14 @@ body.testmode .testmode-flag{display:block;}
       <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="bpick-top">
+      <div class="bpick-mode" id="bpick-mode"></div>
       <div class="corners">
         <button class="corner c0" id="corner0"></button>
         <span class="vs">VS</span>
         <button class="corner c1" id="corner1"></button>
       </div>
       <div class="bpick-btns">
+        <button class="ghost" id="rp-who" style="display:none;"></button>
         <button class="ghost" id="b-random">🎲 おまかせ</button>
         <button class="big" id="b-start" disabled>バトル スタート！</button>
       </div>
@@ -793,6 +885,24 @@ body.testmode .testmode-flag{display:block;}
         <button class="ghost" id="b-other">ほかの たいせん</button>
       </div>
     </div>
+  </section>
+  <!-- ============ はやうち たいけつ ============ -->
+  <section class="screen" id="s-react">
+    <div class="rtop">
+      <div class="hp h0" id="rh0"></div>
+      <button class="iconbtn" id="r-back" aria-label="もどる">←</button>
+      <div class="hp h1" id="rh1"></div>
+    </div>
+    <div class="bstage rstage" id="rstage"></div>
+    <div class="rflash" id="rflash"></div>
+    <div class="rzones" id="rzones">
+      <div class="rzone z0" data-i="0"><div class="rtime" id="rt0"></div><div class="rpad" id="rp0"></div></div>
+      <div class="rzone z1" data-i="1"><div class="rtime" id="rt1"></div><div class="rpad" id="rp1"></div></div>
+    </div>
+    <div class="rsig" id="rsig"></div>
+    <div class="confetti-layer" id="react-confetti"></div>
+    <div class="correct-badge" id="react-badge"></div>
+    <div class="rend" id="rend" style="display:none;"></div>
   </section>
 
   <div class="sheet" id="sheet"><div class="sheet-inner" id="sheet-inner"></div></div>
@@ -2909,6 +3019,10 @@ function bFace(i,id,extra){
    じぶん（あか）は ゲットした きょうりゅうから えらぶ。あいて（あお）は スタートを おすと
    ルーレットで きまる（まだ ゲットして いない きょうりゅうも でる） */
 var bPick=[null,null],bRolling=false;
+/* どちらの バトルの えらびかたか（talk＝じっきょう、react＝はやうち たいけつ）。えらぶ がめんは おなじ */
+var bKind="talk";
+$("#go-talk").addEventListener("click",function(){bKind="talk";go("bpick");});
+$("#go-react").addEventListener("click",function(){bKind="react";go("bpick");});
 function bMine(){return DINOS.filter(function(d){return testMode||got[d.id];});}
 function renderPick(){
   var g=$("#bpick-grid");g.innerHTML="";
@@ -2930,6 +3044,8 @@ function renderPick(){
     g.appendChild(b);
   });
   $("#bpick-none").style.display=bMine().length?"none":"";
+  $("#bpick-mode").textContent=bKind==="react"?"⚡ はやうち たいけつ":"🎙️ バトルを じっきょう";
+  rWhoBtn();
   $("#b-random").disabled=!bMine().length;
   renderCorners();
 }
@@ -2984,11 +3100,11 @@ function bRoulette(){
     bPick[1]=foe;bRolling=false;
     renderCorners();
     speak(me.name+" たい "+foe.name+"！",0.9);
-    setTimeout(function(){if(here())startBattle();},1400);
+    setTimeout(function(){if(here())(bKind==="react"?startReact:startBattle)();},1400);
   };
   tick();
 }
-$("#b-start").addEventListener("click",bRoulette);
+$("#b-start").addEventListener("click",function(){if(bKind==="react")rUnlock();bRoulette();});
 
 /* ---------- バトル ---------- */
 var bs=null,bRun=0;
@@ -3040,7 +3156,7 @@ function openBSet(){
   $("#sheet").classList.add("on");
 }
 $("#b-set").addEventListener("click",openBSet);
-$("#bp-set").addEventListener("click",openBSet);
+$("#bp-set").addEventListener("click",function(){if(bKind==="react")openRSet();else openBSet();});
 /* バトルの とちゅうで もどったら、のこりの タイマーは なにも しない */
 function bLater(fn,ms){var run=bRun;setTimeout(function(){if(run===bRun)fn();},ms);}
 
@@ -3493,6 +3609,419 @@ $("#b-again").addEventListener("click",startBattle);
 /* ほかの あいて・もどる：つぎは また ルーレットで あいてを きめる */
 $("#b-other").addEventListener("click",function(){bRun++;bPick[1]=null;go("bpick");});
 $("#b-back").addEventListener("click",function(){bRun++;bPick[1]=null;try{window.speechSynthesis.cancel();}catch(e){}go("bpick");});
+
+/* ============================================================
+   はやうち たいけつ
+   よこに ならんで すわった パパと こどもが 1だいの がめんを はんぶんずつ つかう。
+   「よーい…」の あと「🍖 ガオー！」が でたら、さきに じぶんの がわを タッチした ほうが こうげき。
+   ガオーの まえに さわったら「おてつき」で、あいてに こうげきされる。
+   レベル2 から はっぱ・とり・「ガ…」の フェイント、レベル3 から 🦴（ほね だけ）の にせの あいずが でる。
+   パパの タッチは ハンデの ぶん おそく かぞえる（おまかせ なら こどもの かちが 6わり くらいに なるよう かわる）。
+   ============================================================ */
+var R_HP=100,R_LAST=4,R_MIN_RT=120,R_TIMEOUT=4000,R_LVUP=[0,8,10];
+var rSet={who:"papa",side:"L",handi:"auto",lv:"auto"};
+/* best・days は こどもの タッチの はやさ（ms）。h＝おまかせ ハンデ、cpu＝コンピュータの はやさ、
+   streak＝おてつき なしで タッチできた かいすう（レベルアップに つかう） */
+var rRec={best:0,days:{},lv:1,streak:0,h:300,cpu:700};
+try{
+  var rsv=JSON.parse(localStorage.getItem("dinolab_rset")||"null"),rk;
+  if(rsv)for(rk in rSet)if(rk in rsv)rSet[rk]=rsv[rk];
+  var rrv=JSON.parse(localStorage.getItem("dinolab_rrec")||"null");
+  if(rrv)for(rk in rRec)if(rk in rrv)rRec[rk]=rrv[rk];
+}catch(e){}
+function saveRSet(){try{localStorage.setItem("dinolab_rset",JSON.stringify(rSet));}catch(e){}}
+function saveRRec(){if(testMode)return;try{localStorage.setItem("dinolab_rrec",JSON.stringify(rRec));}catch(e){}}
+function rClamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function rSec(ms){return (ms/1000).toFixed(2);}
+function rToday(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
+function rHandi(){return rSet.handi==="auto"?rs.rec.h:+rSet.handi;}
+
+/* えらぶ がめんの「パパと / コンピュータと」ボタン */
+function rWhoBtn(){
+  var b=$("#rp-who");
+  b.style.display=bKind==="react"?"":"none";
+  b.textContent=rSet.who==="cpu"?"🤖 コンピュータと":"👨 パパと";
+}
+$("#rp-who").addEventListener("click",function(){
+  rSet.who=rSet.who==="cpu"?"papa":"cpu";saveRSet();rWhoBtn();
+  speak(rSet.who==="cpu"?"コンピュータと たいけつ":"パパと たいけつ",0.95);
+});
+
+/* おと。iOS は タップの なかで AudioContext を うごかして おかないと ならない */
+function rUnlock(){
+  try{
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return;
+    if(!audioCtx)audioCtx=new AC();
+    if(audioCtx.state==="suspended")audioCtx.resume();
+  }catch(e){}
+}
+function rSnd(kind){
+  rUnlock();
+  if(!audioCtx)return;
+  try{
+    var t0=audioCtx.currentTime;
+    var tone=function(type,f0,f1,st,dur,vol){
+      var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type=type;
+      o.frequency.setValueAtTime(f0,t0+st);
+      o.frequency.exponentialRampToValueAtTime(f1,t0+st+dur);
+      g.gain.setValueAtTime(0.0001,t0+st);
+      g.gain.exponentialRampToValueAtTime(vol,t0+st+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+st+dur);
+      o.connect(g);g.connect(audioCtx.destination);
+      o.start(t0+st);o.stop(t0+st+dur+.02);
+    };
+    if(kind==="roar"){tone("sawtooth",260,90,0,.5,.3);tone("square",130,60,0,.5,.12);}
+    else if(kind==="chirp"){tone("sine",1800,2600,0,.08,.12);tone("sine",1900,2700,.13,.08,.12);}
+    else if(kind==="pop"){tone("triangle",520,260,0,.14,.2);}
+    else if(kind==="hit"){tone("triangle",170,50,0,.28,.4);}
+  }catch(e){}
+}
+
+var rs=null;
+function rPName(i){return i===rs.k?"きみ":(rs.cpu?"コンピュータ":"パパ");}
+/* rs.tok は 1かいの あいず ごとに かわる。ふるい タイマーは なにも しない */
+function rAt(tok,ms,fn){bLater(function(){if(rs&&rs.tok===tok)fn();},ms);}
+function rSig(cls,html){var el=$("#rsig");el.className="rsig"+(cls?" "+cls:"");el.innerHTML=html||"";}
+function rSetHP(i){
+  var F=rs.f[i],el=$("#rh"+i),fill=$(".hpfill",el);
+  fill.style.width=Math.round(F.hp/F.max*100)+"%";
+  fill.classList.toggle("low",F.hp/F.max<.35);
+  $(".hpnum",el).textContent=F.hp;
+}
+function rFx(i,txt,cls){
+  var s=document.createElement("span");
+  s.className="bfx "+(cls||"dmg");s.textContent=txt;
+  $(cls==="zzz"?"#rf"+i+" .fbody":"#rf"+i).appendChild(s);
+  if(cls!=="zzz")setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},1600);
+  return s;
+}
+/* タッチの ばしょは うえの HP の ならびの したから */
+function rFit(){
+  var sc=$("#s-react"),t=$("#s-react .rtop");
+  if(!sc.classList.contains("on"))return;
+  sc.style.setProperty("--rtop",Math.ceil(t.offsetTop+t.offsetHeight)+"px");
+}
+window.addEventListener("resize",rFit);
+
+function rRules(lv){
+  var r='<div class="tx" style="font-size:clamp(20px,4vmin,30px)">レベル '+lv+'</div>'+
+    '<div class="rule"><i>🍖</i><span>「ガオー！」が でたら はやく タッチ！</span></div>';
+  if(lv>=2)r+='<div class="rule"><i>🍃</i><span>はっぱ や とり では タッチしない</span></div>';
+  if(lv>=3)r+='<div class="rule"><i>🦴</i><span>ほね だけの ときは がまん！</span></div>';
+  return r+'<div class="rule"><i>✋</i><span>ガオーの まえに さわると おてつき</span></div>';
+}
+function startReact(){
+  if(!(bPick[0]&&bPick[1]))return;
+  bRun++;
+  /* テストモードでは きろくも ハンデも かわらない ように コピーを つかう */
+  var k=rSet.side==="R"?1:0,rec=testMode?JSON.parse(JSON.stringify(rRec)):rRec;
+  var ds=k===0?[bPick[0],bPick[1]]:[bPick[1],bPick[0]];
+  rs={f:ds.map(function(d){return {d:d,st:bStat(d),hp:R_HP,max:R_HP};}),k:k,cpu:rSet.who==="cpu",rec:rec,
+      lv:rSet.lv==="auto"?rec.lv:+rSet.lv,round:0,phase:"intro",tok:0,times:[],fouls:0,over:false};
+  $("#rstage").innerHTML='<div class="bfight">'+rs.f.map(function(F,i){
+    return '<div class="fighter f'+i+'" id="rf'+i+'"><div class="fbody">'+bFace(i,F.d.id,' style="--s:'+bScale(F.d.id)+'"')+'</div></div>';
+  }).join("")+'</div>';
+  [0,1].forEach(function(i){
+    var pc=i===k?"var(--r-prd)":"var(--r-sub)",h=$("#rh"+i),z=$("#rzones .z"+i);
+    h.style.setProperty("--pc",pc);
+    h.innerHTML='<b>'+rs.f[i].d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div>';
+    z.style.setProperty("--pc",pc);
+    z.classList.remove("press","foul");
+    $("#rp"+i).innerHTML='<i>'+(i!==k&&rs.cpu?"🤖":"🖐")+'</i>'+rPName(i);
+    $("#rt"+i).innerHTML="";
+    rSetHP(i);
+  });
+  $("#rend").style.display="none";
+  $("#rflash").classList.remove("on");
+  $("#react-confetti").innerHTML="";
+  hideBadge($("#react-badge"));
+  go("react");
+  rFit();
+  rSig("card",rRules(rs.lv));
+  var say=rs.f[0].d.name+" たい "+rs.f[1].d.name+"！ ガオーが でたら、はやく タッチ！";
+  if(rs.lv>=2)say+=" はっぱや とりでは、タッチしないよ。";
+  if(rs.lv>=3)say+=" ほねだけの ときは、がまん！";
+  speak(say,0.95,1.15);
+  bLater(rReady,[0,4200,6200,7800][rs.lv]);
+}
+
+/* 1かいぶんの けっかを きろくに いれる（おそい タッチも はかれる ように、つぎの じゅんびの ときに まとめる） */
+function rTally(){
+  if(!rs.tally)return;
+  rs.tally=false;
+  if(rs.kidFoul)rs.rec.streak=0;
+  else if(rs.kidT!=null){rs.times.push(rs.kidT);rs.rec.streak++;}
+}
+function rReady(){
+  if(!rs||rs.over)return;
+  rTally();
+  var tok=++rs.tok;
+  rs.phase="wait";rs.sigT=0;rs.kidT=null;rs.otherT=null;rs.kidFoul=false;
+  $$("#rzones .rzone").forEach(function(z){z.classList.remove("press","foul");});
+  $("#rt0").innerHTML="";$("#rt1").innerHTML="";
+  $$("#rstage .fighter").forEach(function(f){f.classList.remove("turn");});
+  $("#rflash").classList.remove("on");
+  rSig("ready",'<div class="tx">よーい…</div>');
+  /* フェイントは レベル2 から。レベル3 は ほねの にせ あいずも まざる */
+  var feints=[],n=0;
+  if(rs.lv>=2)n=Math.random()<.3?0:(Math.random()<.65?1:2);
+  for(var j=0;j<n;j++)feints.push(pick(rs.lv>=3?["leaf","bird","twitch","bone","bone"]:["leaf","bird","twitch"]));
+  var t=700+Math.random()*600;
+  feints.forEach(function(kind){
+    var at=t;
+    rAt(tok,at,function(){rFeint(kind,tok);});
+    t+=1100+Math.random()*700;
+  });
+  rAt(tok,Math.max(1600+Math.random()*2400,t),function(){rGo(tok);});
+}
+/* がめんを よこぎる はっぱ や とり */
+function rFly(ch,x0,y0,x1,y1,ms,rot){
+  var sc=$("#s-react"),w=sc.clientWidth,h=sc.clientHeight,el=document.createElement("span");
+  el.className="rfly";el.textContent=ch;
+  el.style.left="0";el.style.top="0";
+  sc.appendChild(el);
+  var tf=function(x,y,r){return "translate("+Math.round(x*w)+"px,"+Math.round(y*h)+"px) rotate("+r+"deg)";};
+  el.style.transform=tf(x1,y1,0);
+  if(el.animate)el.animate([{transform:tf(x0,y0,0)},{transform:tf((x0+x1)/2+.04,(y0+y1)/2,rot/2)},{transform:tf(x1,y1,rot)}],{duration:ms,easing:"ease-in-out"});
+  setTimeout(function(){if(el.parentNode)el.parentNode.removeChild(el);},ms);
+}
+function rFeint(kind,tok){
+  if(rs.phase!=="wait")return;
+  var other=1-rs.k,d=other===0?1:-1;
+  if(kind==="bone"){
+    rSig("ready",'<div class="ic">🦴</div><div class="tx">…</div>');
+    rSnd("pop");
+    rAt(tok,850,function(){if(rs.phase==="wait")rSig("ready",'<div class="tx">よーい…</div>');});
+  }else if(kind==="leaf"){
+    rFly("🍃",.35+Math.random()*.2,-.1,.45+Math.random()*.2,.7,1500,200);
+  }else if(kind==="bird"){
+    var l=Math.random()<.5;
+    rFly("🐦",l?-.1:1.05,.18,l?1.05:-.1,.1,1300,0);
+    rSnd("chirp");
+  }else{
+    /* あいての きょうりゅうが ピクッ、「ガ…」で とまる */
+    bAnim($("#rf"+other+" .fbody"),bKF(d,[[0],[.3,{X:8,R:-6}],[1]]),420);
+    rSig("ready",'<div class="tx">ガ…</div>');
+    rAt(tok,800,function(){if(rs.phase==="wait")rSig("ready",'<div class="tx">よーい…</div>');});
+  }
+  /* コンピュータも ときどき つられて おてつき */
+  if(rs.cpu&&Math.random()<.08)rAt(tok,280+Math.random()*200,function(){rTap(other);});
+}
+function rGo(tok){
+  if(rs.phase!=="wait")return;
+  rs.phase="go";rs.sigT=performance.now();
+  rSig("go",'<div class="ic">🍖</div><div class="tx">ガオー！</div>');
+  $("#rflash").classList.add("on");
+  rSnd("roar");
+  /* じっさいに がめんに でた じかんから はかる */
+  requestAnimationFrame(function(ts){
+    if(rs&&rs.tok===tok&&rs.phase==="go"&&rs.kidT==null&&rs.otherT==null&&ts>rs.sigT&&ts-rs.sigT<50)rs.sigT=ts;
+  });
+  if(rs.cpu){
+    var ms=rs.rec.cpu*(.85+Math.random()*.3);
+    rAt(tok,ms,function(){if(rs.phase==="go")rTap(1-rs.k);});
+  }
+  rAt(tok,R_TIMEOUT,function(){if(rs.phase==="go")rNoTap(tok);});
+}
+function rPress(i){
+  var z=$("#rzones .z"+i);
+  z.classList.add("press");
+  setTimeout(function(){z.classList.remove("press");},220);
+}
+function rTap(i){
+  if(!rs||rs.over)return;
+  var now=performance.now();
+  if(rs.phase==="wait"){rFoul(i);return;}
+  if((rs.phase!=="go"&&rs.phase!=="res")||!rs.sigT||rs.kidFoul)return;
+  var rt=now-rs.sigT;
+  /* はやすぎる タッチは あいずを みる まえに おしている（おてつき） */
+  if(rs.phase==="go"&&rt<R_MIN_RT){rFoul(i);return;}
+  if(i===rs.k){
+    if(rs.kidT!=null||rt>2500)return;
+    rs.kidT=rt;
+    $("#rt"+i).innerHTML=rSec(rt)+'<small>びょう</small>';
+  }else{
+    if(rs.otherT!=null)return;
+    rs.otherT=rt;
+  }
+  rPress(i);
+  if(rs.phase!=="go")return;
+  /* こどもは おした しゅんかんに かち。パパは ハンデの あいだに こどもが おさなければ かち */
+  var H=i===rs.k||rs.cpu?0:rHandi();
+  if(H<=0)rDecide(i);
+  else rAt(rs.tok,H,function(){if(rs.phase==="go")rDecide(i);});
+}
+function rDecide(w){
+  rs.phase="res";rs.tally=true;
+  $("#rflash").classList.remove("on");
+  var kidWon=w===rs.k,rec=rs.rec;
+  if(rs.cpu)rec.cpu=rClamp(rec.cpu+(kidWon?-30:45),280,1400);
+  else if(rSet.handi==="auto")rec.h=rClamp(rec.h+(kidWon?-40:60),0,900);
+  rSig("","");
+  if(!kidWon)$("#rt"+w).innerHTML="はやい！";
+  rAttack(w,1-w,kidWon?"はやい！ ":"");
+}
+function rFoul(i){
+  rs.phase="res";rs.tally=true;
+  $("#rflash").classList.remove("on");
+  $("#rzones .z"+i).classList.add("foul");
+  playMissSound();
+  if(i===rs.k){rs.kidFoul=true;rs.fouls++;}
+  $("#rt"+i).innerHTML="おてつき！";
+  rSig("foul",'<div class="ic">✋</div><div class="tx">おてつき！</div>');
+  var tok=rs.tok;
+  rAt(tok,1300,function(){rSig("","");});
+  rAttack(1-i,i,"おてつき！ ");
+}
+function rNoTap(tok){
+  rs.phase="res";
+  $("#rflash").classList.remove("on");
+  rSig("ready",'<div class="ic">🤔</div><div class="tx">あれれ？</div><div class="sub">ガオー！が でたら タッチしてね</div>');
+  speak("あれれ？ ガオーが でたら タッチしてね",0.95,1.15);
+  rAt(tok,2800,rReady);
+}
+/* こうげき。5かいめ（R_LAST）からは とどめ、さいしょの 2かいは たおれない → 3〜5かいで しょうぶが つく */
+function rAttack(ai,di,pre){
+  var A=rs.f[ai],D=rs.f[di],r=rs.round++,tok=rs.tok;
+  var move=pick(A.st.m),mv=BMOVE[move.v]||["tackle","knock"],d=ai===0?1:-1;
+  var dmg=r>=R_LAST?D.hp:Math.round(20+A.st.p*2+Math.random()*8);
+  if(r<2)dmg=Math.min(dmg,D.hp-1);
+  dmg=Math.min(dmg,D.hp);
+  var ko=dmg>=D.hp;
+  $("#rf"+ai).classList.add("turn");
+  bAnim($("#rf"+ai+" .fbody"),bKF(d,BATK[mv[0]]),1000);
+  speak(pre+A.d.name+"の こうげき！",1,1.2);
+  rAt(tok,430,function(){
+    bAnim($("#rf"+di+" .fbody"),bKF(d,BHURT[mv[1]]),mv[1]==="hit"||mv[1]==="squash"?650:850);
+    rSnd("hit");
+    D.hp-=dmg;rSetHP(di);rFx(di,"−"+dmg);
+  });
+  if(ko){rs.over=true;rAt(tok,1500,function(){rEnd(ai);});}
+  else rAt(tok,2700,rReady);
+}
+function rEnd(w){
+  rTally();
+  rs.phase="end";
+  var W=rs.f[w].d,li=1-w,kidWon=w===rs.k,rec=rs.rec;
+  $$("#rstage .fighter").forEach(function(f){f.classList.remove("turn");});
+  rSig("","");
+  var fi=$("#rf"+li+" .fimg");
+  bFlipOrigin(fi);
+  $("#rf"+li).classList.add("down");
+  if(fi.animate)fi.animate([{transform:"none"},{transform:"scaleY(-1)"}],{duration:600,easing:"cubic-bezier(.34,1.4,.64,1)"});
+  var z=rFx(li,"💤","zzz");
+  if(z.animate)z.animate([{transform:"translate(-50%,-50%)",opacity:1},{transform:"translate(-30%,-80%)",opacity:.5},{transform:"translate(-50%,-50%)",opacity:1}],{duration:2400,iterations:Infinity,easing:"ease-in-out"});
+  bAnim($("#rf"+w+" .fbody"),"joy",700,true);
+  /* きろく：この バトルの いちばん はやい タッチ、きょうの ベスト、いままでの ベスト */
+  var best=rs.times.length?Math.round(Math.min.apply(null,rs.times)):0,newBest=false,today=0,lvup=0;
+  if(best){
+    var day=rToday(),e=rec.days[day]||(rec.days[day]={n:0,sum:0,best:0});
+    rs.times.forEach(function(t){e.n++;e.sum+=Math.round(t);});
+    if(!e.best||best<e.best)e.best=best;
+    today=e.best;
+    if(!rec.best||best<rec.best){newBest=!!rec.best;rec.best=best;}
+    var keys=Object.keys(rec.days).sort();
+    while(keys.length>60)delete rec.days[keys.shift()];
+  }
+  if(rSet.lv==="auto"&&rec.lv<3&&rec.streak>=R_LVUP[rec.lv]){rec.lv++;rec.streak=0;lvup=rec.lv;}
+  saveRRec();
+  if(kidWon)addStar();
+  if(newBest)addStar();
+  var head=kidWon?"🏆 きみの かち！":(rs.cpu?"🤖 コンピュータの かち！":"👨 パパの かち！");
+  $("#react-badge").textContent="🏆 "+W.name+"の かち！";
+  celebrate("#react-badge","#react-confetti");
+  var say=W.name+"の かち！";
+  if(newBest)say+=" いままでで いちばん はやい タッチ！";
+  if(lvup)say+=" レベル "+lvup+"に アップ！";
+  speak(say,0.95,1.2);
+  bLater(function(){
+    var html='<h2>'+head+'</h2>';
+    if(best){
+      html+='<div class="best">いちばん はやい タッチ <em>'+rSec(best)+'</em> びょう</div>';
+      html+=newBest?'<div class="best">🎉 いままでで いちばん はやい！</div>':
+        '<div class="msg">きょうの ベスト '+rSec(today)+' びょう ／ いままでの ベスト '+rSec(rec.best)+' びょう</div>';
+    }else html+='<div class="msg">こんかいは タッチの はやさが はかれなかったよ</div>';
+    if(rs.fouls)html+='<div class="msg">おてつき '+rs.fouls+'かい</div>';
+    if(lvup)html+='<div class="best">⬆️ レベル '+lvup+' に アップ！</div><div class="msg">'+
+      (lvup===2?'つぎから はっぱ や とり の フェイントが でるよ':'つぎから 🦴 の にせの あいずも でるよ')+'</div>';
+    html+='<div class="done"><button class="big" id="r-again">もういっかい</button><button class="ghost" id="r-other">ほかの たいせん</button></div>';
+    var el=$("#rend");el.innerHTML=html;el.style.display="flex";
+    $("#r-again").addEventListener("click",function(){rUnlock();startReact();});
+    $("#r-other").addEventListener("click",function(){bRun++;bPick[1]=null;go("bpick");});
+  },1600);
+}
+(function(){
+  var ev=window.PointerEvent?"pointerdown":"touchstart";
+  $$("#rzones .rzone").forEach(function(z){
+    z.addEventListener(ev,function(e){
+      if(e.cancelable)e.preventDefault();
+      rUnlock();
+      rTap(+z.dataset.i);
+    });
+  });
+})();
+$("#r-back").addEventListener("click",function(){
+  bRun++;if(rs)rs.over=true;bPick[1]=null;
+  try{window.speechSynthesis.cancel();}catch(e){}
+  go("bpick");
+});
+
+/* ---------- せってい（えらぶ がめんの ⚙️） ---------- */
+/* おうちのかた むけ：1にちの へいきんの はやさ（さいきんの 14にち） */
+function rChart(){
+  var keys=Object.keys(rRec.days).sort().slice(-14);
+  if(!keys.length)return '<p class="rchart-none">まだ きろくが ないよ。たいけつ すると ここに 1にちの へいきんが でるよ</p>';
+  var W=480,H=150,L=34,B=22,T=16,pw=W-L-8,ph=H-B-T;
+  var avg=keys.map(function(k){var e=rRec.days[k];return e.sum/e.n/1000;});
+  var top=Math.max(.2,Math.ceil(Math.max.apply(null,avg)/.2)*.2);
+  var step=pw/keys.length,bw=Math.min(28,step-6);
+  var y=function(v){return T+ph-ph*v/top;};
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="1にちの へいきんの はやさ">';
+  for(var g=0;g<=top+1e-9;g+=top/2){
+    svg+='<line class="grid" x1="'+L+'" x2="'+(W-8)+'" y1="'+y(g)+'" y2="'+y(g)+'"/>'+
+      '<text x="'+(L-6)+'" y="'+(y(g)+4)+'" text-anchor="end">'+g.toFixed(1)+'</text>';
+  }
+  keys.forEach(function(k,i){
+    var v=avg[i],x=L+step*i+(step-bw)/2,yt=y(v),yb=y(0),r=Math.min(4,bw/2,yb-yt);
+    var e=rRec.days[k],md=(+k.slice(5,7))+"/"+(+k.slice(8));
+    svg+='<path class="bar" d="M'+x+','+yb+'V'+(yt+r)+'Q'+x+','+yt+' '+(x+r)+','+yt+'H'+(x+bw-r)+'Q'+(x+bw)+','+yt+' '+(x+bw)+','+(yt+r)+'V'+yb+'Z">'+
+      '<title>'+md+'：へいきん '+v.toFixed(2)+'びょう（'+e.n+'かい）・ベスト '+rSec(e.best)+'びょう</title></path>';
+    if(keys.length<=7||(keys.length-1-i)%2===0)
+      svg+='<text x="'+(x+bw/2)+'" y="'+(H-6)+'" text-anchor="middle">'+md+'</text>';
+    if(i===keys.length-1)svg+='<text x="'+(x+bw/2)+'" y="'+(yt-4)+'" text-anchor="middle" style="fill:var(--ink);font-weight:700">'+v.toFixed(2)+'</text>';
+  });
+  return '<div class="rchart">'+svg+'</svg></div>';
+}
+function openRSet(){
+  var seg=function(key,opts){
+    return '<div class="seg">'+opts.map(function(o){
+      return '<button data-k="'+key+'" data-v="'+o[0]+'"'+(String(rSet[key])===String(o[0])?' class="on"':'')+'>'+o[1]+'</button>';
+    }).join("")+'</div>';
+  };
+  var nx=rRec.lv<3?'（あと '+Math.max(0,R_LVUP[rRec.lv]-rRec.streak)+'かい おてつき なしで タッチできたら アップ）':'（さいこう レベル）';
+  $("#sheet-inner").innerHTML=
+   '<div class="bset'+(rSet.who==="cpu"?" dim":"")+'"><h2>⚙️ はやうち たいけつの せってい</h2>'+
+   '<div class="bset-row"><span>あいて</span>'+seg("who",[["papa","👨 パパ"],["cpu","🤖 コンピュータ"]])+'</div>'+
+   '<div class="bset-row"><span>こどもが すわる がわ</span>'+seg("side",[["L","⬅️ ひだり"],["R","みぎ ➡️"]])+'</div>'+
+   '<div class="bset-row calc"><span>パパの ハンデ（パパの タッチを おそく かぞえる）</span>'+
+     seg("handi",[["auto","おまかせ"],["0","なし"],["200","0.2びょう"],["400","0.4びょう"],["600","0.6びょう"]])+
+     '<span class="bset-now">おまかせの いま：'+rSec(rRec.h)+'びょう（こどもが 6わり くらい かてるように かわる）</span></div>'+
+   '<div class="bset-row"><span>レベル</span>'+seg("lv",[["auto","おまかせ"],["1","1"],["2","2"],["3","3"]])+
+     '<span class="bset-now">おまかせの いま：レベル '+rRec.lv+nx+'<br>1＝ガオーだけ ／ 2＝はっぱ・とりの フェイント ／ 3＝🦴の にせの あいず</span></div>'+
+   '<div class="bset-row"><span>📈 おうちのかたへ：1にちの へいきんの はやさ（びょう・ひくいほど はやい）</span>'+rChart()+
+     (rRec.best?'<span class="bset-now">いままでの ベスト '+rSec(rRec.best)+'びょう</span>':'')+'</div>'+
+   '<div class="sheet-actions"><button class="big" id="sheet-close">とじる</button></div></div>';
+  $$("#sheet-inner .seg button").forEach(function(b){
+    b.addEventListener("click",function(){
+      rSet[b.dataset.k]=b.dataset.v;
+      saveRSet();rWhoBtn();openRSet();
+    });
+  });
+  $("#sheet-close").addEventListener("click",closeSheet);
+  $("#sheet").classList.add("on");
+}
 
 /* ============================================================
    スタート
