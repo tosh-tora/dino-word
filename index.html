@@ -375,6 +375,7 @@ body.testmode .testmode-flag{display:block;}
 :root[data-theme="dark"] .zcard .times{color:#20160A;}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .zcard .times{color:#20160A;}}
 .zcard.locked{background:var(--panel2);}
+.lvtag{font-size:.75em;opacity:.85;}
 .caught{
   text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
   font-size:clamp(18px,2.4vw,24px);color:var(--accent-deep);margin:0 0 12px;
@@ -722,7 +723,7 @@ body.testmode .testmode-flag{display:block;}
       <div class="modes">
         <button class="mode" data-go="build">
           <span class="badge">🧩</span>
-          <span><b>ぶんを つくろう</b><span>ことばを タップして、じゅんばんに ならべる</span></span>
+          <span><b>ぶんを つくろう</b><span>ぶんを つくって きょうりゅうを あつめて つよくしよう</span></span>
         </button>
         <button class="mode" data-go="quiz">
           <span class="badge">🔍</span>
@@ -1968,14 +1969,18 @@ try{
   else Object.keys(saved).forEach(function(id){var n=parseInt(saved[id],10);if(n>0)got[id]=n;});
 }catch(e){got={};}
 function gotCount(){return DINOS.filter(function(d){return got[d.id];}).length;}
-/* つかまえた かいすうを 1 ふやす。はじめての ゲットなら true */
+/* レベル＝つかまえた かいすう（さいこう DLV_MAX）。レベルが あがると バトルで すこし つよくなる */
+var DLV_MAX=10;
+function dinoLv(id){return Math.min(got[id]||0,DLV_MAX);}
+/* つかまえた かいすうを 1 ふやす。{first:はじめての ゲット, lvUp:あがった レベル（あがらなければ 0）} */
 function markGot(id){
-  if(testMode)return false;
-  var first=!got[id];
+  if(testMode)return {first:false,lvUp:0};
+  var first=!got[id],before=dinoLv(id);
   got[id]=(got[id]||0)+1;
   try{localStorage.setItem("dinolab_got",JSON.stringify(got));}catch(e){}
   renderZukanSub();
-  return first;
+  var after=dinoLv(id);
+  return {first:first,lvUp:!first&&after>before?after:0};
 }
 function renderZukanSub(){
   $("#zukan-sub").textContent="ゲットした きょうりゅう "+gotCount()+" / "+DINOS.length+" ひき";
@@ -2392,7 +2397,9 @@ function finishSentence(){
   $("#build-done").style.display="flex";
   addStar();
   /* きょうりゅう ぜんたいの おはなしは ずかんに のらない。 */
-  $("#build-new").style.display=(cur&&markGot(cur.id))?"":"none";
+  var g=cur?markGot(cur.id):{first:false,lvUp:0},nm=$("#build-new");
+  nm.textContent=g.first?"📖 ずかんに のったよ！":"⬆️ もっている "+(cur&&cur.name)+"の レベルが "+g.lvUp+"に あがった！";
+  nm.style.display=(g.first||g.lvUp)?"":"none";
   $("#build-badge").textContent=cur?cur.name+"、ゲット！🎉":"せいかい！🎉";
   celebrate("#build-badge","#build-confetti");
   if(cur)playCapture($("#build-stage svg, #build-stage img"));
@@ -2852,7 +2859,7 @@ function renderZukan(){
     var b=document.createElement("button");
     if(got[d.id]){
       b.className="zcard";
-      b.innerHTML='<span class="times">×'+got[d.id]+'</span>'+dinoSVG(d.id)+'<b>'+d.name+'</b>';
+      b.innerHTML='<span class="times">LV'+dinoLv(d.id)+'</span>'+dinoSVG(d.id)+'<b>'+d.name+'</b>';
     }else{
       b.className="zcard locked";
       b.innerHTML=dinoSVG(d.id,"mystery")+'<b>？？？</b>';
@@ -2878,7 +2885,7 @@ function openSheet(d){
   var html=dinoSVG(d.id)+
    '<h2>'+d.name+'</h2>'+
    '<div class="kindrow"><span class="kind">'+d.kind+'</span></div>'+
-   '<p class="caught">🎉 <em>'+got[d.id]+'</em>ひき つかまえたよ！</p>'+
+   '<p class="caught">🎉 <em>'+got[d.id]+'</em>ひき つかまえたよ！ いまは <em>LV'+dinoLv(d.id)+'</em>'+(dinoLv(d.id)>=DLV_MAX?'（さいこう）':'')+'</p>'+
    '<dl class="facts">'+
      '<div class="fact"><dt>なまえの いみ</dt><dd>'+d.meaning+'</dd></div>'+
      '<div class="fact"><dt>おおきさ</dt><dd>'+d.size+'</dd></div>'+
@@ -3107,6 +3114,15 @@ var BKF={
 };
 
 function bStat(d){return BATTLE[d.id]||{p:5,m:[MV([],"たいあたりしました")]};}
+/* じぶんの きょうりゅうは レベル 1つに つき つよさ（p）が 0.5 ふえる（LV10 で +4.5） */
+function bMyStat(d){
+  var st=bStat(d),lv=testMode?0:dinoLv(d.id);
+  if(lv<=1)return st;
+  var o={};for(var k in st)o[k]=st[k];
+  o.p=st.p+(lv-1)*.5;
+  return o;
+}
+function bLvTag(d,mine){var lv=dinoLv(d.id);return mine&&lv&&!testMode?' <small class="lvtag">LV'+lv+'</small>':'';}
 /* ぜんちょう（つばさの ひとは ひろげた ながさ）で みための おおきさを かえる */
 function bScale(id){
   var f=FACTS[id]||{},len=f.len||parseFloat(f.wing)||5;
@@ -3137,7 +3153,7 @@ function renderPick(){
     b.dataset.id=d.id;
     if(testMode||got[d.id]){
       b.className="zcard";
-      b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
+      b.innerHTML=(testMode?'':'<span class="times">LV'+dinoLv(d.id)+'</span>')+dinoSVG(d.id)+'<b>'+d.name+'</b>';
       b.addEventListener("click",function(){pickFighter(d);});
     }else{
       b.className="zcard locked";
@@ -3267,14 +3283,14 @@ function startBattle(){
   if(!(bPick[0]&&bPick[1]))return;
   bRun++;
   var mode=bSet.add&&bSet.sub?(Math.random()<.5?"add":"sub"):(bSet.add?"add":"sub");
-  bs={f:bPick.map(function(d){var st=bStat(d),mx=bMaxHP(st.p,bSet.od,bSet.dd,mode,bSet.carry);return {d:d,st:st,hp:mx,max:mx,acc:0,defended:false};}),
+  bs={f:bPick.map(function(d,i){var st=i===0?bMyStat(d):bStat(d),mx=bMaxHP(st.p,bSet.od,bSet.dd,mode,bSet.carry);return {d:d,st:st,hp:mx,max:mx,acc:0,defended:false};}),
       round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0,
       mode:mode,od:bSet.od,dd:bSet.dd,carry:bSet.carry};
   bs.f.forEach(function(F,i){F.big=bBig(F,bs.f[1-i]);});
   if(mode==="add")bs.f.forEach(function(F){var a=bStartAcc(F);F.acc=a;F.hp=F.max-a;});
   $("#bstage").innerHTML=
     '<div class="bhp">'+bs.f.map(function(F,i){
-      return '<div class="hp h'+i+'" id="bh'+i+'"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>';
+      return '<div class="hp h'+i+'" id="bh'+i+'"><b>'+F.d.name+bLvTag(F.d,i===0)+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>';
     }).join('<span class="vs">VS</span>')+'</div>'+
     '<div class="bfight">'+bs.f.map(function(F,i){
       return '<div class="fighter f'+i+'" id="bf'+i+'">'+
@@ -4033,7 +4049,7 @@ function startReact(){
   bRun++;
   var k=rSet.side==="R"?1:0,rec=rCur();
   var ds=k===0?[bPick[0],bPick[1]]:[bPick[1],bPick[0]];
-  rs={f:ds.map(function(d){return {d:d,st:bStat(d),hp:R_HP,max:R_HP};}),k:k,cpu:rSet.who==="cpu",rec:rec,
+  rs={f:ds.map(function(d){return {d:d,st:d===bPick[0]?bMyStat(d):bStat(d),hp:R_HP,max:R_HP};}),k:k,cpu:rSet.who==="cpu",rec:rec,
       lv:rSet.lv==="auto"?rec.lv:+rSet.lv,round:0,phase:"intro",tok:0,times:[],fouls:0,over:false};
   $("#rstage").innerHTML='<div class="bfight">'+rs.f.map(function(F,i){
     return '<div class="fighter f'+i+'" id="rf'+i+'"><div class="fbody">'+bFace(i,F.d.id,' style="--s:'+bScale(F.d.id)+'"')+'</div></div>';
