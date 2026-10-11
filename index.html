@@ -2714,22 +2714,35 @@ $("#sheet").addEventListener("click",function(e){if(e.target===this)closeSheet()
    ============================================================ */
 /* しゃしんが ひだりを むいている きょうりゅう（のこりは みぎむき）。むかいあわせる ときに つかう */
 var FACE_LEFT={iguano:1,stego:1,ampelo:1,quetz:1,troodon:1,diplo:1,shantungo:1,styraco:1,elasmo:1,carcharo:1};
-/* こうげきの どうし。obj＝「〜に／〜を」どちらを つかうか、fx＝あたった ときの えもじ */
+/* こうげきの どうし。obj＝「〜に／〜を」どちらを つかうか、fx＝あたった ときの えもじ、
+   on＝ようすを あらわす ことば（g が おなじ なかまの ものは ダミーに しない）、
+   ps＝うけみ（〜されました）。「つきました」は「つかれました」が “つかれた” と まぎらわしいので なし */
 var BVERBS={
-  "かみつきました":{obj:"に",fx:"🦷"},
-  "ひっかきました":{obj:"を",fx:"💢"},
-  "けりました":{obj:"を",fx:"🦶"},
-  "たたきました":{obj:"を",fx:"💥"},
-  "つきました":{obj:"を",fx:"⚡"},
-  "ふみつけました":{obj:"を",fx:"👣"},
-  "つつきました":{obj:"を",fx:"🎯"},
-  "たいあたりしました":{obj:"に",fx:"💨"},
-  "ずつきしました":{obj:"に",fx:"💫"},
-  "おどかしました":{obj:"を",fx:"📢"},
-  "のしかかりました":{obj:"に",fx:"⬇️"},
+  "かみつきました":{obj:"に",fx:"🦷",on:"がぶっと",g:"bite",ps:"かみつかれました"},
+  "ひっかきました":{obj:"を",fx:"💢",on:"ばりばりと",g:"scratch",ps:"ひっかかれました"},
+  "けりました":{obj:"を",fx:"🦶",on:"げしっと",g:"hit",ps:"けられました"},
+  "たたきました":{obj:"を",fx:"💥",on:"ばしっと",g:"hit",ps:"たたかれました"},
+  "つきました":{obj:"を",fx:"⚡",on:"ぐさっと",g:"stab"},
+  "ふみつけました":{obj:"を",fx:"👣",on:"どすんと",g:"heavy",ps:"ふみつけられました"},
+  "つつきました":{obj:"を",fx:"🎯",on:"つんつんと",g:"peck",ps:"つつかれました"},
+  "たいあたりしました":{obj:"に",fx:"💨",on:"どーんと",g:"heavy",ps:"たいあたりされました"},
+  "ずつきしました":{obj:"に",fx:"💫",on:"ごつんと",g:"hit",ps:"ずつきされました"},
+  "おどかしました":{obj:"を",fx:"📢",on:"がおーっと",g:"roar",ps:"おどかされました"},
+  "のしかかりました":{obj:"に",fx:"⬇️",on:"ずしんと",g:"heavy",ps:"のしかかられました"},
   /* sp＝すむ ばしょの とくべつな わざ。ぶんの かたちが ちがうので ダミーには ださない */
-  "きょうしゅうしました":{obj:"を",fx:"🦅",sp:1},
-  "ひきずりこみました":{obj:"を",fx:"🌊",sp:1}
+  "きょうしゅうしました":{obj:"を",fx:"🦅",sp:1,ps:"きょうしゅうされました"},
+  "ひきずりこみました":{obj:"を",fx:"🌊",sp:1,ps:"ひきずりこまれました"}
+};
+/* 「どーんと たたきました」「ばしっと たいあたりしました」も ありそうなので、hit と heavy は おたがいに ダミーに しない */
+var BON_NG={hit:["heavy"],heavy:["hit"]};
+/* こうげきを うけた がわの うごき（BHURT）→ どう なったかの ぶん。
+   ng＝ダミーに しない もの（ふっとぶ ときも よろけて みえる） */
+var BRESULT={
+  hit:{t:[["ぐらっと","mod"],["よろけました","prd"]]},
+  knock:{t:[["ぽーんと","mod"],["ふっとびました","prd"]],ng:["hit"]},
+  squash:{t:[["ぺちゃんこ","wrd"],["に","par"],["なりました","prd"]]},
+  shiver:{t:[["ぶるぶる","mod"],["ふるえました","prd"]]},
+  sink:{t:[["うみ","wrd"],["に","par"],["しずみました","prd"]]}
 };
 /* 「〇〇で 〜ました」で ありえる どうし。ダミーに ださない（「つめで けりました」も ただしそうなので）。 */
 var BPLAUS={
@@ -3081,48 +3094,100 @@ function bFx(i,txt,cls){
   if(cls!=="zzz")setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},cls?1600:1100);
 }
 
-/* ことばを えらばない ぶんの つくりかた */
-function bSentence(ev){
-  var A=bs.f[ev.ai].d,D=bs.f[ev.di].d,toks,extras,v,head;
-  var S=function(n){return [n,"sub"];};
+/* ことばを えらばない ぶんの つくりかた。
+   ばめんごとに つかえる ぶんの かたちを あつめて、ランダムに 1つ えらぶ。
+   alts＝おなじ いみで ならびかたが ちがう こたえ（「Aが がぶっと Dに」も「Aが Dに がぶっと」も ただしい）。
+   x＝しゅごが いれかわる ぶん（うけみ・けっか など）。さいしょの 2かいは しゅごの きまり
+   （nextRound を みてね）が くずれるので ださない。とどめの ときも、かった ほうが しゅごの ぶんに する */
+function bSentence(ev,r){
+  var A=bs.f[ev.ai].d,D=bs.f[ev.di].d,forms;
+  var S=function(n){return [n,"sub"];},P=function(p){return [p,"par"];};
+  if(ev.type==="hit")forms=bHitForms(ev,A,D,S,P);
+  else forms=bDefForms(ev,A,D,S,P)[ev.type];
+  forms=forms.filter(function(f){return !(f.x&&(r<=1||ev.ko));});
+  var f=pick(forms);
+  return {toks:f.toks,extras:f.extras,alts:f.alts||[]};
+}
+function bHitForms(ev,A,D,S,P){
+  var mv=ev.move,v=BVERBS[mv.v],out=[];
   var mine=bs.f[ev.ai].st.m.concat(bs.f[ev.ai].big).map(function(m){return m.v;});
   /* ダミーの どうし（とくべつな わざと、じぶんの わざは ださない） */
   var fake=function(f){return pick(Object.keys(BVERBS).filter(function(x){return !BVERBS[x].sp&&mine.indexOf(x)<0&&f(x);}));};
-  if(ev.type==="hit"&&ev.move.s==="sky"){
-    toks=[S(A.name),["が","par"],["そら","wrd"],["から","par"],S(D.name),["を","par"],[ev.move.v,"prd"]];
-    extras=[["うみ","wrd"],["に","par"],[fake(function(){return true;}),"prd"]];
-  }else if(ev.type==="hit"&&ev.move.s==="sea"){
-    toks=[S(A.name),["が","par"],S(D.name),["を","par"],["うみ","wrd"],["に","par"],[ev.move.v,"prd"]];
-    extras=[["そら","wrd"],["から","par"],[fake(function(){return true;}),"prd"]];
-  }else if(ev.type==="hit"){
-    v=BVERBS[ev.move.v];
-    if(ev.move.w.length&&Math.random()<.6){
-      /* 「A が きば で かみつきました」 */
-      head=ev.move.w[ev.move.w.length-1];
-      toks=[S(A.name),["が","par"]].concat(ev.move.w.map(function(w){return [w,"wrd"];}),[["で","par"],[ev.move.v,"prd"]]);
-      var ok=BPLAUS[head]||[];
-      extras=[S(D.name),[pick(["を","に","の","と"]),"par"],
-        [fake(function(x){return ok.indexOf(x)<0;}),"prd"]];
-    }else{
-      /* 「A が D に かみつきました」「A が D を けりました」：に と を の つかいわけ */
-      toks=[S(A.name),["が","par"],S(D.name),[v.obj,"par"],[ev.move.v,"prd"]];
-      extras=[[v.obj==="に"?"を":"に","par"],
-        [fake(function(x){return BVERBS[x].fx!==v.fx;}),"prd"]];
-    }
-  }else if(ev.type==="dodge"){
-    toks=[S(D.name),["が","par"],["さっと","mod"],["よけました","prd"]];
-    extras=[S(A.name),[pick(["を","に"]),"par"],["たおれました","prd"]];
-  }else if(ev.type==="guard"){
-    toks=[S(D.name),["が","par"],[ev.w,"wrd"],["で","par"],["まもりました","prd"]];
-    extras=[S(A.name),[pick(["に","の"]),"par"],["たおれました","prd"]];
-  }else if(ev.type==="fly"){
-    toks=[S(D.name),["が","par"],["そら","wrd"],["へ","par"],["にげました","prd"]];
-    extras=[S(A.name),["を","par"],["もぐりました","prd"]];
+  /* ダミーの ようすの ことば（にた なかまの ものは ださない） */
+  var fakeOn=function(){
+    var ng=[v.g].concat(BON_NG[v.g]||[]);
+    return [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].on&&ng.indexOf(BVERBS[x].g)<0;}).map(function(x){return BVERBS[x].on;})),"mod"];
+  };
+  var V=[mv.v,"prd"];
+  if(mv.s==="sky"){
+    out.push({toks:[S(A.name),P("が"),["そら","wrd"],P("から"),S(D.name),P("を"),V],
+      extras:[["うみ","wrd"],P("に"),[fake(function(){return true;}),"prd"]]});
+  }else if(mv.s==="sea"){
+    out.push({toks:[S(A.name),P("が"),S(D.name),P("を"),["うみ","wrd"],P("に"),V],
+      extras:[["そら","wrd"],P("から"),[fake(function(){return true;}),"prd"]]});
   }else{
-    toks=[S(D.name),["が","par"],["うみ","wrd"],["に","par"],["もぐりました","prd"]];
-    extras=[S(A.name),["と","par"],["たおれました","prd"]];
+    var W=mv.w.map(function(w){return [w,"wrd"];});
+    var ok=BPLAUS[mv.w[mv.w.length-1]]||[];
+    var notOk=function(x){return ok.indexOf(x)<0;};
+    if(W.length){
+      /* 「A が きば で かみつきました」 */
+      out.push({toks:[S(A.name),P("が")].concat(W,[P("で"),V]),
+        extras:[S(D.name),P(pick(["を","に","の","と"])),[fake(notOk),"prd"]]});
+    }
+    /* 「A が D に かみつきました」「A が D を けりました」：に と を の つかいわけ */
+    out.push({toks:[S(A.name),P("が"),S(D.name),P(v.obj),V],
+      extras:[P(v.obj==="に"?"を":"に"),[fake(function(x){return BVERBS[x].fx!==v.fx;}),"prd"]]});
+    /* 「A が D に がぶっと かみつきました」 */
+    var on=[v.on,"mod"];
+    out.push({toks:[S(A.name),P("が"),S(D.name),P(v.obj),on,V],
+      alts:[[S(A.name),P("が"),on,S(D.name),P(v.obj),V]],
+      extras:[P(v.obj==="に"?"を":"に"),fakeOn(),[fake(function(x){return BVERBS[x].fx!==v.fx;}),"prd"]]});
+    /* 「A が きば で がぶっと かみつきました」（ながく なりすぎない ように 1ごの ときだけ） */
+    if(W.length===1){
+      out.push({toks:[S(A.name),P("が"),W[0],P("で"),on,V],
+        alts:[[S(A.name),P("が"),on,W[0],P("で"),V]],
+        extras:[S(D.name),fakeOn(),[fake(notOk),"prd"]]});
+    }
   }
-  return {toks:toks,extras:extras};
+  /* うけみ「D が A に かみつかれました」。ダミーに「かみつきました」を だして する／される を くらべる */
+  if(v.ps){
+    var ps=[v.ps,"prd"],tail=mv.s==="sea"?[["うみ","wrd"],P("に"),ps]:[ps];
+    var alts=[[S(A.name),P("に"),S(D.name),P("が")].concat(tail)];
+    if(mv.s==="sea")alts.push([S(D.name),P("が"),["うみ","wrd"],P("に"),S(A.name),P("に"),ps]);
+    out.push({x:1,toks:[S(D.name),P("が"),S(A.name),P("に")].concat(tail),alts:alts,
+      extras:[P("を"),V]});
+  }
+  /* けっか「D が ぽーんと ふっとびました」。ダミーに あいての なまえと ちがう けっかを だす */
+  var hurt=(BMOVE[mv.v]||["","knock"])[1],res=BRESULT[hurt];
+  var others=Object.keys(BRESULT).filter(function(k){return k!==hurt&&(res.ng||[]).indexOf(k)<0;});
+  var ot=BRESULT[pick(others)].t;
+  out.push({x:1,toks:[S(D.name),P("が")].concat(res.t),extras:[S(A.name),ot[ot.length-1]]});
+  return out;
+}
+/* まもりの ぶん。にた いみの どうしは おなじ ばめんの ダミーに しない */
+function bDefForms(ev,A,D,S,P){
+  var miss={x:1,toks:[S(A.name),P("の"),["こうげき","wrd"],P("は"),["はずれました","prd"]],
+    extras:[S(D.name),P("が"),["あたりました","prd"]]};
+  return {
+    dodge:[
+      {toks:[S(D.name),P("が"),["さっと","mod"],["よけました","prd"]],extras:[S(A.name),P(pick(["を","に"])),["たおれました","prd"]]},
+      {toks:[S(D.name),P("が"),["ひらりと","mod"],["かわしました","prd"]],extras:[S(A.name),P("を"),["たおれました","prd"]]},
+      {toks:[S(D.name),P("が"),["ぴょんと","mod"],["とびのきました","prd"]],extras:[S(A.name),P("に"),["もぐりました","prd"]]},
+      miss],
+    guard:[
+      {toks:[S(D.name),P("が"),[ev.w,"wrd"],P("で"),["まもりました","prd"]],extras:[S(A.name),P(pick(["に","の"])),["たおれました","prd"]]},
+      {toks:[S(D.name),P("が"),[ev.w,"wrd"],P("で"),["はねかえしました","prd"]],extras:[S(A.name),P("を"),["はねかえされました","prd"]]},
+      /* はねかえされた ほうは うしろに よろける（BRECOIL） */
+      {x:1,toks:[S(A.name),P("が"),["はねかえされました","prd"]],extras:[S(D.name),P("を"),["はねかえしました","prd"]]}],
+    fly:[
+      {toks:[S(D.name),P("が"),["そら","wrd"],P("へ"),["にげました","prd"]],extras:[S(A.name),P("を"),["もぐりました","prd"]]},
+      {toks:[S(D.name),P("が"),["ばさっと","mod"],["まいあがりました","prd"]],extras:[S(A.name),["うみ","wrd"],["しずみました","prd"]]},
+      miss],
+    dive:[
+      {toks:[S(D.name),P("が"),["うみ","wrd"],P("に"),["もぐりました","prd"]],extras:[S(A.name),P("と"),["たおれました","prd"]]},
+      {toks:[S(D.name),P("が"),["ざぶんと","mod"],["もぐりました","prd"]],extras:[S(A.name),["ばさっと","mod"],["まいあがりました","prd"]]},
+      miss]
+  };
 }
 
 function nextRound(){
@@ -3148,8 +3213,8 @@ function nextRound(){
   /* ぶんの しゅごは、あたれば こうげきした ほう、まもったら まもった ほう */
   if(r===0)bs.subj1=ev.type==="hit"?ai:di;
   bs.ev=ev;bs.phase="round";
-  var sn=bSentence(ev);
-  bRenderSentence(sn.toks,sn.extras);
+  var sn=bSentence(ev,r);
+  bRenderSentence(sn.toks,sn.extras,sn.alts);
   bPlay(ev);
 }
 function bPlay(ev){
@@ -3184,8 +3249,9 @@ $("#b-replay").addEventListener("click",function(){
   if(bs&&bs.phase==="round"&&bs.pos<bs.toks.length)bPlay(bs.ev);
 });
 
-function bRenderSentence(toks,extras){
-  markMods(toks);
+function bRenderSentence(toks,extras,alts){
+  bs.cands=[toks].concat(alts||[]);
+  bs.cands.forEach(markMods);
   bs.toks=toks;bs.pos=0;
   var slots=$("#b-slots");slots.innerHTML="";
   toks.forEach(function(t,i){
@@ -3205,8 +3271,14 @@ function bRenderSentence(toks,extras){
 }
 function bTap(btn,tok){
   if(!bs||bs.pos>=bs.toks.length)return;
+  var ok=bs.cands.filter(function(c){return c[bs.pos][0]===tok[0];});
+  if(!ok.length){wrongFeedback(btn);return;}
+  bs.cands=ok;bs.toks=ok[0];
   var want=bs.toks[bs.pos];
-  if(tok[0]!==want[0]){wrongFeedback(btn);return;}
+  /* ならびかたが きまったら、まだ からの わくの いろも あわせる */
+  $$("#b-slots .slot:not(.filled)").forEach(function(el){
+    var i=+el.dataset.i;if(i>bs.pos)el.className="slot n-"+bs.toks[i][1];
+  });
   var slot=$('#b-slots .slot[data-i="'+bs.pos+'"]');
   slot.textContent=tok[0];
   slot.className="slot filled pop r-"+want[1];
