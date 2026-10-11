@@ -136,9 +136,11 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .home-art svg,.home-art img{width:100%;height:100%;max-height:28dvh;object-fit:contain;}
 .modes{
   display:grid;gap:clamp(10px,1.6vw,18px);width:min(94vw,1080px);
-  grid-template-columns:repeat(5,1fr);
+  grid-template-columns:repeat(4,1fr);
 }
-@media (max-width:1000px){.modes{grid-template-columns:repeat(2,1fr);}.mode.wide{grid-column:1/-1;}}
+/* バトルは 2つ ならべて、それぞれ 2れつ ぶんの はばに する */
+.mode.wide{grid-column:span 2;}
+@media (max-width:1000px){.modes{grid-template-columns:repeat(2,1fr);}.mode.wide{grid-column:auto;}}
 @media (max-width:560px){.modes{grid-template-columns:1fr;}}
 .mode{
   display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
@@ -474,7 +476,10 @@ body.testmode .testmode-flag{display:block;}
 .big:disabled{opacity:.35;pointer-events:none;}
 .bgrid .zcard{padding:10px 8px 10px;}
 .bgrid .zcard.sel0{box-shadow:0 0 0 4px var(--r-prd);}
-.bgrid .zcard.sel1{box-shadow:0 0 0 4px var(--r-sub);}
+.bpick-none{
+  flex:0 0 auto;margin:0 clamp(12px,3vw,28px) 12px;text-align:center;color:var(--muted);
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:700;font-size:clamp(14px,1.8vw,18px);
+}
 
 .fimg{display:flex;align-items:flex-end;justify-content:center;}
 .fimg img,.fimg svg{width:100%;height:100%;min-width:0;min-height:0;object-fit:contain;object-position:center bottom;display:block;}
@@ -587,6 +592,86 @@ body.testmode .testmode-flag{display:block;}
   #s-battle .play.math #b-q,#s-battle .play.math #b-slots{display:none;}
 }
 
+/* ---------- はやうち たいけつ ---------- */
+.bpick-mode{
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--accent-deep);
+  font-size:clamp(16px,2.2vw,22px);
+}
+#s-react{position:relative;overflow:hidden;}
+/* がめんの どこを さわっても ずれたり ひろがったり しない（タッチの はやさを はかるため） */
+#s-react,#s-react *{touch-action:none;-webkit-touch-callout:none;}
+.rtop{
+  flex:0 0 auto;position:relative;z-index:8;
+  display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:center;
+  gap:clamp(8px,2vw,20px);padding:8px clamp(10px,3vw,30px) 4px;
+}
+.rtop .hp b{color:var(--pc);}
+.rtop .iconbtn{padding:8px 14px;}
+/* したの タッチパッドに かからない ように、きょうりゅうを うえに よせる */
+.rstage{padding-bottom:calc(var(--padh) + 22px);}
+#s-react{--padh:clamp(64px,15vh,108px);}
+.rzones{position:absolute;left:0;right:0;bottom:0;top:var(--rtop,56px);z-index:4;display:flex;}
+.rzone{
+  flex:1 1 0;min-width:0;position:relative;
+  display:flex;flex-direction:column;align-items:center;justify-content:flex-end;
+  padding:0 8px calc(10px + env(safe-area-inset-bottom));
+}
+.rzone.z0{border-right:2px dashed var(--line);}
+.rpad{
+  min-width:calc(var(--padh) * 1.9);max-width:96%;padding:0 18px;height:var(--padh);border-radius:999px;
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  background:var(--panel);box-shadow:0 5px 0 var(--pc),inset 0 0 0 3px var(--pc);
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--pc);
+  font-size:clamp(17px,2.6vw,26px);white-space:nowrap;
+}
+.rpad i{font-style:normal;font-size:1.5em;}
+.rzone.press .rpad{transform:translateY(5px);box-shadow:inset 0 0 0 3px var(--pc);background:var(--pc);color:var(--chip-text);}
+.rzone.foul .rpad{background:var(--slot-empty);box-shadow:inset 0 0 0 3px var(--miss);color:var(--miss);}
+.rtime{
+  min-height:1.3em;margin-bottom:6px;text-align:center;
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-variant-numeric:tabular-nums;
+  font-size:clamp(18px,3vw,30px);color:var(--ink);text-shadow:0 0 6px var(--bg);
+}
+.rtime small{display:block;font-size:.6em;color:var(--muted);}
+.rsig{
+  position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);z-index:6;pointer-events:none;
+  display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
+}
+.rsig:empty{display:none;}
+.rsig .ic{font-size:clamp(64px,14vmin,130px);line-height:1;}
+.rsig .tx{font-size:clamp(30px,7vmin,64px);line-height:1.1;text-shadow:0 0 6px var(--panel),0 0 12px var(--panel),0 2px 0 var(--panel);}
+.rsig .sub{font-size:clamp(14px,2.6vmin,20px);color:var(--muted);font-weight:700;}
+.rsig.go .tx{color:var(--miss);}
+.rsig.card{
+  top:52%;
+  background:var(--panel);border-radius:24px;padding:14px 22px;box-shadow:0 8px 24px var(--shadow);
+  width:min(86vw,460px);
+}
+.rsig.card .rule{display:flex;align-items:center;gap:10px;font-size:clamp(16px,3vmin,22px);text-align:left;}
+.rsig.card .rule i{font-style:normal;font-size:1.8em;}
+.rsig.ready .tx{color:var(--muted);}
+.rsig.foul .tx{color:var(--miss);}
+.rend{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9;
+  background:var(--panel);border-radius:26px;padding:clamp(14px,2.4vw,24px);
+  box-shadow:0 10px 30px var(--shadow);width:min(92vw,520px);max-height:90%;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
+}
+.rend h2{margin:0;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(22px,4vw,32px);}
+.rend .best{font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(18px,3vw,26px);}
+.rend .best em{font-style:normal;color:var(--accent-deep);font-variant-numeric:tabular-nums;}
+.rend .msg{color:var(--muted);font-weight:700;font-size:clamp(14px,2vw,17px);}
+.rend .done{margin-top:4px;}
+.rchart{width:100%;}
+.rchart svg{width:100%;height:auto;display:block;overflow:visible;}
+.rchart .bar{fill:var(--accent);}
+.rchart .bar:hover{fill:var(--accent-deep);}
+.rchart text{fill:var(--muted);font-size:11px;font-family:inherit;}
+.rchart .grid{stroke:var(--line);stroke-width:1;}
+.rchart-none{color:var(--muted);font-size:14px;margin:6px 0;}
+.bset-now{color:var(--muted);font-size:13px;}
+
 @media (prefers-reduced-motion: reduce){
   *{animation:none !important;transition:none !important;}
   /* うごきを へらす せっていの ときも、バッジは JS が じかに
@@ -597,7 +682,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-09-27-17</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-7</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -631,9 +716,13 @@ body.testmode .testmode-flag{display:block;}
           <span class="badge">📖</span>
           <span><b>ずかんを みる</b><span id="zukan-sub">ぶんを つくって きょうりゅうを ゲットしよう</span></span>
         </button>
-        <button class="mode wide" data-go="bpick">
+        <button class="mode wide" id="go-talk">
           <span class="badge">🎙️</span>
           <span><b>バトルを じっきょう</b><span>きょうりゅうの たたかいを アナウンサーに なって つたえよう</span></span>
+        </button>
+        <button class="mode wide" id="go-react">
+          <span class="badge">⚡</span>
+          <span><b>はやうち たいけつ</b><span>「ガオー！」が でたら すばやく タッチ！ パパと たいせん</span></span>
         </button>
       </div>
       <details class="credits" id="credits">
@@ -749,16 +838,19 @@ body.testmode .testmode-flag{display:block;}
       <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="bpick-top">
+      <div class="bpick-mode" id="bpick-mode"></div>
       <div class="corners">
         <button class="corner c0" id="corner0"></button>
         <span class="vs">VS</span>
         <button class="corner c1" id="corner1"></button>
       </div>
       <div class="bpick-btns">
+        <button class="ghost" id="rp-who" style="display:none;"></button>
         <button class="ghost" id="b-random">🎲 おまかせ</button>
         <button class="big" id="b-start" disabled>バトル スタート！</button>
       </div>
     </div>
+    <p class="bpick-none" id="bpick-none">ぶんを つくって きょうりゅうを ゲットすると、バトルに だせるよ！</p>
     <div class="zukan bgrid" id="bpick-grid"></div>
   </section>
 
@@ -789,6 +881,23 @@ body.testmode .testmode-flag{display:block;}
         <button class="ghost" id="b-other">ほかの たいせん</button>
       </div>
     </div>
+  </section>
+  <!-- ============ はやうち たいけつ ============ -->
+  <section class="screen" id="s-react">
+    <div class="rtop">
+      <div class="hp h0" id="rh0"></div>
+      <button class="iconbtn" id="r-back" aria-label="もどる">←</button>
+      <div class="hp h1" id="rh1"></div>
+    </div>
+    <div class="bstage rstage" id="rstage"></div>
+    <div class="rzones" id="rzones">
+      <div class="rzone z0" data-i="0"><div class="rtime" id="rt0"></div><div class="rpad" id="rp0"></div></div>
+      <div class="rzone z1" data-i="1"><div class="rtime" id="rt1"></div><div class="rpad" id="rp1"></div></div>
+    </div>
+    <div class="rsig" id="rsig"></div>
+    <div class="confetti-layer" id="react-confetti"></div>
+    <div class="correct-badge" id="react-badge"></div>
+    <div class="rend" id="rend" style="display:none;"></div>
   </section>
 
   <div class="sheet" id="sheet"><div class="sheet-inner" id="sheet-inner"></div></div>
@@ -2721,7 +2830,9 @@ var BVERBS={
   "かみつきました":{obj:"に",fx:"🦷",on:"がぶっと",g:"bite",ps:"かみつかれました"},
   "ひっかきました":{obj:"を",fx:"💢",on:"ばりばりと",g:"scratch",ps:"ひっかかれました"},
   "けりました":{obj:"を",fx:"🦶",on:"げしっと",g:"hit",ps:"けられました"},
-  "たたきました":{obj:"を",fx:"💥",on:"ばしっと",g:"hit",ps:"たたかれました"},
+  "とびげりしました":{obj:"に",fx:"🦶",on:"びゅんと",g:"hit",ps:"とびげりされました"},
+  /* 「D に しっぽ を うちつけられました」は ぎこちないので うけみは なし */
+  "うちつけました":{obj:"に",fx:"💥",wo:1,on:"ばしっと",g:"hit"},
   "つきました":{obj:"を",fx:"⚡",on:"ぐさっと",g:"stab"},
   "ふみつけました":{obj:"を",fx:"👣",on:"どすんと",g:"heavy",ps:"ふみつけられました"},
   "つつきました":{obj:"を",fx:"🎯",on:"つんつんと",g:"peck",ps:"つつかれました"},
@@ -2729,11 +2840,13 @@ var BVERBS={
   "ずつきしました":{obj:"に",fx:"💫",on:"ごつんと",g:"hit",ps:"ずつきされました"},
   "おどかしました":{obj:"を",fx:"📢",on:"がおーっと",g:"roar",ps:"おどかされました"},
   "のしかかりました":{obj:"に",fx:"⬇️",on:"ずしんと",g:"heavy",ps:"のしかかられました"},
+  /* はんげき：とびかかって きた あいてに とげで やりかえす（ダミーには ださない） */
+  "はんげきしました":{obj:"に",fx:"🌵",sp:1},
   /* sp＝すむ ばしょの とくべつな わざ。ぶんの かたちが ちがうので ダミーには ださない */
   "きょうしゅうしました":{obj:"を",fx:"🦅",sp:1,ps:"きょうしゅうされました"},
   "ひきずりこみました":{obj:"を",fx:"🌊",sp:1,ps:"ひきずりこまれました"}
 };
-/* 「どーんと たたきました」「ばしっと たいあたりしました」も ありそうなので、hit と heavy は おたがいに ダミーに しない */
+/* 「どーんと うちつけました」「ばしっと たいあたりしました」も ありそうなので、hit と heavy は おたがいに ダミーに しない */
 var BON_NG={hit:["heavy"],heavy:["hit"]};
 /* こうげきを うけた がわの うごき（BHURT）→ どう なったかの ぶん。
    ng＝ダミーに しない もの（ふっとぶ ときも よろけて みえる） */
@@ -2748,52 +2861,54 @@ var BRESULT={
 var BPLAUS={
   "きば":["かみつきました"],"くち":["かみつきました"],
   "くちばし":["つつきました","かみつきました"],
-  "つめ":["ひっかきました","けりました","つきました"],
-  "とげ":["つきました","たたきました"],"ハンマー":["たたきました"],"しっぽ":["たたきました","ふみつけました"],
+  "つめ":["ひっかきました","けりました","とびげりしました","つきました"],
+  "とげ":["つきました","うちつけました"],"ハンマー":["うちつけました"],"しっぽ":["うちつけました","ふみつけました"],
   "つの":["つきました","ずつきしました","たいあたりしました"],
   "あたま":["ずつきしました","たいあたりしました"],
-  "こえ":["おどかしました"],"あし":["ふみつけました","けりました"],
+  "こえ":["おどかしました"],"あし":["ふみつけました","けりました","とびげりしました"],
   "からだ":["のしかかりました","たいあたりしました"]
 };
-/* p＝つよさ(1〜10)、m＝わざ（w＝なにで、v＝どうし。w が からなら「〇〇に」の ぶんだけ）、
-   d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ） */
-function MV(w,v){return {w:w,v:v};}
+/* p＝つよさ(1〜10)、m＝わざ（w＝なにで、v＝どうし。w が からなら「〇〇に」の ぶんだけ。
+   full＝いつも「A が D を W で V」の かたち）、
+   d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ。false＝まもらない：かみなりりゅうは おもくて さっと よけられない）、
+   c＝じぶんの こうげきの かいに「とげで はんげき」を つかう かくりつ、cw＝はんげきに つかう もの（なければ とげ） */
+function MV(w,v,full){return {w:w,v:v,full:!!full};}
 /* すむ ばしょの とくべつな わざ。s＝ぶんの かたち
    （sky:「A が そら から D を きょうしゅうしました」／sea:「A が D を うみ に ひきずりこみました」） */
 var SKY={w:[],v:"きょうしゅうしました",s:"sky"},SEA={w:[],v:"ひきずりこみました",s:"sea"};
 var BATTLE={
-  tyranno:{p:10,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")]},
-  ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"たたきました")],d:{t:"guard",w:"よろい",r:.35}},
-  spino:{p:9,m:[MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました")]},
+  tyranno:{p:10,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")]},
+  ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"うちつけました")],d:{t:"guard",w:"よろい",r:.35},c:.2,cw:[["しっぽの","ハンマー"]]},
+  spino:{p:9,m:[MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
   tricera:{p:8,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
-  ptera:{p:3,m:[MV(["くちばし"],"つつきました"),SKY],d:{t:"fly",r:.35}},
-  iguano:{p:5,m:[MV(["おやゆびの","とげ"],"つきました"),MV(["しっぽ"],"たたきました")]},
+  ptera:{p:3,m:[MV(["くちばし"],"つつきました",1),SKY],d:{t:"fly",r:.35}},
+  iguano:{p:5,m:[MV(["おやゆびの","とげ"],"つきました"),MV(["しっぽ"],"うちつけました")],c:.25},
   pachy:{p:4,m:[MV(["かたい","あたま"],"ずつきしました")],d:{t:"dodge",r:.15}},
-  parasaur:{p:4,m:[MV(["おおきな","こえ"],"おどかしました"),MV(["しっぽ"],"たたきました")],d:{t:"dodge",r:.15}},
+  parasaur:{p:4,m:[MV(["おおきな","こえ"],"おどかしました"),MV(["しっぽ"],"うちつけました")],d:{t:"dodge",r:.15}},
   mosa:{p:9,m:[MV(["おおきな","くち"],"かみつきました"),SEA],d:{t:"dive",r:.3}},
-  raptor:{p:3,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました")],d:{t:"dodge",r:.35}},
-  stego:{p:7,m:[MV(["しっぽの","とげ"],"たたきました")]},
-  ampelo:{p:6,m:[MV(["ながい","しっぽ"],"たたきました")],d:{t:"guard",w:"よろい",r:.3}},
-  giganto:{p:9,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")]},
-  quetz:{p:5,m:[MV(["くちばし"],"つつきました"),SKY],d:{t:"fly",r:.3}},
+  raptor:{p:3,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.35}},
+  stego:{p:7,m:[MV(["しっぽの","とげ"],"うちつけました")],c:.3},
+  ampelo:{p:6,m:[MV(["ながい","しっぽ"],"うちつけました")],d:{t:"guard",w:"よろい",r:.3},c:.2},
+  giganto:{p:9,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")]},
+  quetz:{p:5,m:[MV(["くちばし"],"つつきました",1),SKY],d:{t:"fly",r:.3}},
   yi:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"fly",r:.35}},
-  kentro:{p:5,m:[MV(["しっぽの","とげ"],"つきました")]},
-  troodon:{p:3,m:[MV(["つめ"],"ひっかきました"),MV([],"かみつきました")],d:{t:"dodge",r:.35}},
-  yuty:{p:7,m:[MV(["きば"],"かみつきました")]},
+  kentro:{p:5,m:[MV(["しっぽの","とげ"],"つきました")],c:.3},
+  troodon:{p:3,m:[MV(["つめ"],"ひっかきました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.35}},
+  yuty:{p:7,m:[MV(["きば"],"かみつきました"),MV(["しっぽ"],"うちつけました")]},
   archaeo:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"dodge",r:.3}},
-  argentino:{p:8,m:[MV(["ながい","しっぽ"],"たたきました")],d:{t:"dodge",r:.04}},
-  brachio:{p:7,m:[MV([],"たいあたりしました")],d:{t:"dodge",r:.04}},
-  diplo:{p:7,m:[MV(["ながい","しっぽ"],"たたきました")],d:{t:"dodge",r:.05}},
-  allo:{p:8,m:[MV(["きば"],"かみつきました"),MV(["つめ"],"ひっかきました")]},
+  argentino:{p:8,m:[MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  brachio:{p:7,m:[MV([],"たいあたりしました"),MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  diplo:{p:7,m:[MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  allo:{p:8,m:[MV(["きば"],"かみつきました"),MV(["つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
   psitta:{p:2,m:[MV(["くちばし"],"かみつきました")],d:{t:"dodge",r:.25}},
   therizino:{p:7,m:[MV(["ながい","つめ"],"ひっかきました")]},
-  shantungo:{p:7,m:[MV(["しっぽ"],"たたきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.05}},
-  styraco:{p:6,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
+  shantungo:{p:7,m:[MV(["しっぽ"],"うちつけました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.05}},
+  styraco:{p:6,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25},c:.2},
   elasmo:{p:5,m:[MV([],"かみつきました"),SEA],d:{t:"dive",r:.3}},
-  deino:{p:4,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました")],d:{t:"dodge",r:.3}},
+  deino:{p:4,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.3}},
   proto:{p:3,m:[MV(["くちばし"],"つつきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.15}},
-  carno:{p:6,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.2}},
-  carcharo:{p:9,m:[MV(["きば"],"かみつきました")]}
+  carno:{p:6,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")],d:{t:"dodge",r:.2}},
+  carcharo:{p:9,m:[MV(["きば"],"かみつきました"),MV(["しっぽ"],"うちつけました")]}
 };
 /* りくの いきものは、あいての 3ばい いじょう おもい ときだけ ふみつけ・のしかかりが つかえる */
 var BIG_RATIO=3;
@@ -2833,6 +2948,8 @@ var BATK={
   scratch:[[0],[.25,{X:32}],[.36,{X:34,Y:-12,R:-18}],[.45,{X:42,R:10}],[.55,{X:34,Y:-12,R:-18}],[.64,{X:42,R:10}],[.8,{X:28}],[1]],
   /* ける：とびあがって あしを まえに つきだす */
   kick:[[0],[.2,{X:10}],[.36,{X:32,Y:-40,R:-25}],[.47,{X:46,Y:-18,R:-38}],[.62,{X:30}],[1]],
+  /* とびげり：いきおいを つけて たかく ジャンプ、うえから ななめに あしを つきだして ズドン */
+  flykick:[[0],[.12,{X:-10,R:4}],[.26,{X:8,Y:-70,R:-15}],[.36,{X:26,Y:-85,R:-30}],[.47,{X:50,Y:-12,R:-42}],[.56,{X:40,Y:-22,R:-20}],[.72,{X:20,Y:-10}],[1]],
   /* しっぽで たたく：くるっと うしろを むいて しっぽを ぶんぶん */
   tail:[[0],[.2,{X:26}],[.32,{X:28,flip:1}],[.44,{X:42,flip:1,R:10}],[.53,{X:34,flip:1,R:-6}],[.62,{X:42,flip:1,R:10}],[.76,{X:26,flip:1}],[.88,{X:14}],[1]],
   /* つのや とげで つく：いちど さがって、あたまを さげて まっすぐ つっこむ */
@@ -2882,8 +2999,8 @@ var BDEF={
 var BRECOIL=[[0,{X:44}],[.4,{X:-8,Y:-10,R:-12}],[1]];
 /* どうし → こうげきの うごき と うけた がわの うごき */
 var BMOVE={
-  "かみつきました":["bite","hit"],"ひっかきました":["scratch","hit"],"けりました":["kick","knock"],
-  "たたきました":["tail","knock"],"つきました":["stab","hit"],"ふみつけました":["stomp","squash"],
+  "かみつきました":["bite","hit"],"ひっかきました":["scratch","hit"],"けりました":["kick","knock"],"とびげりしました":["flykick","knock"],
+  "うちつけました":["tail","knock"],"つきました":["stab","hit"],"ふみつけました":["stomp","squash"],
   "つつきました":["peck","hit"],"たいあたりしました":["tackle","knock"],"ずつきしました":["headbutt","knock"],
   "おどかしました":["roar","shiver"],"のしかかりました":["press","squash"],
   "きょうしゅうしました":["swoop","knock"],"ひきずりこみました":["drag","sink"]
@@ -2907,46 +3024,96 @@ function bFace(i,id,extra){
   return '<div class="fimg'+(flip?" flip":"")+'"'+(extra||"")+'>'+dinoSVG(id)+'</div>';
 }
 
-/* ---------- たいせんを えらぶ ---------- */
-var bPick=[null,null];
+/* ---------- たいせんを えらぶ ----------
+   じぶん（あか）は ゲットした きょうりゅうから えらぶ。あいて（あお）は スタートを おすと
+   ルーレットで きまる（まだ ゲットして いない きょうりゅうも でる） */
+var bPick=[null,null],bRolling=false;
+/* どちらの バトルの えらびかたか（talk＝じっきょう、react＝はやうち たいけつ）。えらぶ がめんは おなじ */
+var bKind="talk";
+$("#go-talk").addEventListener("click",function(){bKind="talk";go("bpick");});
+$("#go-react").addEventListener("click",function(){bKind="react";go("bpick");});
+function bMine(){return DINOS.filter(function(d){return testMode||got[d.id];});}
 function renderPick(){
   var g=$("#bpick-grid");g.innerHTML="";
+  /* とちゅうの ルーレットは とめる */
+  bRun++;bRolling=false;
+  if(bPick[0]&&!(testMode||got[bPick[0].id]))bPick[0]=null;
   DINOS.forEach(function(d){
     var b=document.createElement("button");
-    b.className="zcard";b.dataset.id=d.id;
-    b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
-    b.addEventListener("click",function(){pickFighter(d);});
+    b.dataset.id=d.id;
+    if(testMode||got[d.id]){
+      b.className="zcard";
+      b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+'</b>';
+      b.addEventListener("click",function(){pickFighter(d);});
+    }else{
+      b.className="zcard locked";
+      b.innerHTML=dinoSVG(d.id,"mystery")+'<b>？？？</b>';
+      b.addEventListener("click",openLockedSheet);
+    }
     g.appendChild(b);
   });
+  $("#bpick-none").style.display=bMine().length?"none":"";
+  $("#bpick-mode").textContent=bKind==="react"?"⚡ はやうち たいけつ":"🎙️ バトルを じっきょう";
+  rWhoBtn();
+  $("#b-random").disabled=!bMine().length;
   renderCorners();
 }
 function pickFighter(d){
-  var i;
-  for(i=0;i<2;i++)if(bPick[i]&&bPick[i].id===d.id){bPick[i]=null;renderCorners();return;}
-  bPick[bPick[0]?1:0]=d;
+  if(bRolling)return;
+  if(bPick[0]&&bPick[0].id===d.id){bPick[0]=null;renderCorners();return;}
+  bPick[0]=d;
   speak(d.name,0.9);
   renderCorners();
 }
 function renderCorners(){
-  [0,1].forEach(function(i){
-    var c=$("#corner"+i),d=bPick[i];
-    c.innerHTML=d?bFace(i,d.id)+'<b>'+d.name+'</b>':'<span>'+(i?"あお":"あか")+' コーナー</span>';
+  var c=$("#corner0"),d=bPick[0];
+  c.innerHTML=d?bFace(0,d.id)+'<b>'+d.name+'</b>':'<span>じぶんを えらんでね</span>';
+  c.classList.toggle("filled",!!d);
+  c=$("#corner1");d=bPick[1];
+  if(!bRolling){
+    c.innerHTML=d?bFace(1,d.id)+'<b>'+d.name+'</b>':'<span>❓<br>あいては<br>スタートで きまるよ</span>';
     c.classList.toggle("filled",!!d);
-  });
+  }
   $$("#bpick-grid .zcard").forEach(function(b){
     b.classList.toggle("sel0",!!bPick[0]&&bPick[0].id===b.dataset.id);
-    b.classList.toggle("sel1",!!bPick[1]&&bPick[1].id===b.dataset.id);
   });
-  $("#b-start").disabled=!(bPick[0]&&bPick[1]);
+  $("#b-start").disabled=!bPick[0]||bRolling;
 }
-[0,1].forEach(function(i){$("#corner"+i).addEventListener("click",function(){bPick[i]=null;renderCorners();});});
+$("#corner0").addEventListener("click",function(){if(bRolling)return;bPick[0]=null;renderCorners();});
 $("#b-random").addEventListener("click",function(){
-  var two=shuffle(DINOS).slice(0,2);
-  bPick=[two[0],two[1]];
-  renderCorners();
-  speak(two[0].name+" たい "+two[1].name,0.9);
+  var mine=bMine();
+  if(bRolling||!mine.length)return;
+  pickFighter(pick(mine.length>1&&bPick[0]?mine.filter(function(d){return d.id!==bPick[0].id;}):mine));
 });
-$("#b-start").addEventListener("click",startBattle);
+/* あいての ルーレット：え と なまえを だんだん ゆっくり きりかえて、さいごに とまった きょうりゅうが あいて */
+function bRoulette(){
+  if(!bPick[0]||bRolling)return;
+  var run=++bRun,me=bPick[0];
+  var pool=DINOS.filter(function(d){return d.id!==me.id;}),foe=pick(pool);
+  var c=$("#corner1"),i=0,delays=[],t=60;
+  while(t<320){delays.push(t);t=Math.round(t*1.15);}
+  var order=shuffle(pool);
+  bRolling=true;bPick[1]=null;
+  c.classList.add("filled");
+  renderCorners();
+  /* とちゅうで がめんを はなれたら（ホームへ もどる など）とめる */
+  var here=function(){return run===bRun&&$("#s-bpick").classList.contains("on");};
+  var tick=function(){
+    if(!here()){bRolling=false;return;}
+    if(i<delays.length){
+      var d=order[i%order.length];
+      c.innerHTML=bFace(1,d.id)+'<b>'+d.name+'</b>';
+      setTimeout(tick,delays[i++]);
+      return;
+    }
+    bPick[1]=foe;bRolling=false;
+    renderCorners();
+    speak(me.name+" たい "+foe.name+"！",0.9);
+    setTimeout(function(){if(here())(bKind==="react"?startReact:startBattle)();},1400);
+  };
+  tick();
+}
+$("#b-start").addEventListener("click",function(){if(bKind==="react")rUnlock();bRoulette();});
 
 /* ---------- バトル ---------- */
 var bs=null,bRun=0;
@@ -2998,7 +3165,7 @@ function openBSet(){
   $("#sheet").classList.add("on");
 }
 $("#b-set").addEventListener("click",openBSet);
-$("#bp-set").addEventListener("click",openBSet);
+$("#bp-set").addEventListener("click",function(){if(bKind==="react")openRSet();else openBSet();});
 /* バトルの とちゅうで もどったら、のこりの タイマーは なにも しない */
 function bLater(fn,ms){var run=bRun;setTimeout(function(){if(run===bRun)fn();},ms);}
 
@@ -3006,10 +3173,11 @@ function startBattle(){
   if(!(bPick[0]&&bPick[1]))return;
   bRun++;
   var mode=bSet.add&&bSet.sub?(Math.random()<.5?"add":"sub"):(bSet.add?"add":"sub");
-  bs={f:bPick.map(function(d){var st=bStat(d),mx=bMaxHP(st.p,bSet.od);return {d:d,st:st,hp:mx,max:mx,acc:0,defended:false};}),
+  bs={f:bPick.map(function(d){var st=bStat(d),mx=bMaxHP(st.p,bSet.od,bSet.dd,mode,bSet.carry);return {d:d,st:st,hp:mx,max:mx,acc:0,defended:false};}),
       round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0,
       mode:mode,od:bSet.od,dd:bSet.dd,carry:bSet.carry};
   bs.f.forEach(function(F,i){F.big=bBig(F,bs.f[1-i]);});
+  if(mode==="add")bs.f.forEach(function(F){var a=bStartAcc(F);F.acc=a;F.hp=F.max-a;});
   $("#bstage").innerHTML=
     '<div class="bhp">'+bs.f.map(function(F,i){
       return '<div class="hp h'+i+'" id="bh'+i+'"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>';
@@ -3030,11 +3198,19 @@ function startBattle(){
   speak("さあ、"+bs.f[0].d.name+" たい "+bs.f[1].d.name+"！ "+(bSet.on?mname:"バトル スタート")+"！",0.95,1.2);
   bLater(nextRound,2600);
 }
-/* もとの かずの けたに あわせた さいだい たいりょく（2けたは いままで どおり） */
-function bMaxHP(p,od){
-  if(od===1)return 5+Math.round(p*.4);
-  if(od===3)return 100+10*p+Math.floor(Math.random()*50);
-  return 30+p*3;
+/* さいだい たいりょくは もとの かずの けた（od）で きめる。ダメージの けた（dd）が ちいさくても、
+   けいさんの あとの「さらに ダメージ」で へるので だいじょうぶ。
+   くりさがり なしの ひきざんで、さいしょから ひける かずが ない たいりょくは えらばない */
+function bMaxHP(p,od,dd,mode,carry){
+  var mx=od===1?5+Math.round(p*.4):od===3?100+10*p+Math.floor(Math.random()*50):30+p*3;
+  while(!carry&&mode==="sub"&&!bCanHit(mx,dd))mx++;
+  return mx;
+}
+/* くりさがり なしで dd けたの かずを ひけるか（ひく かずの けたに 0 が ないか） */
+function bCanHit(cur,dd){
+  var x=bDigits(cur);
+  if(x.length<dd)return false;
+  return x[dd-1]>0;
 }
 /* たしざん バトルは ダメージが たまって いき、さいだい たいりょくに とどいたら まけ */
 function setHP(i){
@@ -3059,20 +3235,46 @@ function bCarries(a,b,add){
   }
   return false;
 }
-/* ダメージは dd けたの かず。くりあがり なしで つくれない ときは null（とどめの いちげき） */
-function bDamage(A,D,r){
-  var lo=Math.pow(10,bs.dd-1),hi=Math.pow(10,bs.dd)-1,add=bs.mode==="add";
-  var cur=add?D.acc:D.hp;
-  var t=D.max*(.35+Math.random()*.35)*(.8+.04*A.st.p);
-  t=Math.max(lo,Math.min(hi,Math.round(t)));
-  var all=[];
+/* けいさんに だせる dd けたの かず（cur は ひきざんは たいりょく、たしざんは ダメージの ごうけい） */
+function bCands(cur){
+  var lo=Math.pow(10,bs.dd-1),hi=Math.pow(10,bs.dd)-1,add=bs.mode==="add",all=[];
   for(var n=lo;n<=hi;n++)if(bs.carry||!bCarries(cur,n,add))all.push(n);
+  return all;
+}
+/* 1かいに へらす ごうけい（けいさんの かず＋さらに ダメージ）。3かい くらい あたると たおれる */
+function bTotal(A,D){return Math.max(1,Math.round(D.max*(.3+Math.random()*.15)*(.8+.04*A.st.p)));}
+/* たしざん バトルは さいしょから すこし ダメージを いれておく（「0 ＋ ◯」の けいさんに ならないように）。
+   さいだい たいりょくの 12〜25% くらい。くりあがり なしでも つぎの けいさんが つくれる かずに する */
+function bStartAcc(F){
+  var lo=Math.max(1,Math.round(F.max*.12)),hi=Math.max(lo,Math.round(F.max*.25)),c=[];
+  for(var n=lo;n<=hi;n++)if(bs.carry||bCands(n).length)c.push(n);
+  return c.length?pick(c):0;
+}
+/* ダメージは dd けたの かず。くりあがり なしで つくれない ときは null（とどめの いちげき） */
+function bDamage(D,r,t){
+  var all=bCands(bs.mode==="add"?D.acc:D.hp);
   if(!all.length)return null;
-  /* さいしょの かいは たおれない */
-  var c=r===0?all.filter(function(n){return n<D.hp;}):all;
+  /* さいしょの 2かいは たおれない */
+  var c=r<2?all.filter(function(n){return n<D.hp;}):all;
   if(!c.length)c=all;
   c.sort(function(x,y){return Math.abs(x-t)-Math.abs(y-t);});
   return pick(c.slice(0,5));
+}
+/* けいさんの あとの「さらに ダメージ」。ごうけいが t に なるように たす。
+   くりあがり なしでは、つぎの けいさんが つくれる のこりに なるよう すこし ずらす。
+   ずらしても だめなら、のこり ぜんぶ（とどめ） */
+function bBonusAmt(D,dmg,t,r){
+  var left=D.hp-dmg,b=Math.max(0,Math.min(left,t-dmg));
+  if(r<2&&b>=left)b=Math.max(0,left-1);
+  if(b>=left)return left;
+  var ok=function(x){return x>=0&&x<left&&bCands(bs.mode==="add"?D.acc+dmg+x:left-x).length;};
+  /* さらに ダメージが なくても つぎが つくれない ときは、そのまま（つぎの いちげきが とどめ） */
+  if(bs.carry||ok(b)||!ok(0))return b;
+  for(var k=1;k<=left;k++){
+    if(ok(b-k))return b-k;
+    if(ok(b+k))return b+k;
+  }
+  return left;
 }
 function bClearPlay(){
   $("#s-battle .play").classList.remove("math");
@@ -3119,16 +3321,35 @@ function bHitForms(ev,A,D,S,P){
     return [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].on&&ng.indexOf(BVERBS[x].g)<0;}).map(function(x){return BVERBS[x].on;})),"mod"];
   };
   var V=[mv.v,"prd"];
+  var W=mv.w.map(function(w){return [w,"wrd"];});
+  var ok=BPLAUS[mv.w[mv.w.length-1]]||[];
+  var notOk=function(x){return ok.indexOf(x)<0;};
+  if(ev.counter){
+    /* 「A が D に とげ で はんげきしました」（A＝とげの ほう。アンキロは「しっぽの ハンマー で」）。
+       はんげきは この かたちだけ */
+    return [{toks:[S(A.name),P("が"),S(D.name),P("に")].concat(W,[P("で"),V]),
+      extras:[P("を"),[fake(notOk),"prd"]]}];
+  }
   if(mv.s==="sky"){
     out.push({toks:[S(A.name),P("が"),["そら","wrd"],P("から"),S(D.name),P("を"),V],
       extras:[["うみ","wrd"],P("に"),[fake(function(){return true;}),"prd"]]});
   }else if(mv.s==="sea"){
     out.push({toks:[S(A.name),P("が"),S(D.name),P("を"),["うみ","wrd"],P("に"),V],
       extras:[["そら","wrd"],P("から"),[fake(function(){return true;}),"prd"]]});
+  }else if(v.wo||mv.full){
+    /* wo:「A が D に しっぽ を うちつけました」：に と を を どちらも つかう
+       full:「A が D を くちばし で つつきました」：あいても なにで も いつも いれる */
+    var p1=P(v.wo?"に":v.obj),p2=P(v.wo?"を":"で");
+    out.push({toks:[S(A.name),P("が"),S(D.name),p1].concat(W,[p2,V]),
+      extras:[P(v.wo?"で":(v.obj==="に"?"を":"に")),[fake(notOk),"prd"]]});
+    /* 「A が D に しっぽ を ばしっと うちつけました」（ながく なりすぎない ように 1ごの ときだけ） */
+    if(W.length===1){
+      var on1=[v.on,"mod"];
+      out.push({toks:[S(A.name),P("が"),S(D.name),p1,W[0],p2,on1,V],
+        alts:[[S(A.name),P("が"),on1,S(D.name),p1,W[0],p2,V],[S(A.name),P("が"),S(D.name),p1,on1,W[0],p2,V]],
+        extras:[fakeOn(),[fake(notOk),"prd"]]});
+    }
   }else{
-    var W=mv.w.map(function(w){return [w,"wrd"];});
-    var ok=BPLAUS[mv.w[mv.w.length-1]]||[];
-    var notOk=function(x){return ok.indexOf(x)<0;};
     if(W.length){
       /* 「A が きば で かみつきました」 */
       out.push({toks:[S(A.name),P("が")].concat(W,[P("で"),V]),
@@ -3190,28 +3411,49 @@ function bDefForms(ev,A,D,S,P){
   };
 }
 
+/* A が D に あたった ときの ダメージ。ko＝けいさんの かずだけで たおれる、bko＝さらに ダメージで たおれる */
+function bHit(ev,A,D,r){
+  ev.type="hit";
+  var t=r>=BLAST?D.hp:bTotal(A,D),dm=bDamage(D,r,t);
+  ev.ko=dm===null||dm>=D.hp;
+  ev.dmg=ev.ko?D.hp:dm;
+  ev.bonus=ev.ko?0:(r>=BLAST?D.hp-dm:bBonusAmt(D,dm,t,r));
+  ev.bko=!ev.ko&&ev.dmg+ev.bonus>=D.hp;
+}
+/* BLAST＝さいごの かい（0 から かぞえる）。ここまでに たいりょくが なくならなければ とどめ */
+var BLAST=5;
 function nextRound(){
   bClearPlay();
   /* こうげきする ほうは まいかい ランダム（こうたいだと さきに こうげきした ほうが ゆうりすぎる）。
      ただし さいしょの 2かいは、どちらも 1かいずつ ぶんの しゅご（だれが）に なる：
-     1かいめは たおれない、2かいめは 1かいめの しゅごで なかった ほうが こうげきして かならず あたる。 */
+     1かいめは たおれない、2かいめは 1かいめの しゅごで なかった ほうが こうげきして かならず あたる。
+     ひだり（あかい わく）の きょうりゅうが プレイヤー。すこし かちやすく、6わりで こうげきが まわってくる */
   var r=bs.round++;
-  var ai=r===1?1-bs.subj1:(Math.random()<.5?0:1),di=1-ai;
+  var ai=r===1?1-bs.subj1:(Math.random()<.6?0:1),di=1-ai;
+  /* さいごの かいは、たいりょくが すくない ほうが こうげきを うける */
+  if(r>=BLAST){di=bs.f[0].hp/bs.f[0].max<=bs.f[1].hp/bs.f[1].max?0:1;ai=1-di;}
   var A=bs.f[ai],D=bs.f[di];
   /* たいじゅうの さが あれば、2かいに 1かいは ふみつけ か のしかかり */
-  var ev={ai:ai,di:di,move:A.big.length&&Math.random()<.5?pick(A.big):pick(A.st.m)};
-  var def=D.st.d||{t:"dodge",r:.08};
+  /* うみの なかまは もともと うみに いるので「うみに ひきずりこむ」は つかわない */
+  var ms=(FACTS[D.d.id]||{}).move==="swim"?A.st.m.filter(function(m){return m.s!=="sea";}):A.st.m;
+  var ev={ai:ai,di:di,move:A.big.length&&Math.random()<.5?pick(A.big):pick(ms)};
+  var def=D.st.d===false?{r:0}:D.st.d||{t:"dodge",r:.08};
   /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
-  if(r!==1&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
+  /* 3〜6かいで しょうぶが つく ように：1かいに たいりょくの 1/4〜1/3 くらい へらす
+     （けいさんの かず＋さらに ダメージ）。6かいめは かならず あたって とどめ */
+  /* とげの ある なかまは、じぶんの こうげきの かいに ときどき「はんげき」：
+     あいてに とびかからせて、とげで やりかえす（よけたり まもったり できない） */
+  if(A.st.c&&Math.random()<A.st.c){
+    ev.counter=true;ev.atk=pick(D.st.m.filter(function(m){return !m.s;}).concat([MV([],"たいあたりしました")]));ev.move={w:pick(A.st.cw||[["とげ"]]),v:"はんげきしました"};
+    D.defended=false;
+    bHit(ev,A,D,r);
+  }else if(r!==1&&r<BLAST&&!D.defended&&Math.random()<def.r){ev.type=def.t;ev.w=def.w;D.defended=true;}
   else{
     D.defended=false;
-    ev.type="hit";
-    var dm=bDamage(A,D,r);
-    ev.dmg=dm===null?D.hp:dm;
-    ev.ko=ev.dmg>=D.hp;
+    bHit(ev,A,D,r);
   }
   /* ぶんの しゅごは、あたれば こうげきした ほう、まもったら まもった ほう */
-  if(r===0)bs.subj1=ev.type==="hit"?ai:di;
+  if(r===0)bs.subj1=ev.type==="hit"?ev.ai:ev.di;
   bs.ev=ev;bs.phase="round";
   var sn=bSentence(ev,r);
   bRenderSentence(sn.toks,sn.extras,sn.alts);
@@ -3232,6 +3474,7 @@ function bPlay(ev){
 function bQ(t){var q=$("#b-q");q.textContent=t;q.style.display=t?"":"none";}
 /* こうげきと まもりの うごき（ぶんが できた ときにも もういちど ながす） */
 function bMotion(ev){
+  if(ev.counter){bCounterMotion(ev);return;}
   var fa=$("#bf"+ev.ai),fd=$("#bf"+ev.di);
   var d=ev.ai===0?1:-1,mv=BMOVE[ev.move.v]||["tackle","knock"];
   var ab=$(".fbody",fa),db=$(".fbody",fd);
@@ -3244,6 +3487,18 @@ function bMotion(ev){
     /* まもられたら、こうげきした ほうが はねかえされる */
     if(ev.type==="guard")bLater(function(){bAnim(ab,bKF(d,BRECOIL),550);},470);
   }
+}
+/* はんげき：あいて（ev.di）が とびかかり、とげの ほう（ev.ai）が ふんばって ピカッ、
+   あいてが はねかえされて いたがる */
+function bCounterMotion(ev){
+  var sp=$("#bf"+ev.ai+" .fbody"),at=$("#bf"+ev.di+" .fbody");
+  var d=ev.di===0?1:-1,mv=BMOVE[ev.atk.v]||["tackle","knock"];
+  bAnim(at,bKF(d,BATK[mv[0]]),1000);
+  /* しっぽの ハンマーなら くるっと ふりまわす、とげなら ふんばって ピカッ */
+  var tail=ev.move.w.indexOf("ハンマー")>=0;
+  bLater(function(){bAnim(sp,tail?bKF(-d,BATK.tail):bKF(d,BDEF.guard),tail?800:700);},tail?200:280);
+  bLater(function(){bAnim(at,bKF(d,BRECOIL),550);},470);
+  bLater(function(){bAnim(at,bKF(-d,BHURT.hit),650);},1020);
 }
 $("#b-replay").addEventListener("click",function(){
   if(bs&&bs.phase==="round"&&bs.pos<bs.toks.length)bPlay(bs.ev);
@@ -3314,7 +3569,7 @@ function bFinish(){
         bShowMath(ev);
       }else{
         D.hp-=ev.dmg;D.acc+=ev.dmg;setHP(ev.di);
-        bShowDone("next");
+        bLater(function(){bBonus(ev);},900);
       }
     },500);
   }else{
@@ -3357,12 +3612,30 @@ function bShowMath(ev){
       D.hp-=b;D.acc+=b;setHP(ev.di);
       addStar();
       speak((add?"ぜんぶで ":"のこりは ")+ans+"！",1,1.2);
-      bShowDone("next");
+      bLater(function(){bBonus(ev);},1300);
     });
     box.appendChild(c);
   });
   $("#s-battle .play").classList.add("math");
   $("#b-math").style.display="flex";
+}
+
+/* けいさんの あとの「さらに ダメージ」。もとの かずが おおきくても、たまった ダメージで しょうぶが つく */
+function bBonus(ev){
+  var D=bs.f[ev.di],add=bs.mode==="add",b=ev.bonus;
+  if(!b){bShowDone("next");return;}
+  D.hp-=b;D.acc+=b;
+  if(ev.bko){D.hp=0;D.acc=D.max;bs.over=true;bs.winner=ev.ai;}
+  bFx(ev.di,(add?"+":"−")+b,"dmg");
+  bAnim($("#bf"+ev.di+" .fbody"),bKF(ev.ai===0?1:-1,BHURT.hit),650);
+  setHP(ev.di);
+  var now=add?D.acc:D.hp;
+  $("#b-mq").innerHTML='さらに ダメージ <em>'+b+'</em>！ '+(add?'ダメージは ':'のこりは ')+'<em>'+now+'</em>';
+  var say="さらに ダメージ "+b+"！";
+  if(ev.bko)say+=" "+D.d.name+"が たおれた！ しょうしゃ、"+bs.f[ev.ai].d.name+"！";
+  speak(say,1,1.2);
+  if(ev.bko)bLater(winFinish,1200);
+  else bShowDone("next");
 }
 
 /* え は わくの したに よせて かいてあるので、わくの まんなかで ひっくりかえすと うえに とんでしまう。
@@ -3413,8 +3686,462 @@ function fitBBar(){
 }
 window.addEventListener("resize",fitBBar);
 $("#b-again").addEventListener("click",startBattle);
-$("#b-other").addEventListener("click",function(){bRun++;go("bpick");});
-$("#b-back").addEventListener("click",function(){bRun++;try{window.speechSynthesis.cancel();}catch(e){}go("bpick");});
+/* ほかの あいて・もどる：つぎは また ルーレットで あいてを きめる */
+$("#b-other").addEventListener("click",function(){bRun++;bPick[1]=null;go("bpick");});
+$("#b-back").addEventListener("click",function(){bRun++;bPick[1]=null;try{window.speechSynthesis.cancel();}catch(e){}go("bpick");});
+
+/* ============================================================
+   はやうち たいけつ
+   よこに ならんで すわった パパと こどもが 1だいの がめんを はんぶんずつ つかう。
+   「よーい…」の あと「🍖 ガオー！」が でたら、さきに じぶんの がわを タッチした ほうが こうげき。
+   ガオーの まえに さわったら「おてつき」で、あいてに こうげきされる。
+   レベル2 から はっぱ・とり・「ガ…」の フェイント、レベル3 から 🦴（ほね だけ）の にせの あいずが でる。
+   パパの タッチは ハンデの ぶん おそく かぞえる（おまかせ なら こどもの かちが 6わり くらいに なるよう かわる）。
+   ============================================================ */
+var R_HP=100,R_MIN_RT=120,R_TIMEOUT=4000,R_LVUP=[0,8,10];
+var rSet={who:"papa",side:"L",handi:"auto",lv:"auto"};
+/* best・days は こどもの タッチの はやさ（ms）。h＝おまかせ ハンデ、cpu＝コンピュータの はやさ、
+   streak＝おてつき なしで タッチできた かいすう（レベルアップに つかう） */
+var rRec={best:0,days:{},lv:1,streak:0,h:300,cpu:700};
+try{
+  var rsv=JSON.parse(localStorage.getItem("dinolab_rset")||"null"),rk;
+  if(rsv)for(rk in rSet)if(rk in rsv)rSet[rk]=rsv[rk];
+  var rrv=JSON.parse(localStorage.getItem("dinolab_rrec")||"null");
+  if(rrv)for(rk in rRec)if(rk in rrv)rRec[rk]=rrv[rk];
+}catch(e){}
+function saveRSet(){try{localStorage.setItem("dinolab_rset",JSON.stringify(rSet));}catch(e){}}
+function saveRRec(){if(testMode)return;try{localStorage.setItem("dinolab_rrec",JSON.stringify(rRec));}catch(e){}}
+/* テストモードの あいだは きろくの コピー（rTest）で あそぶ。レベルアップも ベストも ふつうに すすむが、
+   ほぞんは しないので、テストモードを おわる・よみこみなおすと すてて もとの きろくに もどる */
+var rTest=null;
+function rCur(){
+  if(!testMode){rTest=null;return rRec;}
+  if(!rTest)rTest=JSON.parse(JSON.stringify(rRec));
+  return rTest;
+}
+$("#testmode-btn").addEventListener("click",function(){rTest=null;});
+function rClamp(v,lo,hi){return Math.max(lo,Math.min(hi,v));}
+function rSec(ms){return (ms/1000).toFixed(2);}
+function rToday(){var d=new Date();return d.getFullYear()+"-"+("0"+(d.getMonth()+1)).slice(-2)+"-"+("0"+d.getDate()).slice(-2);}
+function rHandi(){return rSet.handi==="auto"?rs.rec.h:+rSet.handi;}
+
+/* えらぶ がめんの「パパと / コンピュータと」ボタン */
+function rWhoBtn(){
+  var b=$("#rp-who");
+  b.style.display=bKind==="react"?"":"none";
+  b.textContent=rSet.who==="cpu"?"🤖 コンピュータと":"👨 パパと";
+}
+$("#rp-who").addEventListener("click",function(){
+  rSet.who=rSet.who==="cpu"?"papa":"cpu";saveRSet();rWhoBtn();
+  speak(rSet.who==="cpu"?"コンピュータと たいけつ":"パパと たいけつ",0.95);
+});
+
+/* おと。iOS は タップの なかで AudioContext を うごかして おかないと ならない */
+function rUnlock(){
+  try{
+    /* iPhone の マナーモードでも おとが でる ように（Safari 16.4 から） */
+    if(navigator.audioSession&&navigator.audioSession.type!=="playback")navigator.audioSession.type="playback";
+    var AC=window.AudioContext||window.webkitAudioContext;
+    if(!AC)return;
+    if(!audioCtx)audioCtx=new AC();
+    if(audioCtx.state==="suspended")audioCtx.resume();
+  }catch(e){}
+}
+function rSnd(kind){
+  rUnlock();
+  if(!audioCtx)return;
+  try{
+    var t0=audioCtx.currentTime;
+    var tone=function(type,f0,f1,st,dur,vol){
+      var o=audioCtx.createOscillator(),g=audioCtx.createGain();
+      o.type=type;
+      o.frequency.setValueAtTime(f0,t0+st);
+      o.frequency.exponentialRampToValueAtTime(f1,t0+st+dur);
+      g.gain.setValueAtTime(0.0001,t0+st);
+      g.gain.exponentialRampToValueAtTime(vol,t0+st+.02);
+      g.gain.exponentialRampToValueAtTime(0.0001,t0+st+dur);
+      o.connect(g);g.connect(audioCtx.destination);
+      o.start(t0+st);o.stop(t0+st+dur+.02);
+    };
+    if(kind==="roar")rRoar(t0,.75);
+    else if(kind==="growl"){rRoar(t0,.2);rRoar(t0+.32,.2);}
+    else if(kind==="pop"){tone("triangle",520,260,0,.14,.2);}
+    else if(kind==="hit"){tone("square",420,140,0,.22,.25);tone("triangle",300,90,0,.3,.4);}
+  }catch(e){}
+}
+
+/* 「ガオー！」の おと。iPhone の スピーカーは ひくい おとが ほとんど でないので、
+   400〜900Hz くらいの ざらざらした うなりごえ（2ほんの のこぎりなみを ずらして かさね、ブルブル ゆらす）に する */
+function rRoar(t0,dur){
+  var out=audioCtx.createGain(),lp=audioCtx.createBiquadFilter(),trem=audioCtx.createGain();
+  lp.type="lowpass";lp.frequency.value=2600;
+  out.gain.setValueAtTime(0.0001,t0);
+  out.gain.exponentialRampToValueAtTime(.42,t0+.04);
+  out.gain.setValueAtTime(.42,t0+dur*.55);
+  out.gain.exponentialRampToValueAtTime(0.0001,t0+dur);
+  trem.gain.value=.7;
+  var lfo=audioCtx.createOscillator(),lg=audioCtx.createGain();
+  lfo.frequency.value=32;lg.gain.value=.3;
+  lfo.connect(lg);lg.connect(trem.gain);
+  [[620,880,300],[633,860,290]].forEach(function(f){
+    var o=audioCtx.createOscillator();
+    o.type="sawtooth";
+    o.frequency.setValueAtTime(f[0],t0);
+    o.frequency.linearRampToValueAtTime(f[1],t0+.12);
+    o.frequency.exponentialRampToValueAtTime(f[2],t0+dur);
+    o.connect(trem);o.start(t0);o.stop(t0+dur+.02);
+  });
+  /* いきの ざらざら（ノイズ） */
+  var n=Math.floor(audioCtx.sampleRate*dur),buf=audioCtx.createBuffer(1,n,audioCtx.sampleRate),ch=buf.getChannelData(0);
+  for(var i=0;i<n;i++)ch[i]=Math.random()*2-1;
+  var src=audioCtx.createBufferSource(),bp=audioCtx.createBiquadFilter(),ng=audioCtx.createGain();
+  src.buffer=buf;bp.type="bandpass";bp.frequency.value=1200;bp.Q.value=.8;ng.gain.value=.35;
+  src.connect(bp);bp.connect(ng);ng.connect(trem);
+  trem.connect(lp);lp.connect(out);out.connect(audioCtx.destination);
+  lfo.start(t0);lfo.stop(t0+dur+.02);src.start(t0);
+}
+
+var rs=null;
+function rPName(i){return i===rs.k?"きみ":(rs.cpu?"コンピュータ":"パパ");}
+/* rs.tok は 1かいの あいず ごとに かわる。ふるい タイマーは なにも しない */
+function rAt(tok,ms,fn){bLater(function(){if(rs&&rs.tok===tok)fn();},ms);}
+function rSig(cls,html){var el=$("#rsig");el.className="rsig"+(cls?" "+cls:"");el.innerHTML=html||"";}
+function rSetHP(i){
+  var F=rs.f[i],el=$("#rh"+i),fill=$(".hpfill",el);
+  fill.style.width=Math.round(F.hp/F.max*100)+"%";
+  fill.classList.toggle("low",F.hp/F.max<.35);
+  $(".hpnum",el).textContent=F.hp;
+}
+function rFx(i,txt,cls){
+  var s=document.createElement("span");
+  s.className="bfx "+(cls||"dmg");s.textContent=txt;
+  $(cls==="zzz"?"#rf"+i+" .fbody":"#rf"+i).appendChild(s);
+  if(cls!=="zzz")setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},1600);
+  return s;
+}
+/* タッチの ばしょは うえの HP の ならびの したから */
+function rFit(){
+  var sc=$("#s-react"),t=$("#s-react .rtop");
+  if(!sc.classList.contains("on"))return;
+  sc.style.setProperty("--rtop",Math.ceil(t.offsetTop+t.offsetHeight)+"px");
+}
+window.addEventListener("resize",rFit);
+
+function rRules(lv){
+  var r='<div class="tx" style="font-size:clamp(20px,4vmin,30px)">レベル '+lv+'</div>'+
+    '<div class="rule"><i>🍖</i><span>「ガオー！」が でたら はやく タッチ！</span></div>';
+  if(lv>=2)r+='<div class="rule"><i>🍎</i><span>ほかの たべもの や「ガ…」では タッチしない</span></div>';
+  if(lv>=3)r+='<div class="rule"><i>🍗</i><span>にている もの にも ちゅうい！ 🍖 だけ！</span></div>';
+  return r+'<div class="rule"><i>✋</i><span>ガオーの まえに さわると おてつき</span></div>';
+}
+/* せつめいは その レベルを はじめて あそぶ ときだけ（テストモードでも おぼえておく） */
+var rRulesSeen={};
+try{rRulesSeen=JSON.parse(localStorage.getItem("dinolab_rrules")||"{}")||{};}catch(e){rRulesSeen={};}
+function startReact(){
+  if(!(bPick[0]&&bPick[1]))return;
+  bRun++;
+  var k=rSet.side==="R"?1:0,rec=rCur();
+  var ds=k===0?[bPick[0],bPick[1]]:[bPick[1],bPick[0]];
+  rs={f:ds.map(function(d){return {d:d,st:bStat(d),hp:R_HP,max:R_HP};}),k:k,cpu:rSet.who==="cpu",rec:rec,
+      lv:rSet.lv==="auto"?rec.lv:+rSet.lv,round:0,phase:"intro",tok:0,times:[],fouls:0,over:false};
+  $("#rstage").innerHTML='<div class="bfight">'+rs.f.map(function(F,i){
+    return '<div class="fighter f'+i+'" id="rf'+i+'"><div class="fbody">'+bFace(i,F.d.id,' style="--s:'+bScale(F.d.id)+'"')+'</div></div>';
+  }).join("")+'</div>';
+  [0,1].forEach(function(i){
+    var pc=i===k?"var(--r-prd)":"var(--r-sub)",h=$("#rh"+i),z=$("#rzones .z"+i);
+    h.style.setProperty("--pc",pc);
+    h.innerHTML='<b>'+rs.f[i].d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div>';
+    z.style.setProperty("--pc",pc);
+    z.classList.remove("press","foul");
+    $("#rp"+i).innerHTML='<i>'+(i!==k&&rs.cpu?"🤖":"🖐")+'</i>'+rPName(i);
+    $("#rt"+i).innerHTML="";
+    rSetHP(i);
+  });
+  $("#rend").style.display="none";
+  $("#react-confetti").innerHTML="";
+  hideBadge($("#react-badge"));
+  go("react");
+  rFit();
+  var say=rs.f[0].d.name+" たい "+rs.f[1].d.name+"！";
+  if(!rRulesSeen[rs.lv]){
+    rRulesSeen[rs.lv]=1;
+    try{localStorage.setItem("dinolab_rrules",JSON.stringify(rRulesSeen));}catch(e){}
+    rSig("card",rRules(rs.lv));
+    say+=" ガオーが でたら、はやく タッチ！";
+    if(rs.lv>=2)say+=" ほかの たべものや、ガ、では、タッチしないよ。";
+    if(rs.lv>=3)say+=" にている ものにも ちゅうい！";
+    speak(say,0.95,1.15);
+    bLater(rReady,[0,4200,6400,7800][rs.lv]);
+  }else{
+    rSig("ready",'<div class="tx">レベル '+rs.lv+'</div>');
+    speak(say,0.95,1.15);
+    bLater(rReady,2400);
+  }
+}
+
+/* 1かいぶんの けっかを きろくに いれる（おそい タッチも はかれる ように、つぎの じゅんびの ときに まとめる） */
+function rTally(){
+  if(!rs.tally)return;
+  rs.tally=false;
+  if(rs.kidFoul)rs.rec.streak=0;
+  else if(rs.kidT!=null){rs.times.push(rs.kidT);rs.rec.streak++;}
+}
+function rReady(){
+  if(!rs||rs.over)return;
+  rTally();
+  var tok=++rs.tok;
+  rs.phase="wait";rs.sigT=0;rs.kidT=null;rs.otherT=null;rs.kidFoul=false;rs.kidBest=false;
+  $$("#rzones .rzone").forEach(function(z){z.classList.remove("press","foul");});
+  $("#rt0").innerHTML="";$("#rt1").innerHTML="";
+  $$("#rstage .fighter").forEach(function(f){f.classList.remove("turn");});
+  rSig("ready",'<div class="tx">よーい…</div>');
+  /* フェイントは レベル2 から。レベル3 は ほねの にせ あいずも まざる */
+  var feints=[],n=0;
+  if(rs.lv>=2)n=Math.random()<.3?0:(Math.random()<.65?1:2);
+  for(var j=0;j<n;j++)feints.push(pick(rs.lv>=3?["food","gaa","alike","alike","alike"]:["food","food","gaa"]));
+  var t=700+Math.random()*600;
+  feints.forEach(function(kind){
+    var at=t;
+    rAt(tok,at,function(){rFeint(kind,tok);});
+    t+=1100+Math.random()*700;
+  });
+  rAt(tok,Math.max(1600+Math.random()*2400,t),function(){rGo(tok);});
+}
+/* フェイント：ほんものの あいずと おなじ ばしょ・おなじ おおきさで でる。
+   food＝ほかの たべもの、gaa＝あいての ピクッと「ガ…ガ…」（みじかい うなりごえ）、
+   alike（レベル3）＝🍗・🦴 が「ガオー！」の もじと おなじ おとで でる。🍖 だけが ほんもの */
+function rFeint(kind,tok){
+  if(rs.phase!=="wait")return;
+  var other=1-rs.k,d=other===0?1:-1,ms=850,cpuFoul=.08;
+  if(kind==="food"){
+    rSig("ready",'<div class="ic">'+pick(["🍎","🥕","🍙","🍌","🧀"])+'</div><div class="tx">…</div>');
+    rSnd("pop");
+  }else if(kind==="gaa"){
+    bAnim($("#rf"+other+" .fbody"),bKF(d,[[0],[.3,{X:8,R:-6}],[1]]),420);
+    rSig("ready",'<div class="tx">ガ…ガ…</div>');
+    rSnd("growl");
+  }else{
+    rSig("go",'<div class="ic">'+pick(["🍗","🦴"])+'</div><div class="tx">ガオー！</div>');
+    rSnd("roar");
+    ms=750;cpuFoul=.15;
+  }
+  rAt(tok,ms,function(){if(rs.phase==="wait")rSig("ready",'<div class="tx">よーい…</div>');});
+  /* コンピュータも ときどき つられて おてつき */
+  if(rs.cpu&&Math.random()<cpuFoul)rAt(tok,280+Math.random()*200,function(){rTap(other);});
+}
+function rGo(tok){
+  if(rs.phase!=="wait")return;
+  rs.phase="go";rs.sigT=performance.now();
+  rSig("go",'<div class="ic">🍖</div><div class="tx">ガオー！</div>');
+  rSnd("roar");
+  /* じっさいに がめんに でた じかんから はかる */
+  requestAnimationFrame(function(ts){
+    if(rs&&rs.tok===tok&&rs.phase==="go"&&rs.kidT==null&&rs.otherT==null&&ts>rs.sigT&&ts-rs.sigT<50)rs.sigT=ts;
+  });
+  if(rs.cpu){
+    var ms=rs.rec.cpu*(.85+Math.random()*.3);
+    rAt(tok,ms,function(){if(rs.phase==="go")rTap(1-rs.k);});
+  }
+  rAt(tok,R_TIMEOUT,function(){if(rs.phase==="go")rNoTap(tok);});
+}
+function rPress(i){
+  var z=$("#rzones .z"+i);
+  z.classList.add("press");
+  setTimeout(function(){z.classList.remove("press");},220);
+}
+function rTap(i){
+  if(!rs||rs.over)return;
+  var now=performance.now();
+  if(rs.phase==="wait"){rFoul(i);return;}
+  if((rs.phase!=="go"&&rs.phase!=="res")||!rs.sigT||rs.kidFoul)return;
+  var rt=now-rs.sigT;
+  /* はやすぎる タッチは あいずを みる まえに おしている（おてつき） */
+  if(rs.phase==="go"&&rt<R_MIN_RT){rFoul(i);return;}
+  if(i===rs.k){
+    if(rs.kidT!=null||rt>2500)return;
+    rs.kidT=rt;
+    /* いままでの ベスト（この バトルの ぶんも ふくむ）より はやければ「はやい！」と いう */
+    rs.kidBest=rt<Math.min.apply(null,rs.times.concat([rs.rec.best||Infinity]));
+    $("#rt"+i).innerHTML=rSec(rt)+'<small>びょう</small>';
+  }else{
+    if(rs.otherT!=null)return;
+    rs.otherT=rt;
+  }
+  rPress(i);
+  if(rs.phase!=="go")return;
+  /* こどもは おした しゅんかんに かち。パパは ハンデの あいだに こどもが おさなければ かち */
+  var H=i===rs.k||rs.cpu?0:rHandi();
+  if(H<=0)rDecide(i);
+  else rAt(rs.tok,H,function(){if(rs.phase==="go")rDecide(i);});
+}
+function rDecide(w){
+  rs.phase="res";rs.tally=true;
+  var kidWon=w===rs.k,rec=rs.rec;
+  if(rs.cpu)rec.cpu=rClamp(rec.cpu+(kidWon?-30:45),280,1400);
+  else if(rSet.handi==="auto")rec.h=rClamp(rec.h+(kidWon?-40:60),0,900);
+  rSig("","");
+  rAttack(w,1-w,kidWon&&rs.kidBest?"はやい！ ":"");
+}
+function rFoul(i){
+  rs.phase="res";rs.tally=true;
+  $("#rzones .z"+i).classList.add("foul");
+  playMissSound();
+  if(i===rs.k){rs.kidFoul=true;rs.fouls++;}
+  $("#rt"+i).innerHTML="おてつき！";
+  rSig("foul",'<div class="ic">✋</div><div class="tx">おてつき！</div>');
+  var tok=rs.tok;
+  rAt(tok,1300,function(){rSig("","");});
+  rAttack(1-i,i,"おてつき！ ");
+}
+function rNoTap(tok){
+  rs.phase="res";
+  rSig("ready",'<div class="ic">🤔</div><div class="tx">あれれ？</div><div class="sub">ガオー！が でたら タッチしてね</div>');
+  speak("あれれ？ ガオーが でたら タッチしてね",0.95,1.15);
+  rAt(tok,2800,rReady);
+}
+/* こうげき。ダメージは つよさで きまり、むりに とどめを ささない（HP が なくなるまで つづく）。
+   さいしょの 2かいは たおれない */
+function rAttack(ai,di,pre){
+  var A=rs.f[ai],D=rs.f[di],r=rs.round++,tok=rs.tok;
+  var move=pick(A.st.m),mv=BMOVE[move.v]||["tackle","knock"],d=ai===0?1:-1;
+  var dmg=Math.round(20+A.st.p*2+Math.random()*8);
+  if(r<2)dmg=Math.min(dmg,D.hp-1);
+  dmg=Math.min(dmg,D.hp);
+  var ko=dmg>=D.hp;
+  $("#rf"+ai).classList.add("turn");
+  bAnim($("#rf"+ai+" .fbody"),bKF(d,BATK[mv[0]]),1000);
+  speak(pre+A.d.name+"の こうげき！",1,1.2);
+  rAt(tok,430,function(){
+    bAnim($("#rf"+di+" .fbody"),bKF(d,BHURT[mv[1]]),mv[1]==="hit"||mv[1]==="squash"?650:850);
+    rSnd("hit");
+    D.hp-=dmg;rSetHP(di);rFx(di,"−"+dmg);
+  });
+  if(ko){rs.over=true;rAt(tok,1500,function(){rEnd(ai);});}
+  else rAt(tok,2700,rReady);
+}
+function rEnd(w){
+  rTally();
+  rs.phase="end";
+  var W=rs.f[w].d,li=1-w,kidWon=w===rs.k,rec=rs.rec;
+  $$("#rstage .fighter").forEach(function(f){f.classList.remove("turn");});
+  rSig("","");
+  var fi=$("#rf"+li+" .fimg");
+  bFlipOrigin(fi);
+  $("#rf"+li).classList.add("down");
+  if(fi.animate)fi.animate([{transform:"none"},{transform:"scaleY(-1)"}],{duration:600,easing:"cubic-bezier(.34,1.4,.64,1)"});
+  var z=rFx(li,"💤","zzz");
+  if(z.animate)z.animate([{transform:"translate(-50%,-50%)",opacity:1},{transform:"translate(-30%,-80%)",opacity:.5},{transform:"translate(-50%,-50%)",opacity:1}],{duration:2400,iterations:Infinity,easing:"ease-in-out"});
+  bAnim($("#rf"+w+" .fbody"),"joy",700,true);
+  /* きろく：この バトルの いちばん はやい タッチ、きょうの ベスト、いままでの ベスト */
+  var best=rs.times.length?Math.round(Math.min.apply(null,rs.times)):0,newBest=false,today=0,lvup=0;
+  if(best){
+    var day=rToday(),e=rec.days[day]||(rec.days[day]={n:0,sum:0,best:0});
+    rs.times.forEach(function(t){e.n++;e.sum+=Math.round(t);});
+    if(!e.best||best<e.best)e.best=best;
+    today=e.best;
+    if(!rec.best||best<rec.best){newBest=!!rec.best;rec.best=best;}
+    var keys=Object.keys(rec.days).sort();
+    while(keys.length>60)delete rec.days[keys.shift()];
+  }
+  if(rSet.lv==="auto"&&rec.lv<3&&rec.streak>=R_LVUP[rec.lv]){rec.lv++;rec.streak=0;lvup=rec.lv;}
+  saveRRec();
+  if(kidWon)addStar();
+  if(newBest)addStar();
+  var head=kidWon?"🏆 きみの かち！":(rs.cpu?"🤖 コンピュータの かち！":"👨 パパの かち！");
+  $("#react-badge").textContent="🏆 "+W.name+"の かち！";
+  celebrate("#react-badge","#react-confetti");
+  var say=W.name+"の かち！";
+  if(newBest)say+=" いままでで いちばん はやい タッチ！";
+  if(lvup)say+=" レベル "+lvup+"に アップ！";
+  speak(say,0.95,1.2);
+  bLater(function(){
+    var html='<h2>'+head+'</h2>';
+    if(best){
+      html+='<div class="best">いちばん はやい タッチ <em>'+rSec(best)+'</em> びょう</div>';
+      html+=newBest?'<div class="best">🎉 いままでで いちばん はやい！</div>':
+        '<div class="msg">きょうの ベスト '+rSec(today)+' びょう ／ いままでの ベスト '+rSec(rec.best)+' びょう</div>';
+    }else html+='<div class="msg">こんかいは タッチの はやさが はかれなかったよ</div>';
+    if(rs.fouls)html+='<div class="msg">おてつき '+rs.fouls+'かい</div>';
+    if(lvup)html+='<div class="best">⬆️ レベル '+lvup+' に アップ！</div><div class="msg">'+
+      (lvup===2?'つぎから ほかの たべもの や「ガ…」の フェイントが でるよ':'つぎから 🍗 や 🦴 の そっくりさんも でるよ')+'</div>';
+    html+='<div class="done"><button class="big" id="r-again">もういっかい</button><button class="ghost" id="r-other">ほかの たいせん</button></div>';
+    var el=$("#rend");el.innerHTML=html;el.style.display="flex";
+    $("#r-again").addEventListener("click",function(){rUnlock();startReact();});
+    $("#r-other").addEventListener("click",function(){bRun++;bPick[1]=null;go("bpick");});
+  },1600);
+}
+(function(){
+  var ev=window.PointerEvent?"pointerdown":"touchstart";
+  $$("#rzones .rzone").forEach(function(z){
+    z.addEventListener(ev,function(e){
+      if(e.cancelable)e.preventDefault();
+      rUnlock();
+      rTap(+z.dataset.i);
+    });
+  });
+})();
+$("#r-back").addEventListener("click",function(){
+  bRun++;if(rs)rs.over=true;bPick[1]=null;
+  try{window.speechSynthesis.cancel();}catch(e){}
+  go("bpick");
+});
+
+/* ---------- せってい（えらぶ がめんの ⚙️） ---------- */
+/* おうちのかた むけ：1にちの へいきんの はやさ（さいきんの 14にち） */
+function rChart(){
+  var R=rCur();
+  var keys=Object.keys(R.days).sort().slice(-14);
+  if(!keys.length)return '<p class="rchart-none">まだ きろくが ないよ。たいけつ すると ここに 1にちの へいきんが でるよ</p>';
+  var W=480,H=150,L=34,B=22,T=16,pw=W-L-8,ph=H-B-T;
+  var avg=keys.map(function(k){var e=R.days[k];return e.sum/e.n/1000;});
+  var top=Math.max(.2,Math.ceil(Math.max.apply(null,avg)/.2)*.2);
+  var step=pw/keys.length,bw=Math.min(28,step-6);
+  var y=function(v){return T+ph-ph*v/top;};
+  var svg='<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="1にちの へいきんの はやさ">';
+  for(var g=0;g<=top+1e-9;g+=top/2){
+    svg+='<line class="grid" x1="'+L+'" x2="'+(W-8)+'" y1="'+y(g)+'" y2="'+y(g)+'"/>'+
+      '<text x="'+(L-6)+'" y="'+(y(g)+4)+'" text-anchor="end">'+g.toFixed(1)+'</text>';
+  }
+  keys.forEach(function(k,i){
+    var v=avg[i],x=L+step*i+(step-bw)/2,yt=y(v),yb=y(0),r=Math.min(4,bw/2,yb-yt);
+    var e=R.days[k],md=(+k.slice(5,7))+"/"+(+k.slice(8));
+    svg+='<path class="bar" d="M'+x+','+yb+'V'+(yt+r)+'Q'+x+','+yt+' '+(x+r)+','+yt+'H'+(x+bw-r)+'Q'+(x+bw)+','+yt+' '+(x+bw)+','+(yt+r)+'V'+yb+'Z">'+
+      '<title>'+md+'：へいきん '+v.toFixed(2)+'びょう（'+e.n+'かい）・ベスト '+rSec(e.best)+'びょう</title></path>';
+    if(keys.length<=7||(keys.length-1-i)%2===0)
+      svg+='<text x="'+(x+bw/2)+'" y="'+(H-6)+'" text-anchor="middle">'+md+'</text>';
+    if(i===keys.length-1)svg+='<text x="'+(x+bw/2)+'" y="'+(yt-4)+'" text-anchor="middle" style="fill:var(--ink);font-weight:700">'+v.toFixed(2)+'</text>';
+  });
+  return '<div class="rchart">'+svg+'</svg></div>';
+}
+function openRSet(){
+  var R=rCur();
+  var seg=function(key,opts){
+    return '<div class="seg">'+opts.map(function(o){
+      return '<button data-k="'+key+'" data-v="'+o[0]+'"'+(String(rSet[key])===String(o[0])?' class="on"':'')+'>'+o[1]+'</button>';
+    }).join("")+'</div>';
+  };
+  var nx=R.lv<3?'（あと '+Math.max(0,R_LVUP[R.lv]-R.streak)+'かい おてつき なしで タッチできたら アップ）':'（さいこう レベル）';
+  $("#sheet-inner").innerHTML=
+   '<div class="bset'+(rSet.who==="cpu"?" dim":"")+'"><h2>⚙️ はやうち たいけつの せってい</h2>'+
+   '<div class="bset-row"><span>あいて</span>'+seg("who",[["papa","👨 パパ"],["cpu","🤖 コンピュータ"]])+'</div>'+
+   '<div class="bset-row"><span>こどもが すわる がわ</span>'+seg("side",[["L","⬅️ ひだり"],["R","みぎ ➡️"]])+'</div>'+
+   '<div class="bset-row calc"><span>パパの ハンデ（パパの タッチを おそく かぞえる）</span>'+
+     seg("handi",[["auto","おまかせ"],["0","なし"],["200","0.2びょう"],["400","0.4びょう"],["600","0.6びょう"]])+
+     '<span class="bset-now">おまかせの いま：'+rSec(R.h)+'びょう（こどもが 6わり くらい かてるように かわる）</span></div>'+
+   '<div class="bset-row"><span>レベル</span>'+seg("lv",[["auto","おまかせ"],["1","1"],["2","2"],["3","3"]])+
+     '<span class="bset-now">おまかせの いま：レベル '+R.lv+nx+'<br>1＝ガオーだけ ／ 2＝ほかの たべもの・「ガ…」の フェイント ／ 3＝🍗・🦴 の そっくりさん（ガオーの こえつき）</span></div>'+
+   '<div class="bset-row"><span>📈 おうちのかたへ：1にちの へいきんの はやさ（びょう・ひくいほど はやい）</span>'+rChart()+
+     (R.best?'<span class="bset-now">いままでの ベスト '+rSec(R.best)+'びょう</span>':'')+'</div>'+
+   '<div class="sheet-actions"><button class="big" id="sheet-close">とじる</button></div></div>';
+  $$("#sheet-inner .seg button").forEach(function(b){
+    b.addEventListener("click",function(){
+      rSet[b.dataset.k]=b.dataset.v;
+      saveRSet();rWhoBtn();openRSet();
+    });
+  });
+  $("#sheet-close").addEventListener("click",closeSheet);
+  $("#sheet").classList.add("on");
+}
 
 /* ============================================================
    スタート
