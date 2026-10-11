@@ -2856,7 +2856,7 @@ var BPLAUS={
 };
 /* p＝つよさ(1〜10)、m＝わざ（w＝なにで、v＝どうし。w が からなら「〇〇に」の ぶんだけ。
    full＝いつも「A が D を W で V」の かたち）、
-   d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ）、
+   d＝まもり（t: dodge よける / guard 〇〇で まもる / fly そらへ にげる / dive うみに もぐる、r＝かくりつ。false＝まもらない：かみなりりゅうは おもくて さっと よけられない）、
    c＝じぶんの こうげきの かいに「とげで はんげき」を つかう かくりつ、cw＝はんげきに つかう もの（なければ とげ） */
 function MV(w,v,full){return {w:w,v:v,full:!!full};}
 /* すむ ばしょの とくべつな わざ。s＝ぶんの かたち
@@ -2882,9 +2882,9 @@ var BATTLE={
   troodon:{p:3,m:[MV(["つめ"],"ひっかきました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.35}},
   yuty:{p:7,m:[MV(["きば"],"かみつきました"),MV(["しっぽ"],"うちつけました")]},
   archaeo:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"dodge",r:.3}},
-  argentino:{p:8,m:[MV(["ながい","しっぽ"],"うちつけました")],d:{t:"dodge",r:.04}},
-  brachio:{p:7,m:[MV([],"たいあたりしました"),MV(["ながい","しっぽ"],"うちつけました")],d:{t:"dodge",r:.04}},
-  diplo:{p:7,m:[MV(["ながい","しっぽ"],"うちつけました")],d:{t:"dodge",r:.05}},
+  argentino:{p:8,m:[MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  brachio:{p:7,m:[MV([],"たいあたりしました"),MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  diplo:{p:7,m:[MV(["ながい","しっぽ"],"うちつけました")],d:false},
   allo:{p:8,m:[MV(["きば"],"かみつきました"),MV(["つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
   psitta:{p:2,m:[MV(["くちばし"],"かみつきました")],d:{t:"dodge",r:.25}},
   therizino:{p:7,m:[MV(["ながい","つめ"],"ひっかきました")]},
@@ -3163,6 +3163,7 @@ function startBattle(){
       round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0,
       mode:mode,od:bSet.od,dd:bSet.dd,carry:bSet.carry};
   bs.f.forEach(function(F,i){F.big=bBig(F,bs.f[1-i]);});
+  if(mode==="add")bs.f.forEach(function(F){var a=bStartAcc(F);F.acc=a;F.hp=F.max-a;});
   $("#bstage").innerHTML=
     '<div class="bhp">'+bs.f.map(function(F,i){
       return '<div class="hp h'+i+'" id="bh'+i+'"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>';
@@ -3228,6 +3229,13 @@ function bCands(cur){
 }
 /* 1かいに へらす ごうけい（けいさんの かず＋さらに ダメージ）。3かい くらい あたると たおれる */
 function bTotal(A,D){return Math.max(1,Math.round(D.max*(.3+Math.random()*.15)*(.8+.04*A.st.p)));}
+/* たしざん バトルは さいしょから すこし ダメージを いれておく（「0 ＋ ◯」の けいさんに ならないように）。
+   さいだい たいりょくの 12〜25% くらい。くりあがり なしでも つぎの けいさんが つくれる かずに する */
+function bStartAcc(F){
+  var lo=Math.max(1,Math.round(F.max*.12)),hi=Math.max(lo,Math.round(F.max*.25)),c=[];
+  for(var n=lo;n<=hi;n++)if(bs.carry||bCands(n).length)c.push(n);
+  return c.length?pick(c):0;
+}
 /* ダメージは dd けたの かず。くりあがり なしで つくれない ときは null（とどめの いちげき） */
 function bDamage(D,r,t){
   var all=bCands(bs.mode==="add"?D.acc:D.hp);
@@ -3351,15 +3359,18 @@ function nextRound(){
   bClearPlay();
   /* こうげきする ほうは まいかい ランダム（こうたいだと さきに こうげきした ほうが ゆうりすぎる）。
      ただし さいしょの 2かいは、どちらも 1かいずつ ぶんの しゅご（だれが）に なる：
-     1かいめは たおれない、2かいめは 1かいめの しゅごで なかった ほうが こうげきして かならず あたる。 */
+     1かいめは たおれない、2かいめは 1かいめの しゅごで なかった ほうが こうげきして かならず あたる。
+     ひだり（あかい わく）の きょうりゅうが プレイヤー。すこし かちやすく、6わりで こうげきが まわってくる */
   var r=bs.round++;
-  var ai=r===1?1-bs.subj1:(Math.random()<.5?0:1),di=1-ai;
+  var ai=r===1?1-bs.subj1:(Math.random()<.6?0:1),di=1-ai;
   /* さいごの かいは、たいりょくが すくない ほうが こうげきを うける */
   if(r>=BLAST){di=bs.f[0].hp/bs.f[0].max<=bs.f[1].hp/bs.f[1].max?0:1;ai=1-di;}
   var A=bs.f[ai],D=bs.f[di];
   /* たいじゅうの さが あれば、2かいに 1かいは ふみつけ か のしかかり */
-  var ev={ai:ai,di:di,move:A.big.length&&Math.random()<.5?pick(A.big):pick(A.st.m)};
-  var def=D.st.d||{t:"dodge",r:.08};
+  /* うみの なかまは もともと うみに いるので「うみに ひきずりこむ」は つかわない */
+  var ms=(FACTS[D.d.id]||{}).move==="swim"?A.st.m.filter(function(m){return m.s!=="sea";}):A.st.m;
+  var ev={ai:ai,di:di,move:A.big.length&&Math.random()<.5?pick(A.big):pick(ms)};
+  var def=D.st.d===false?{r:0}:D.st.d||{t:"dodge",r:.08};
   /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
   /* 3〜6かいで しょうぶが つく ように：1かいに たいりょくの 1/4〜1/3 くらい へらす
      （けいさんの かず＋さらに ダメージ）。6かいめは かならず あたって とどめ */
