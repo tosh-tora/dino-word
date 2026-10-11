@@ -682,7 +682,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-09-7</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-11-1</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3698,7 +3698,7 @@ $("#b-back").addEventListener("click",function(){bRun++;bPick[1]=null;try{window
    レベル2 から はっぱ・とり・「ガ…」の フェイント、レベル3 から 🦴（ほね だけ）の にせの あいずが でる。
    パパの タッチは ハンデの ぶん おそく かぞえる（おまかせ なら こどもの かちが 6わり くらいに なるよう かわる）。
    ============================================================ */
-var R_HP=100,R_MIN_RT=120,R_TIMEOUT=4000,R_LVUP=[0,8,10];
+var R_HP=100,R_MIN_RT=120,R_TIMEOUT=4000,R_LVUP=[0,8,10,12];
 var rSet={who:"papa",side:"L",handi:"auto",lv:"auto"};
 /* best・days は こどもの タッチの はやさ（ms）。h＝おまかせ ハンデ、cpu＝コンピュータの はやさ、
    streak＝おてつき なしで タッチできた かいすう（レベルアップに つかう） */
@@ -3832,6 +3832,7 @@ function rRules(lv){
     '<div class="rule"><i>🍖</i><span>「ガオー！」が でたら はやく タッチ！</span></div>';
   if(lv>=2)r+='<div class="rule"><i>🍎</i><span>ほかの たべもの や「ガ…」では タッチしない</span></div>';
   if(lv>=3)r+='<div class="rule"><i>🍗</i><span>にている もの にも ちゅうい！ 🍖 だけ！</span></div>';
+  if(lv>=4)r+='<div class="rule"><i>⚡</i><span>どんどん はやく きりかわるよ！ よく みて！</span></div>';
   return r+'<div class="rule"><i>✋</i><span>ガオーの まえに さわると おてつき</span></div>';
 }
 /* せつめいは その レベルを はじめて あそぶ ときだけ（テストモードでも おぼえておく） */
@@ -3870,8 +3871,9 @@ function startReact(){
     say+=" ガオーが でたら、はやく タッチ！";
     if(rs.lv>=2)say+=" ほかの たべものや、ガ、では、タッチしないよ。";
     if(rs.lv>=3)say+=" にている ものにも ちゅうい！";
+    if(rs.lv>=4)say+=" どんどん はやく きりかわるよ！";
     speak(say,0.95,1.15);
-    bLater(rReady,[0,4200,6400,7800][rs.lv]);
+    bLater(rReady,[0,4200,6400,7800,9200][rs.lv]);
   }else{
     rSig("ready",'<div class="tx">レベル '+rs.lv+'</div>');
     speak(say,0.95,1.15);
@@ -3895,22 +3897,24 @@ function rReady(){
   $("#rt0").innerHTML="";$("#rt1").innerHTML="";
   $$("#rstage .fighter").forEach(function(f){f.classList.remove("turn");});
   rSig("ready",'<div class="tx">よーい…</div>');
-  /* フェイントは レベル2 から。レベル3 は ほねの にせ あいずも まざる */
-  var feints=[],n=0;
-  if(rs.lv>=2)n=Math.random()<.3?0:(Math.random()<.65?1:2);
+  /* フェイントは レベル2 から。レベル3 は そっくりさんも まざる。
+     レベル4 は 2〜4こ つづけて、0.4〜0.6びょう ごとに どんどん きりかわる（すぐ あとに 🍖 が くる ことも ある） */
+  var feints=[],n=0,fast=rs.lv>=4;
+  if(fast)n=2+Math.floor(Math.random()*3);
+  else if(rs.lv>=2)n=Math.random()<.3?0:(Math.random()<.65?1:2);
   for(var j=0;j<n;j++)feints.push(pick(rs.lv>=3?["food","gaa","alike","alike","alike"]:["food","food","gaa"]));
-  var t=700+Math.random()*600;
+  var t=fast?500+Math.random()*500:700+Math.random()*600;
   feints.forEach(function(kind){
-    var at=t;
-    rAt(tok,at,function(){rFeint(kind,tok);});
-    t+=1100+Math.random()*700;
+    var at=t,gap=fast?400+Math.random()*200:1100+Math.random()*700;
+    rAt(tok,at,function(){rFeint(kind,tok,fast?gap-90:0);});
+    t+=gap;
   });
-  rAt(tok,Math.max(1600+Math.random()*2400,t),function(){rGo(tok);});
+  rAt(tok,fast&&n?t:Math.max(1600+Math.random()*2400,t),function(){rGo(tok);});
 }
 /* フェイント：ほんものの あいずと おなじ ばしょ・おなじ おおきさで でる。
    food＝ほかの たべもの、gaa＝あいての ピクッと「ガ…ガ…」（みじかい うなりごえ）、
    alike（レベル3）＝🍗・🦴 が「ガオー！」の もじと おなじ おとで でる。🍖 だけが ほんもの */
-function rFeint(kind,tok){
+function rFeint(kind,tok,show){
   if(rs.phase!=="wait")return;
   var other=1-rs.k,d=other===0?1:-1,ms=850,cpuFoul=.08;
   if(kind==="food"){
@@ -3925,6 +3929,7 @@ function rFeint(kind,tok){
     rSnd("roar");
     ms=750;cpuFoul=.15;
   }
+  if(show)ms=show;
   rAt(tok,ms,function(){if(rs.phase==="wait")rSig("ready",'<div class="tx">よーい…</div>');});
   /* コンピュータも ときどき つられて おてつき */
   if(rs.cpu&&Math.random()<cpuFoul)rAt(tok,280+Math.random()*200,function(){rTap(other);});
@@ -4043,7 +4048,7 @@ function rEnd(w){
     var keys=Object.keys(rec.days).sort();
     while(keys.length>60)delete rec.days[keys.shift()];
   }
-  if(rSet.lv==="auto"&&rec.lv<3&&rec.streak>=R_LVUP[rec.lv]){rec.lv++;rec.streak=0;lvup=rec.lv;}
+  if(rSet.lv==="auto"&&rec.lv<4&&rec.streak>=R_LVUP[rec.lv]){rec.lv++;rec.streak=0;lvup=rec.lv;}
   saveRRec();
   if(kidWon)addStar();
   if(newBest)addStar();
@@ -4063,7 +4068,7 @@ function rEnd(w){
     }else html+='<div class="msg">こんかいは タッチの はやさが はかれなかったよ</div>';
     if(rs.fouls)html+='<div class="msg">おてつき '+rs.fouls+'かい</div>';
     if(lvup)html+='<div class="best">⬆️ レベル '+lvup+' に アップ！</div><div class="msg">'+
-      (lvup===2?'つぎから ほかの たべもの や「ガ…」の フェイントが でるよ':'つぎから 🍗 や 🦴 の そっくりさんも でるよ')+'</div>';
+      (lvup===2?'つぎから ほかの たべもの や「ガ…」の フェイントが でるよ':lvup===3?'つぎから 🍗 や 🦴 の そっくりさんも でるよ':'つぎから どんどん はやく きりかわるよ')+'</div>';
     html+='<div class="done"><button class="big" id="r-again">もういっかい</button><button class="ghost" id="r-other">ほかの たいせん</button></div>';
     var el=$("#rend");el.innerHTML=html;el.style.display="flex";
     $("#r-again").addEventListener("click",function(){rUnlock();startReact();});
@@ -4120,7 +4125,7 @@ function openRSet(){
       return '<button data-k="'+key+'" data-v="'+o[0]+'"'+(String(rSet[key])===String(o[0])?' class="on"':'')+'>'+o[1]+'</button>';
     }).join("")+'</div>';
   };
-  var nx=R.lv<3?'（あと '+Math.max(0,R_LVUP[R.lv]-R.streak)+'かい おてつき なしで タッチできたら アップ）':'（さいこう レベル）';
+  var nx=R.lv<4?'（あと '+Math.max(0,R_LVUP[R.lv]-R.streak)+'かい おてつき なしで タッチできたら アップ）':'（さいこう レベル）';
   $("#sheet-inner").innerHTML=
    '<div class="bset'+(rSet.who==="cpu"?" dim":"")+'"><h2>⚙️ はやうち たいけつの せってい</h2>'+
    '<div class="bset-row"><span>あいて</span>'+seg("who",[["papa","👨 パパ"],["cpu","🤖 コンピュータ"]])+'</div>'+
@@ -4128,8 +4133,8 @@ function openRSet(){
    '<div class="bset-row calc"><span>パパの ハンデ（パパの タッチを おそく かぞえる）</span>'+
      seg("handi",[["auto","おまかせ"],["0","なし"],["200","0.2びょう"],["400","0.4びょう"],["600","0.6びょう"]])+
      '<span class="bset-now">おまかせの いま：'+rSec(R.h)+'びょう（こどもが 6わり くらい かてるように かわる）</span></div>'+
-   '<div class="bset-row"><span>レベル</span>'+seg("lv",[["auto","おまかせ"],["1","1"],["2","2"],["3","3"]])+
-     '<span class="bset-now">おまかせの いま：レベル '+R.lv+nx+'<br>1＝ガオーだけ ／ 2＝ほかの たべもの・「ガ…」の フェイント ／ 3＝🍗・🦴 の そっくりさん（ガオーの こえつき）</span></div>'+
+   '<div class="bset-row"><span>レベル</span>'+seg("lv",[["auto","おまかせ"],["1","1"],["2","2"],["3","3"],["4","4"]])+
+     '<span class="bset-now">おまかせの いま：レベル '+R.lv+nx+'<br>1＝ガオーだけ ／ 2＝ほかの たべもの・「ガ…」の フェイント ／ 3＝🍗・🦴 の そっくりさん（ガオーの こえつき） ／ 4＝つぎつぎ はやく きりかわる</span></div>'+
    '<div class="bset-row"><span>📈 おうちのかたへ：1にちの へいきんの はやさ（びょう・ひくいほど はやい）</span>'+rChart()+
      (R.best?'<span class="bset-now">いままでの ベスト '+rSec(R.best)+'びょう</span>':'')+'</div>'+
    '<div class="sheet-actions"><button class="big" id="sheet-close">とじる</button></div></div>';
