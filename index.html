@@ -3163,6 +3163,7 @@ function startBattle(){
       round:0,subj1:null,over:false,winner:null,phase:"intro",ev:null,toks:null,pos:0,
       mode:mode,od:bSet.od,dd:bSet.dd,carry:bSet.carry};
   bs.f.forEach(function(F,i){F.big=bBig(F,bs.f[1-i]);});
+  if(mode==="add")bs.f.forEach(function(F){var a=bStartAcc(F);F.acc=a;F.hp=F.max-a;});
   $("#bstage").innerHTML=
     '<div class="bhp">'+bs.f.map(function(F,i){
       return '<div class="hp h'+i+'" id="bh'+i+'"><b>'+F.d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div></div>';
@@ -3228,6 +3229,13 @@ function bCands(cur){
 }
 /* 1かいに へらす ごうけい（けいさんの かず＋さらに ダメージ）。3かい くらい あたると たおれる */
 function bTotal(A,D){return Math.max(1,Math.round(D.max*(.3+Math.random()*.15)*(.8+.04*A.st.p)));}
+/* たしざん バトルは さいしょから すこし ダメージを いれておく（「0 ＋ ◯」の けいさんに ならないように）。
+   さいだい たいりょくの 12〜25% くらい。くりあがり なしでも つぎの けいさんが つくれる かずに する */
+function bStartAcc(F){
+  var lo=Math.max(1,Math.round(F.max*.12)),hi=Math.max(lo,Math.round(F.max*.25)),c=[];
+  for(var n=lo;n<=hi;n++)if(bs.carry||bCands(n).length)c.push(n);
+  return c.length?pick(c):0;
+}
 /* ダメージは dd けたの かず。くりあがり なしで つくれない ときは null（とどめの いちげき） */
 function bDamage(D,r,t){
   var all=bCands(bs.mode==="add"?D.acc:D.hp);
