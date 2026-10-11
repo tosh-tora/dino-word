@@ -200,7 +200,9 @@ body.testmode .testmode-flag{display:block;}
   width:min(46vw,300px);height:16px;border-radius:50%;
   background:var(--shadow);filter:blur(6px);opacity:.5;
 }
-.stage.bounce svg{animation:bounce .6s ease;}
+.stage.bounce svg,.stage.bounce img{animation:bounce .6s ease;}
+.stage.bounce .gen-icon{animation:hop .6s ease;}
+@keyframes hop{30%{transform:translateY(-16px) scale(1.04);}55%{transform:none;}75%{transform:translateY(-6px);}}
 @keyframes bounce{
   0%{transform:translate(-50%,-50%) translateY(0) scale(1);}
   30%{transform:translate(-50%,-50%) translateY(-16px) scale(1.04);}
@@ -225,7 +227,19 @@ body.testmode .testmode-flag{display:block;}
 }
 
 /* ---------- sentence slots ---------- */
-.play{flex:0 0 auto;margin-top:auto;padding:0 clamp(10px,2.4vw,26px) clamp(10px,2vh,20px);display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);}
+.play{position:relative;flex:0 0 auto;margin-top:auto;padding:0 clamp(10px,2.4vw,26px) clamp(10px,2vh,20px);display:flex;flex-direction:column;gap:clamp(8px,1.4vh,14px);}
+/* おてつきの ヒント：ことばの わくの うえに ふきだしで だす（ならびが ずれない ように うかせる） */
+.miss-hint{
+  position:absolute;left:50%;bottom:calc(100% + 6px);transform:translate(-50%,6px);
+  max-width:calc(100% - 20px);width:max-content;text-align:center;
+  font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-size:clamp(18px,2.6vw,26px);
+  color:var(--ink);background:var(--panel);padding:8px 18px;border-radius:18px;
+  box-shadow:0 0 0 3px var(--accent),0 6px 16px var(--shadow);
+  opacity:0;pointer-events:none;z-index:14;transition:opacity .2s,transform .2s;
+}
+.miss-hint.show{opacity:1;transform:translate(-50%,0);}
+.miss-hint .mh-color{white-space:nowrap;}
+.miss-hint .mh-color i{display:inline-block;width:.8em;height:.8em;border-radius:4px;margin:0 4px 0 6px;vertical-align:-1px;}
 .slots{
   display:flex;flex-wrap:wrap;justify-content:center;align-items:center;
   gap:8px;min-height:64px;
@@ -527,6 +541,9 @@ body.testmode .testmode-flag{display:block;}
 .fbody{flex:1 1 0;min-height:0;position:relative;overflow:visible;display:flex;align-items:flex-end;justify-content:center;transform-origin:50% 100%;transition:transform .6s ease,opacity .6s ease,filter .6s ease;}
 .fbody .fimg{width:calc(100% * var(--s,1));height:calc(100% * var(--s,1));transition:filter .2s ease;}
 .fighter.turn .fimg{filter:drop-shadow(0 0 10px var(--accent)) drop-shadow(0 0 4px var(--accent));}
+/* おてつきの ヒント：「〜したのは どっち？」の きょうりゅうを ぴかぴか */
+.fighter.hint-flash .fimg{animation:hintFlash .5s ease-in-out 3;}
+@keyframes hintFlash{50%{filter:drop-shadow(0 0 14px #FFD23F) drop-shadow(0 0 6px #FFD23F) brightness(1.15);}}
 /* まけ：さかさまに なって ねてしまう（💤）。かち：ぴょんぴょん よろこぶ */
 .fighter.down .fimg{transform:scaleY(-1);}
 .bfx.zzz{top:20%;font-size:clamp(28px,5vw,48px);animation:none;}
@@ -539,6 +556,8 @@ body.testmode .testmode-flag{display:block;}
   top:40%;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--miss);
   font-size:clamp(28px,5vw,52px);text-shadow:0 2px 0 var(--panel),0 0 8px var(--panel);
 }
+/* あたった しるしの 💥：ぶつかった あたりに おおきく */
+.bfx.hitfx{font-size:clamp(40px,8vw,84px);z-index:4;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
 @keyframes fxpop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0;}100%{transform:translate(-50%,-50%) scale(1);opacity:1;}}
 
 .bq{
@@ -650,6 +669,7 @@ body.testmode .testmode-flag{display:block;}
 }
 .rsig.card .rule{display:flex;align-items:center;gap:10px;font-size:clamp(16px,3vmin,22px);text-align:left;}
 .rsig.card .rule i{font-style:normal;font-size:1.8em;}
+.rsig.card .rule-go{margin-top:6px;font-size:clamp(15px,2.8vmin,20px);color:var(--accent-deep);animation:pulse 1.6s ease-in-out infinite;}
 .rsig.ready .tx{color:var(--muted);}
 .rsig.foul .tx{color:var(--miss);}
 .rend{
@@ -749,6 +769,7 @@ body.testmode .testmode-flag{display:block;}
     <div class="confetti-layer" id="build-confetti"></div>
     <div class="correct-badge" id="build-badge">せいかい！🎉</div>
     <div class="play">
+      <div class="miss-hint" id="miss-hint"></div>
       <div class="slots" id="slots"></div>
       <div class="bank" id="bank"></div>
       <div class="legend">
@@ -867,6 +888,7 @@ body.testmode .testmode-flag{display:block;}
     <div class="confetti-layer" id="battle-confetti"></div>
     <div class="correct-badge" id="battle-badge">バトル スタート！</div>
     <div class="play">
+      <div class="miss-hint" id="b-miss-hint"></div>
       <div class="bq" id="b-q"></div>
       <div class="slots" id="b-slots"></div>
       <div class="bank" id="b-bank"></div>
@@ -2215,7 +2237,7 @@ function newSentence(){
     curTokens=pickSentence(cur);
     stage.innerHTML='<div class="shadow"></div>'+dinoSVG(cur.id);
   }
-  slotPos=0;
+  slotPos=0;missReset();
   curCands=[curTokens].concat(curTokens.alts||[]);
   curCands.forEach(markMods);
 
@@ -2293,10 +2315,72 @@ function tapChip(btn,tok){
     speak(speechWord(tok),1);
     var nx=$('.slot[data-i="'+slotPos+'"]');
     if(nx)nx.classList.add("next");
+    missReset();
     if(slotPos===curTokens.length)finishSentence();
   }else{
     wrongFeedback(btn);
+    missHint(curCands,slotPos,false,tok);
   }
+}
+
+/* おてつきの ヒント（こえ と もじ）。「だれが？」「どう した？」のように つぎの ことばを きく。
+   2かいめからは、ちがう いろの カードを おしていたら「あかの カードだよ」も いう。
+   バトルで なまえの わくなら「よけたのは どっち？」と きいて その きょうりゅうを ぴかぴか させる。
+   まいかい うらで え を はずませる（バトルは うごきを もういちど ながす）。
+   かいすうは わくごとに かぞえる（せいかいで つぎの わくへ いったら 0 に もどす） */
+var missN=0,missTimer=null,missHideTimer=null;
+var ROLE_COLOR={sub:"あお",par:"きいろ",wrd:"みどり",prd:"あか",mod:"むらさき"};
+function missReset(){
+  missN=0;clearTimeout(missTimer);clearTimeout(missHideTimer);
+  $$(".miss-hint").forEach(function(el){el.classList.remove("show");});
+}
+function missAsk(toks,pos){
+  var t=toks[pos],nx=toks[pos+1],p=nx&&nx[1]==="par"?nx[0]:"",w=t[0];
+  if(p==="は")p="が";
+  switch(t[1]){
+    case "sub":return "だれ"+(p||"かな")+"？";
+    case "wrd":if(/[0-9０-９]/.test(w))return "どのくらい？";
+      return p==="へ"||p==="に"?"どこ"+p+"？":p==="の"?"なんの？":p?"なに"+p+"？":"なにかな？";
+    case "mod":return /と$/.test(w)?"どんな ふうに？":"どんな？";
+    case "prd":return w==="です"?"さいごの ことばは どれかな？":/ました$/.test(w)?"どう した？":/です$/.test(w)?"どんな？":"どう する？";
+    default:return "つなぐ ことばは どれかな？";
+  }
+}
+function missHint(cands,pos,battle,tok){
+  missN++;
+  var t=cands[0][pos],say=missAsk(cands[0],pos);
+  /* なまえの わくなら、どちらの きょうりゅうか ぴかぴか させて きく */
+  if(battle&&t[1]==="sub"){
+    var ev=bs.ev;
+    [0,1].some(function(i){
+      if(bs.f[i].d.name!==t[0])return false;
+      say=(i===ev.ai?(ev.counter?"はんげきした":"こうげきした"):
+        ev.type==="hit"?"やられた":ev.type==="guard"?"まもった":"よけた")+"のは どっち？";
+      var f=$("#bf"+i);
+      if(!prefersReducedMotion()){f.classList.remove("hint-flash");void f.offsetWidth;f.classList.add("hint-flash");}
+      return true;
+    });
+  }
+  var html=say;
+  /* ならべかたが いくつか ある ぶんは、どの こたえの いろとも ちがう ときだけ いろを いう */
+  if(missN>1&&cands.every(function(c){return c[pos][1]!==tok[1];})){
+    var c=ROLE_COLOR[t[1]];
+    say+=" "+c+"の カードだよ";
+    html+=' <span class="mh-color"><i style="background:var(--r-'+t[1]+')"></i>'+c+'の カードだよ</span>';
+  }
+  if(battle){
+    /* カードは かくさずに うごきだけ ながす（さいしょの うごきの とちゅうなら ださない） */
+    if(!$("#b-bank").classList.contains("wait"))bMotion(bs.ev);
+  }else if(!prefersReducedMotion()){
+    var st=$("#build-stage");
+    st.classList.remove("bounce");void st.offsetWidth;st.classList.add("bounce");
+  }
+  var box=$(battle?"#b-miss-hint":"#miss-hint");
+  box.innerHTML=html;box.classList.add("show");
+  clearTimeout(missHideTimer);
+  missHideTimer=setTimeout(function(){box.classList.remove("show");},4000);
+  clearTimeout(missTimer);
+  missTimer=setTimeout(function(){speak(say,0.85);},300);
 }
 
 /* じょし「は」は はつおんが「わ」に なる ので、よみあげ ようの もじれつだけ へんかんする（がめんの ひょうじは そのまま「は」） */
@@ -2855,7 +2939,8 @@ var BRESULT={
   knock:{t:[["ぽーんと","mod"],["ふっとびました","prd"]],ng:["hit"]},
   squash:{t:[["ぺちゃんこ","wrd"],["に","par"],["なりました","prd"]]},
   shiver:{t:[["ぶるぶる","mod"],["ふるえました","prd"]]},
-  sink:{t:[["うみ","wrd"],["に","par"],["しずみました","prd"]]}
+  /* じぶんで しずんだのでは ないので うけみに する */
+  sink:{t:[["うみ","wrd"],["に","par"],["しずめられました","prd"]]}
 };
 /* 「〇〇で 〜ました」で ありえる どうし。ダミーに ださない（「つめで けりました」も ただしそうなので）。 */
 var BPLAUS={
@@ -3005,6 +3090,15 @@ var BMOVE={
   "おどかしました":["roar","shiver"],"のしかかりました":["press","squash"],
   "きょうしゅうしました":["swoop","knock"],"ひきずりこみました":["drag","sink"]
 };
+/* みための にかた。おなじ なかまや BLOOK_NEAR どうしは うごきが にているので ダミーに しない */
+var BLOOK={bite:"mouth",peck:"mouth",scratch:"claw",kick:"jump",flykick:"jump",tail:"tail",
+  stab:"charge",headbutt:"charge",tackle:"charge",stomp:"heavy",press:"heavy",roar:"roar",swoop:"sky",drag:"sea"};
+var BLOOK_NEAR={charge:["heavy"],heavy:["charge","jump"],jump:["heavy"],mouth:["claw"],claw:["mouth"]};
+function bLookFar(a,b){
+  var la=BLOOK[(BMOVE[a]||[])[0]],lb=BLOOK[(BMOVE[b]||[])[0]];
+  if(!la||!lb)return true;
+  return la!==lb&&(BLOOK_NEAR[la]||[]).indexOf(lb)<0;
+}
 /* まもりの うごきを はじめる じかん（ms）と ながさ */
 var BDEF_T={dodge:[250,800],guard:[280,700],fly:[220,1300],dive:[220,1300]};
 var BKF={
@@ -3195,7 +3289,6 @@ function startBattle(){
   var mname=mode==="add"?"たしざん バトル":"ひきざん バトル";
   $("#battle-badge").textContent=bSet.on?mname+"！":"バトル スタート！";
   showBadge($("#battle-badge"));
-  speak("さあ、"+bs.f[0].d.name+" たい "+bs.f[1].d.name+"！ "+(bSet.on?mname:"バトル スタート")+"！",0.95,1.2);
   bLater(nextRound,2600);
 }
 /* さいだい たいりょくは もとの かずの けた（od）で きめる。ダメージの けた（dd）が ちいさくても、
@@ -3307,14 +3400,35 @@ function bSentence(ev,r){
   if(ev.type==="hit")forms=bHitForms(ev,A,D,S,P);
   else forms=bDefForms(ev,A,D,S,P)[ev.type];
   forms=forms.filter(function(f){return !(f.x&&(r<=1||ev.ko));});
-  var f=pick(forms);
+  /* おなじ たいせんで いちど でた ぶんは、ほかに なければ だけ だす */
+  var key=function(f){return f.toks.map(function(t){return t[0];}).join("");};
+  bs.said=bs.said||{};
+  var fresh=forms.filter(function(f){return !bs.said[key(f)];});
+  var f=pick(fresh.length?fresh:forms);
+  bs.said[key(f)]=1;
   return {toks:f.toks,extras:f.extras,alts:f.alts||[]};
 }
 function bHitForms(ev,A,D,S,P){
   var mv=ev.move,v=BVERBS[mv.v],out=[];
   var mine=bs.f[ev.ai].st.m.concat(bs.f[ev.ai].big).map(function(m){return m.v;});
   /* ダミーの どうし（とくべつな わざと、じぶんの わざは ださない） */
-  var fake=function(f){return pick(Object.keys(BVERBS).filter(function(x){return !BVERBS[x].sp&&mine.indexOf(x)<0&&f(x);}));};
+  /* うごきが にている わざ（ずつき と のしかかり など）は みわけが つかないので、なるべく ちがう うごきの わざに する */
+  var fake=function(f){
+    var all=Object.keys(BVERBS).filter(function(x){return !BVERBS[x].sp&&mine.indexOf(x)<0&&f(x);});
+    var far=all.filter(function(x){return bLookFar(mv.v,x);});
+    return pick(far.length?far:all);
+  };
+  /* ダミーの じょしと ダミーの どうしで べつの ぶんが できない ように、ダミーの どうしは
+     こたえと おなじ じょし（を／に）を とる ものだけに する（「D を きょうしゅうしました」の ダミーに
+     「に」と「たいあたりしました」を だすと「D に たいあたりしました」が できてしまう）。
+     ばあいに よって いなければ じょしは きにしない */
+  var fakeObj=function(obj,f){
+    f=f||function(){return true;};
+    var o=function(x){return BVERBS[x].obj===obj&&f(x);};
+    var far=function(x){return bLookFar(mv.v,x);};
+    /* じょしが あって うごきも ちがう もの → じょしだけ あう もの → うごきだけ ちがう もの の じゅん */
+    return fake(function(x){return o(x)&&far(x);})||fake(o)||fake(function(x){return f(x)&&far(x);})||fake(f);
+  };
   /* ダミーの ようすの ことば（にた なかまの ものは ださない） */
   var fakeOn=function(){
     var ng=[v.g].concat(BON_NG[v.g]||[]);
@@ -3328,11 +3442,11 @@ function bHitForms(ev,A,D,S,P){
     /* 「A が D に とげ で はんげきしました」（A＝とげの ほう。アンキロは「しっぽの ハンマー で」）。
        はんげきは この かたちだけ */
     return [{toks:[S(A.name),P("が"),S(D.name),P("に")].concat(W,[P("で"),V]),
-      extras:[P("を"),[fake(notOk),"prd"]]}];
+      extras:[P("を"),[fakeObj("に",notOk),"prd"]]}];
   }
   if(mv.s==="sky"){
     out.push({toks:[S(A.name),P("が"),["そら","wrd"],P("から"),S(D.name),P("を"),V],
-      extras:[["うみ","wrd"],P("に"),[fake(function(){return true;}),"prd"]]});
+      extras:[["うみ","wrd"],P("に"),[fakeObj(v.obj),"prd"]]});
   }else if(mv.s==="sea"){
     out.push({toks:[S(A.name),P("が"),S(D.name),P("を"),["うみ","wrd"],P("に"),V],
       extras:[["そら","wrd"],P("から"),[fake(function(){return true;}),"prd"]]});
@@ -3341,7 +3455,8 @@ function bHitForms(ev,A,D,S,P){
        full:「A が D を くちばし で つつきました」：あいても なにで も いつも いれる */
     var p1=P(v.wo?"に":v.obj),p2=P(v.wo?"を":"で");
     out.push({toks:[S(A.name),P("が"),S(D.name),p1].concat(W,[p2,V]),
-      extras:[P(v.wo?"で":(v.obj==="に"?"を":"に")),[fake(notOk),"prd"]]});
+      /* wo は「D に しっぽ で 〜」に ならない よう「を」を とる どうしを ダミーに する */
+      extras:[P(v.wo?"で":(v.obj==="に"?"を":"に")),[fakeObj(v.wo?"を":v.obj,notOk),"prd"]]});
     /* 「A が D に しっぽ を ばしっと うちつけました」（ながく なりすぎない ように 1ごの ときだけ） */
     if(W.length===1){
       var on1=[v.on,"mod"];
@@ -3352,17 +3467,19 @@ function bHitForms(ev,A,D,S,P){
   }else{
     if(W.length){
       /* 「A が きば で かみつきました」 */
+      /* ダミーの じょしは、こたえ や ダミーの どうしと「A が D に 〜」の ぶんに ならない ものに する */
+      var fk=fake(notOk),fo=fk&&BVERBS[fk].obj;
       out.push({toks:[S(A.name),P("が")].concat(W,[P("で"),V]),
-        extras:[S(D.name),P(pick(["を","に","の","と"])),[fake(notOk),"prd"]]});
+        extras:[S(D.name),P(pick(["を","に","の"].filter(function(x){return x!==v.obj&&x!==fo;}))),[fk,"prd"]]});
     }
     /* 「A が D に かみつきました」「A が D を けりました」：に と を の つかいわけ */
     out.push({toks:[S(A.name),P("が"),S(D.name),P(v.obj),V],
-      extras:[P(v.obj==="に"?"を":"に"),[fake(function(x){return BVERBS[x].fx!==v.fx;}),"prd"]]});
+      extras:[P(v.obj==="に"?"を":"に"),[fakeObj(v.obj,function(x){return BVERBS[x].fx!==v.fx;}),"prd"]]});
     /* 「A が D に がぶっと かみつきました」 */
     var on=[v.on,"mod"];
     out.push({toks:[S(A.name),P("が"),S(D.name),P(v.obj),on,V],
       alts:[[S(A.name),P("が"),on,S(D.name),P(v.obj),V]],
-      extras:[P(v.obj==="に"?"を":"に"),fakeOn(),[fake(function(x){return BVERBS[x].fx!==v.fx;}),"prd"]]});
+      extras:[P(v.obj==="に"?"を":"に"),fakeOn(),[fakeObj(v.obj,function(x){return BVERBS[x].fx!==v.fx;}),"prd"]]});
     /* 「A が きば で がぶっと かみつきました」（ながく なりすぎない ように 1ごの ときだけ） */
     if(W.length===1){
       out.push({toks:[S(A.name),P("が"),W[0],P("で"),on,V],
@@ -3382,7 +3499,8 @@ function bHitForms(ev,A,D,S,P){
   var hurt=(BMOVE[mv.v]||["","knock"])[1],res=BRESULT[hurt];
   var others=Object.keys(BRESULT).filter(function(k){return k!==hurt&&(res.ng||[]).indexOf(k)<0;});
   var ot=BRESULT[pick(others)].t;
-  out.push({x:1,toks:[S(D.name),P("が")].concat(res.t),extras:[S(A.name),ot[ot.length-1]]});
+  /* しずめられた ときは「D が A に しずめられました」も なりたつので、あいての なまえの かわりに「そら」を ダミーに する */
+  out.push({x:1,toks:[S(D.name),P("が")].concat(res.t),extras:[hurt==="sink"?["そら","wrd"]:S(A.name),ot[ot.length-1]]});
   return out;
 }
 /* まもりの ぶん。にた いみの どうしは おなじ ばめんの ダミーに しない */
@@ -3396,7 +3514,7 @@ function bDefForms(ev,A,D,S,P){
       {toks:[S(D.name),P("が"),["ぴょんと","mod"],["とびのきました","prd"]],extras:[S(A.name),P("に"),["もぐりました","prd"]]},
       miss],
     guard:[
-      {toks:[S(D.name),P("が"),[ev.w,"wrd"],P("で"),["まもりました","prd"]],extras:[S(A.name),P(pick(["に","の"])),["たおれました","prd"]]},
+      {toks:[S(D.name),P("が"),[ev.w,"wrd"],P("で"),["まもりました","prd"]],extras:[S(A.name),P("の"),["たおれました","prd"]]},
       {toks:[S(D.name),P("が"),[ev.w,"wrd"],P("で"),["はねかえしました","prd"]],extras:[S(A.name),P("を"),["はねかえされました","prd"]]},
       /* はねかえされた ほうは うしろに よろける（BRECOIL） */
       {x:1,toks:[S(A.name),P("が"),["はねかえされました","prd"]],extras:[S(D.name),P("を"),["はねかえしました","prd"]]}],
@@ -3405,7 +3523,7 @@ function bDefForms(ev,A,D,S,P){
       {toks:[S(D.name),P("が"),["ばさっと","mod"],["まいあがりました","prd"]],extras:[S(A.name),["うみ","wrd"],["しずみました","prd"]]},
       miss],
     dive:[
-      {toks:[S(D.name),P("が"),["うみ","wrd"],P("に"),["もぐりました","prd"]],extras:[S(A.name),P("と"),["たおれました","prd"]]},
+      {toks:[S(D.name),P("が"),["うみ","wrd"],P("に"),["もぐりました","prd"]],extras:[S(A.name),P("を"),["たおれました","prd"]]},
       {toks:[S(D.name),P("が"),["ざぶんと","mod"],["もぐりました","prd"]],extras:[S(A.name),["ばさっと","mod"],["まいあがりました","prd"]]},
       miss]
   };
@@ -3436,7 +3554,15 @@ function nextRound(){
   /* たいじゅうの さが あれば、2かいに 1かいは ふみつけ か のしかかり */
   /* うみの なかまは もともと うみに いるので「うみに ひきずりこむ」は つかわない */
   var ms=(FACTS[D.d.id]||{}).move==="swim"?A.st.m.filter(function(m){return m.s!=="sea";}):A.st.m;
-  var ev={ai:ai,di:di,move:A.big.length&&Math.random()<.5?pick(A.big):pick(ms)};
+  /* おなじ ぶんが つづかない ように、その きょうりゅうが まだ つかって いない わざを さきに えらぶ */
+  bs.usedMv=bs.usedMv||{};
+  var pickMv=function(list){
+    var fresh=list.filter(function(m){return !bs.usedMv[ai+m.v+m.w.join("")];});
+    return pick(fresh.length?fresh:list);
+  };
+  var big=A.big.filter(function(m){return !bs.usedMv[ai+m.v+m.w.join("")];});
+  var ev={ai:ai,di:di,move:A.big.length&&Math.random()<(big.length?.5:.2)?pickMv(A.big):pickMv(ms)};
+  bs.usedMv[ai+ev.move.v+ev.move.w.join("")]=1;
   var def=D.st.d===false?{r:0}:D.st.d||{t:"dodge",r:.08};
   /* おなじ きょうりゅうが 2かい つづけて まもらない（バトルが かならず すすむ） */
   /* 3〜6かいで しょうぶが つく ように：1かいに たいりょくの 1/4〜1/3 くらい へらす
@@ -3480,7 +3606,10 @@ function bMotion(ev){
   var ab=$(".fbody",fa),db=$(".fbody",fd);
   bAnim(ab,bKF(d,BATK[mv[0]]),1000);
   if(ev.type==="hit"){
-    bLater(function(){bAnim(db,bKF(d,BHURT[mv[1]]),mv[1]==="hit"||mv[1]==="squash"?650:850);},430);
+    bLater(function(){
+      bAnim(db,bKF(d,BHURT[mv[1]]),mv[1]==="hit"||mv[1]==="squash"?650:850);
+      bImpact(ev.di,d,mv[1]==="shiver"?"😱":"💥");
+    },430);
   }else{
     var t=BDEF_T[ev.type];
     bLater(function(){bAnim(db,bKF(d,BDEF[ev.type]),t[1]);},t[0]);
@@ -3498,25 +3627,60 @@ function bCounterMotion(ev){
   var tail=ev.move.w.indexOf("ハンマー")>=0;
   bLater(function(){bAnim(sp,tail?bKF(-d,BATK.tail):bKF(d,BDEF.guard),tail?800:700);},tail?200:280);
   bLater(function(){bAnim(at,bKF(d,BRECOIL),550);},470);
-  bLater(function(){bAnim(at,bKF(-d,BHURT.hit),650);},1020);
+  bLater(function(){bAnim(at,bKF(-d,BHURT.hit),650);bImpact(ev.di,-d);},1020);
+}
+/* あたった しるし：💥 を だして、がめんを すこし ゆらす。
+   よけた／まもった ときは ださないので、のけぞる うごきと よける うごきを まちがえない。
+   バトルは うごきを みて ぶんを つくるので、prefers-reduced-motion でも とめない（bKF と おなじ） */
+/* 💥 は、あたった きょうりゅうの え の うち あいてに むいている がわ（あたまの あたり）に だす。
+   え は わくの なかで よこか たてに よはくが あるので、じっさいに かかれている ところを はかる
+   （img は したに よせて、svg は まんなかに かかれる） */
+function bHitMark(i,ic){
+  var f=$("#bf"+i),el=$("img,svg",f);if(!f||!el)return;
+  var fr=f.getBoundingClientRect(),r=el.getBoundingClientRect(),img=el.tagName==="IMG";
+  var ratio=img?(el.naturalWidth?el.naturalHeight/el.naturalWidth:0):160/240;
+  var cw=r.width,ch=r.height,cx=r.left,cy=r.top;
+  if(ratio){
+    if(r.height/r.width>ratio){ch=r.width*ratio;cy=img?r.bottom-ch:r.top+(r.height-ch)/2;}
+    else{cw=r.height/ratio;cx=r.left+(r.width-cw)/2;}
+  }
+  /* ひだり（i=0）は みぎがわ、みぎ（i=1）は ひだりがわが あいてを むいている */
+  var x=cx+cw*(i===0?.8:.2)-fr.left,y=cy+ch*.35-fr.top;
+  var s=document.createElement("span");
+  s.className="bfx hitfx";s.textContent=ic;
+  s.style.left=Math.round(x)+"px";s.style.top=Math.round(y)+"px";
+  f.appendChild(s);
+  setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},1100);
+}
+function bImpact(i,d,ic){
+  bHitMark(i,ic||"💥");
+  var st=$("#bstage");
+  if(st&&st.animate)st.animate([{transform:"none"},{transform:"translate("+(8*d)+"px,3px)"},{transform:"translate("+(-5*d)+"px,-2px)"},{transform:"translate("+(3*d)+"px,1px)"},{transform:"none"}],{duration:320});
 }
 $("#b-replay").addEventListener("click",function(){
-  if(bs&&bs.phase==="round"&&bs.pos<bs.toks.length)bPlay(bs.ev);
+  if(bs&&bs.phase==="round"&&bs.pos<bs.end)bPlay(bs.ev);
 });
 
 function bRenderSentence(toks,extras,alts){
   bs.cands=[toks].concat(alts||[]);
   bs.cands.forEach(markMods);
-  bs.toks=toks;bs.pos=0;
+  bs.toks=toks;bs.pos=0;missReset();
+  /* さいごの じゅつご（あかい ことば）は うごきだけでは まぎらわしいので、カードに ださずに
+     はじめから わくに いれておく（bs.end＝こどもが ならべる ところの おわり） */
+  var last=toks[toks.length-1],fixed=last[1]==="prd";
+  bs.end=fixed?toks.length-1:toks.length;
   var slots=$("#b-slots");slots.innerHTML="";
   toks.forEach(function(t,i){
     var el=document.createElement("div");
-    el.className="slot n-"+t[1]+(i===0?" next":"");
+    el.className=i>=bs.end?"slot filled r-"+t[1]:"slot n-"+t[1]+(i===0?" next":"");
+    if(i>=bs.end)el.textContent=t[0];
     el.dataset.i=i;
     slots.appendChild(el);
   });
   var bank=$("#b-bank");bank.innerHTML="";
-  shuffle(toks.concat(extras)).forEach(function(t){
+  var ex=extras.filter(function(t){return !fixed||t[1]!=="prd";});
+  if(fixed)ex=bMoreExtras(toks,ex);
+  shuffle(toks.slice(0,bs.end).concat(ex)).forEach(function(t){
     var b=document.createElement("button");
     b.className="chip r-"+t[1];
     b.textContent=t[0];
@@ -3524,10 +3688,34 @@ function bRenderSentence(toks,extras,alts){
     bank.appendChild(b);
   });
 }
+/* あかい ことばを カードに ださない ぶんは ダミーが へって かんたんに なるので、3まいに なるまで たす。
+   たすのは、その ばめんでは べつの ただしい ぶんに ならない もの：
+   ようすの ことば（こうげきの おと）、そらや うみ、いない きょうりゅうの なまえ、あわない じょし */
+var BX_MOD=["がぶっと","ばりばりと","つんつんと","がおーっと"],BX_WRD=["そら","うみ","ぺちゃんこ"];
+function bMoreExtras(toks,ex){
+  var out=ex.slice(),has=function(w){return toks.concat(out).some(function(t){return t[0]===w;});};
+  var role=function(r){return toks.some(function(t){return t[1]===r;});};
+  var add=function(list,r){
+    var c=list.filter(function(w){return !has(w);});
+    if(c.length&&out.length<3)out.push([pick(c),r]);
+  };
+  var names=bs.f.map(function(F){return F.d.name;});
+  /* ようすの ことばは、ダミーに まだ ない ときだけ */
+  if(role("mod")&&!out.some(function(t){return t[1]==="mod";}))add(BX_MOD,"mod");
+  if(role("wrd"))add(BX_WRD,"wrd");
+  /* 「そらへ」と「そらに」、「うみに」と「うみで」のように ばしょの じょしは いれかえても なりたつので、
+     ばしょの ことばが ある ぶんには「を」「で」「に」「へ」を ださない */
+  var place=toks.some(function(t){return BX_WRD.indexOf(t[0])>=0;});
+  /* 「A が D の とげで」のように、なにかで こうげきする ぶんでは「の」も なりたつので ださない */
+  add(["を","の","と","で"].filter(function(p){return !(place&&(p==="を"||p==="で"))&&!(p==="の"&&role("wrd"));}),"par");
+  add(DINOS.map(function(d){return d.name;}).filter(function(n){return names.indexOf(n)<0;}),"sub");
+  return out;
+}
 function bTap(btn,tok){
-  if(!bs||bs.pos>=bs.toks.length)return;
+  if(!bs||bs.pos>=bs.end)return;
   var ok=bs.cands.filter(function(c){return c[bs.pos][0]===tok[0];});
-  if(!ok.length){wrongFeedback(btn);return;}
+  if(!ok.length){wrongFeedback(btn);missHint(bs.cands,bs.pos,true,tok);return;}
+  missReset();
   bs.cands=ok;bs.toks=ok[0];
   var want=bs.toks[bs.pos];
   /* ならびかたが きまったら、まだ からの わくの いろも あわせる */
@@ -3542,9 +3730,9 @@ function bTap(btn,tok){
   if(bs.round===1&&bs.pos===0)bQ("");
   bs.pos++;
   speak(speechWord(tok),1);
-  var nx=$('#b-slots .slot[data-i="'+bs.pos+'"]');
+  var nx=bs.pos<bs.end&&$('#b-slots .slot[data-i="'+bs.pos+'"]');
   if(nx)nx.classList.add("next");
-  if(bs.pos===bs.toks.length){$("#b-bank").innerHTML="";bFinish();}
+  if(bs.pos===bs.end){$("#b-bank").innerHTML="";bFinish();}
 }
 function bSay(){return bs.toks.map(speechWord).join("");}
 
@@ -3628,6 +3816,7 @@ function bBonus(ev){
   if(ev.bko){D.hp=0;D.acc=D.max;bs.over=true;bs.winner=ev.ai;}
   bFx(ev.di,(add?"+":"−")+b,"dmg");
   bAnim($("#bf"+ev.di+" .fbody"),bKF(ev.ai===0?1:-1,BHURT.hit),650);
+  bImpact(ev.di,ev.ai===0?1:-1);
   setHP(ev.di);
   var now=add?D.acc:D.hp;
   $("#b-mq").innerHTML='さらに ダメージ <em>'+b+'</em>！ '+(add?'ダメージは ':'のこりは ')+'<em>'+now+'</em>';
@@ -3864,21 +4053,15 @@ function startReact(){
   hideBadge($("#react-badge"));
   go("react");
   rFit();
-  var say=rs.f[0].d.name+" たい "+rs.f[1].d.name+"！";
+  /* 「〇〇 たい 〇〇！」は あいてを きめる ルーレット（bRoulette）で もう よみあげて いるので ここでは いわない */
   if(!rRulesSeen[rs.lv]){
     rRulesSeen[rs.lv]=1;
     try{localStorage.setItem("dinolab_rrules",JSON.stringify(rRulesSeen));}catch(e){}
-    rSig("card",rRules(rs.lv));
-    say+=" ガオーが でたら、はやく タッチ！";
-    if(rs.lv>=2)say+=" ほかの たべものや、ガ、では、タッチしないよ。";
-    if(rs.lv>=3)say+=" にている ものにも ちゅうい！";
-    if(rs.lv===4)say+=" つぎつぎ きりかわるよ！";
-    if(rs.lv>=5)say+=" もっと はやく きりかわるよ！";
-    speak(say,0.95,1.15);
-    bLater(rReady,[0,4200,6400,7800,9200,9200][rs.lv]);
+    /* ルールは よみあげない。がめんを タッチしたら けして はじめる（rStartTap） */
+    rs.phase="rules";
+    rSig("card",rRules(rs.lv)+'<div class="rule-go">👆 がめんを タッチして スタート</div>');
   }else{
     rSig("ready",'<div class="tx">レベル '+rs.lv+'</div>');
-    speak(say,0.95,1.15);
     bLater(rReady,2400);
   }
 }
@@ -4105,6 +4288,16 @@ function rEnd(w){
 }
 (function(){
   var ev=window.PointerEvent?"pointerdown":"touchstart";
+  /* ルールが でている ときは、どこを タッチしても ルールを けして スタート（おてつきには しない） */
+  $("#s-react").addEventListener(ev,function(e){
+    if(!rs||rs.phase!=="rules"||e.target.closest("#r-back"))return;
+    if(e.cancelable)e.preventDefault();
+    e.stopPropagation();
+    rUnlock();
+    rs.phase="intro";
+    rSig("ready",'<div class="tx">レベル '+rs.lv+'</div>');
+    bLater(rReady,1200);
+  },true);
   $$("#rzones .rzone").forEach(function(z){
     z.addEventListener(ev,function(e){
       if(e.cancelable)e.preventDefault();
