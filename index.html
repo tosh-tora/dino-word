@@ -749,7 +749,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-11-2</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-16-2</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3856,8 +3856,8 @@ function bFinish(){
   speak(say,0.95,1.2);
 }
 
-/* こたえは a − b（または a + b）。まちがいの せんたくしは
-   「くりさがり・くりあがりを わすれた こたえ」と ±1・±2・±10（3けたは ±100 も） */
+/* こたえは a − b（または a + b）。まちがいの せんたくしは まよいやすい じゅんに
+   「くりさがり・くりあがりを わすれた こたえ」→ ±1 → ±2・±10（こたえが 10いじょうの とき）・±100（3けた） */
 function bMathChoices(a,b,add){
   var ans=add?a+b:a-b,out=[ans];
   var x=bDigits(a),y=bDigits(b),forgot=0;
@@ -3867,9 +3867,11 @@ function bMathChoices(a,b,add){
   }
   var ok=function(v){return v>=0&&out.indexOf(v)<0;};
   if(ok(forgot))out.push(forgot);
-  var near=[ans+10,ans-10,ans+1,ans-1,ans+2,ans-2];
-  if(bs.od===3)near.push(ans+100,ans-100);
-  shuffle(near).forEach(function(v){if(out.length<3&&ok(v))out.push(v);});
+  /* ちいさい かずで ±10 を だすと すぐ わかるので、まず ±1 を ひとつ いれる */
+  var one=shuffle([ans+1,ans-1]),rest=[one[1],ans+2,ans-2];
+  if(ans>=10)rest.push(ans+10,ans-10);
+  if(bs.od===3&&ans>=100)rest.push(ans+100,ans-100);
+  [one[0]].concat(shuffle(rest),one[1]).forEach(function(v){if(out.length<3&&ok(v))out.push(v);});
   return shuffle(out);
 }
 function bShowMath(ev){
@@ -3932,7 +3934,7 @@ function bBonus(ev){
 /* ひやあせ：え は わくの したに よせて かいてあるので、えの たかさを はかって あたまの あたりに だす。
    じぶんの きょうりゅうは いつも みぎを むいている */
 function bSweat(i){
-  bFx(i,"💦","sweat");
+  bFx(i,"💧","sweat");
   var fi=$("#bf"+i+" .fimg"),s=$("#bf"+i+" .bfx.sweat");
   if(!fi||!s||!fi.clientHeight)return;
   var im=$("img,svg",fi),bw=fi.clientWidth,bh=fi.clientHeight,ratio=160/240;
