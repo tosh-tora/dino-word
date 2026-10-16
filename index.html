@@ -749,7 +749,7 @@ body.testmode .testmode-flag{display:block;}
 :focus-visible{outline:3px solid var(--accent);outline-offset:3px;}
 </style>
 
-<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-16-1</div>
+<div id="build-stamp" style="position:fixed;bottom:calc(2px + env(safe-area-inset-bottom));right:calc(4px + env(safe-area-inset-right));font-size:9px;color:rgba(0,0,0,.18);pointer-events:none;z-index:99999;font-family:monospace;">v2026-10-16-2</div>
 
 <div class="testmode-flag">テストモード（きろくされません）</div>
 
@@ -3934,7 +3934,7 @@ function bBonus(ev){
 /* ひやあせ：え は わくの したに よせて かいてあるので、えの たかさを はかって あたまの あたりに だす。
    じぶんの きょうりゅうは いつも みぎを むいている */
 function bSweat(i){
-  bFx(i,"💦","sweat");
+  bFx(i,"💧","sweat");
   var fi=$("#bf"+i+" .fimg"),s=$("#bf"+i+" .bfx.sweat");
   if(!fi||!s||!fi.clientHeight)return;
   var im=$("img,svg",fi),bw=fi.clientWidth,bh=fi.clientHeight,ratio=160/240;
