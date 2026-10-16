@@ -375,7 +375,7 @@ body.testmode .testmode-flag{display:block;}
 :root[data-theme="dark"] .zcard .times{color:#20160A;}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .zcard .times{color:#20160A;}}
 .zcard.locked{background:var(--panel2);}
-.lvtag{font-size:.75em;opacity:.85;}
+.lvtag{font-size:.75em;opacity:.85;white-space:nowrap;}
 .caught{
   text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
   font-size:clamp(18px,2.4vw,24px);color:var(--accent-deep);margin:0 0 12px;
@@ -489,7 +489,7 @@ body.testmode .testmode-flag{display:block;}
 }
 .bpick-btns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;}
 .big:disabled{opacity:.35;pointer-events:none;}
-.bgrid .zcard{padding:30px 8px 10px;}
+.bgrid .zcard{padding:10px 8px 10px;}
 .bgrid .zcard.sel0{box-shadow:0 0 0 4px var(--r-prd);}
 .bpick-none{
   flex:0 0 auto;margin:0 clamp(12px,3vw,28px) 12px;text-align:center;color:var(--muted);
@@ -3153,7 +3153,7 @@ function renderPick(){
     b.dataset.id=d.id;
     if(testMode||got[d.id]){
       b.className="zcard";
-      b.innerHTML=(testMode?'':'<span class="times">LV'+dinoLv(d.id)+'</span>')+dinoSVG(d.id)+'<b>'+d.name+'</b>';
+      b.innerHTML=dinoSVG(d.id)+'<b>'+d.name+bLvTag(d,true)+'</b>';
       b.addEventListener("click",function(){pickFighter(d);});
     }else{
       b.className="zcard locked";
