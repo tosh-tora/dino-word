@@ -110,14 +110,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   font-weight:700;font-size:clamp(15px,1.7vw,18px);
 }
 .iconbtn:active{transform:translateY(2px);box-shadow:none;}
-.stars{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:8px 18px;border-radius:999px;
-  background:var(--panel);box-shadow:0 2px 0 var(--line);
-  font-weight:700;font-variant-numeric:tabular-nums;
-  font-size:clamp(15px,1.7vw,18px);
-}
-.stars svg{width:22px;height:22px;}
 
 /* ---------- home ---------- */
 .home{
@@ -141,7 +133,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 /* バトルは 2つ ならべて、それぞれ 2れつ ぶんの はばに する */
 .mode.wide{grid-column:span 2;}
 @media (max-width:1000px){.modes{grid-template-columns:repeat(2,1fr);}.mode.wide{grid-column:auto;}}
-@media (max-width:560px){.modes{grid-template-columns:1fr;}}
 .mode{
   display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;
   padding:clamp(14px,2vw,20px);border-radius:22px;
@@ -157,6 +148,19 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
 .mode b{display:block;font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(17px,2vw,21px);font-weight:700;}
 .mode span{display:block;color:var(--muted);font-size:clamp(12px,1.4vw,14px);margin-top:4px;line-height:1.6;}
 .mode .badge{font-family:"Zen Maru Gothic",sans-serif;font-weight:700;}
+/* スマホの たてがめんは 2れつに して、カードを ちいさく まとめる（せつめいは はぶく） */
+@media (max-width:560px){
+  .home{justify-content:flex-start;gap:10px;padding:4px 12px 16px;}
+  .home h1{font-size:clamp(26px,8vw,34px);}
+  .home .sub{font-size:12px;}
+  .home-art,.home-art svg,.home-art img{max-height:22dvh;}
+  .modes{grid-template-columns:1fr 1fr;gap:10px;}
+  .mode{flex-direction:row;justify-content:flex-start;gap:8px;padding:10px;border-radius:16px;text-align:left;min-height:0;}
+  .mode .badge{width:36px;height:36px;border-radius:10px;font-size:20px;}
+  .mode b{font-size:14px;line-height:1.3;word-break:keep-all;}
+  .mode>span:last-child{margin-top:0;}
+  .mode span span{display:none;}
+}
 .choices.solved .choice:not(.right){opacity:.3;}
 .credits{
   width:min(94vw,1080px);margin:0;color:var(--muted);
@@ -377,7 +381,19 @@ body.testmode .testmode-flag{display:block;}
 :root[data-theme="dark"] .zcard .times{color:#20160A;}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .zcard .times{color:#20160A;}}
 .zcard.locked{background:var(--panel2);}
-.lvtag{font-size:.75em;opacity:.85;white-space:nowrap;}
+.lvtag{font-size:.75em;white-space:nowrap;}
+/* レベルの いろ：あがるほど めだつ いろに（1 はいいろ → 10 きんいろ） */
+.lvc{display:inline-block;padding:1px 7px;border-radius:999px;font-weight:900;line-height:1.3;color:#fff!important;text-shadow:none!important;}
+.lvc.lv1{background:#7C838C;}
+.lvc.lv2{background:#3E9A5A;}
+.lvc.lv3{background:#18938C;}
+.lvc.lv4{background:#2F7FD0;}
+.lvc.lv5{background:#5865D6;}
+.lvc.lv6{background:#8A4FD0;}
+.lvc.lv7{background:#C2479A;}
+.lvc.lv8{background:#DD6A1F;}
+.lvc.lv9{background:#D23B3B;}
+.lvc.lv10{background:linear-gradient(135deg,#FFE27A,#E8A912);color:#3A2600!important;box-shadow:0 0 0 1.5px #FFF2B8 inset;}
 .caught{
   text-align:center;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;
   font-size:clamp(18px,2.4vw,24px);color:var(--accent-deep);margin:0 0 12px;
@@ -596,7 +612,7 @@ body.testmode .testmode-flag{display:block;}
 @media (orientation:landscape){
   #s-battle .bar{position:absolute;top:0;left:0;right:0;z-index:5;gap:6px;padding:6px clamp(10px,3vw,30px);pointer-events:none;}
   #s-battle .bar>*{pointer-events:auto;}
-  #s-battle .bar .stars,#s-battle .lbl,#s-battle .bk{display:none;}
+  #s-battle .lbl,#s-battle .bk{display:none;}
   #s-battle .iconbtn{padding:6px 12px;font-size:15px;min-height:36px;}
   #s-battle .bstage{padding-top:6px;}
   #s-battle .bhp{margin:0 var(--br,150px) 0 var(--bl,56px);min-height:36px;align-items:center;}
@@ -723,7 +739,6 @@ body.testmode .testmode-flag{display:block;}
   <section class="screen on" id="s-home">
     <div class="bar">
       <div class="spacer"></div>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span id="star-count">0</span></div>
       <button class="iconbtn" id="theme-btn" aria-label="よるモード">🌙</button>
     </div>
     <div class="home">
@@ -774,7 +789,6 @@ body.testmode .testmode-flag{display:block;}
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
       <button class="iconbtn" id="say-again">🔊 きく</button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="stage" id="build-stage"><div class="shadow"></div></div>
     <div class="confetti-layer" id="build-confetti"></div>
@@ -802,7 +816,6 @@ body.testmode .testmode-flag{display:block;}
     <div class="bar">
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="stage" id="quiz-stage"><div class="shadow"></div></div>
     <div class="confetti-layer" id="quiz-confetti"></div>
@@ -826,7 +839,6 @@ body.testmode .testmode-flag{display:block;}
       <div class="spacer"></div>
       <button class="iconbtn" id="kanji-hint">💡 ヒント</button>
       <button class="iconbtn" id="kanji-say">🔊 きく</button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="confetti-layer" id="kanji-confetti"></div>
     <div class="correct-badge" id="kanji-badge">せいかい！🎉</div>
@@ -855,7 +867,6 @@ body.testmode .testmode-flag{display:block;}
     <div class="bar">
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="zprogress" id="zprogress"></div>
     <div class="zukan" id="zukan"></div>
@@ -867,7 +878,6 @@ body.testmode .testmode-flag{display:block;}
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
       <button class="iconbtn" id="bp-set">⚙️ せってい</button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="bpick-top">
       <div class="bpick-mode" id="bpick-mode"></div>
@@ -893,7 +903,6 @@ body.testmode .testmode-flag{display:block;}
       <div class="spacer"></div>
       <button class="iconbtn" id="b-replay" aria-label="もういちど みる">🔁<span class="lbl"> もういちど みる</span></button>
       <button class="iconbtn" id="b-set" aria-label="せってい">⚙️<span class="lbl"> せってい</span></button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="bstage" id="bstage"></div>
     <div class="confetti-layer" id="battle-confetti"></div>
@@ -1967,8 +1976,8 @@ $("#testmode-btn").addEventListener("click",function(){
 
 var stars=0;
 try{stars=parseInt(localStorage.getItem("dinolab_stars")||"0",10)||0;}catch(e){stars=0;}
-function renderStars(){$$(".stars span, #star-count").forEach(function(el){el.textContent=stars;});}
-function addStar(){if(testMode)return;stars++;try{localStorage.setItem("dinolab_stars",String(stars));}catch(e){}renderStars();}
+/* ほしは がめんには ださないが、かずは きろくしておく */
+function addStar(){if(testMode)return;stars++;try{localStorage.setItem("dinolab_stars",String(stars));}catch(e){}}
 
 /* ゲットした きょうりゅう（ぶんを つくろうで かんせいさせると ずかんに のる）。
    got[id] = つかまえた かいすう。むかしの ほぞんけいしき（id の はいれつ）も よみこむ。 */
@@ -1981,6 +1990,7 @@ try{
 function gotCount(){return DINOS.filter(function(d){return got[d.id];}).length;}
 /* レベル＝つかまえた かいすう（さいこう DLV_MAX）。レベルが あがると バトルで すこし つよくなる */
 var DLV_MAX=10;
+function lvCls(lv){return "lvc lv"+Math.max(1,Math.min(lv,DLV_MAX));}
 function dinoLv(id){return Math.min(got[id]||0,DLV_MAX);}
 /* つかまえた かいすうを 1 ふやす。{first:はじめての ゲット, lvUp:あがった レベル（あがらなければ 0）} */
 function markGot(id){
@@ -2869,7 +2879,7 @@ function renderZukan(){
     var b=document.createElement("button");
     if(got[d.id]){
       b.className="zcard";
-      b.innerHTML='<span class="times">LV'+dinoLv(d.id)+'</span>'+dinoSVG(d.id)+'<b>'+d.name+'</b>';
+      b.innerHTML='<span class="times '+lvCls(dinoLv(d.id))+'">LV'+dinoLv(d.id)+'</span>'+dinoSVG(d.id)+'<b>'+d.name+'</b>';
     }else{
       b.className="zcard locked";
       b.innerHTML=dinoSVG(d.id,"mystery")+'<b>？？？</b>';
@@ -2895,7 +2905,7 @@ function openSheet(d){
   var html=dinoSVG(d.id)+
    '<h2>'+d.name+'</h2>'+
    '<div class="kindrow"><span class="kind">'+d.kind+'</span></div>'+
-   '<p class="caught">🎉 <em>'+got[d.id]+'</em>ひき つかまえたよ！ いまは <em>LV'+dinoLv(d.id)+'</em>'+(dinoLv(d.id)>=DLV_MAX?'（さいこう）':'')+'</p>'+
+   '<p class="caught">🎉 <em>'+got[d.id]+'</em>ひき つかまえたよ！ いまは <em class="'+lvCls(dinoLv(d.id))+'">LV'+dinoLv(d.id)+'</em>'+(dinoLv(d.id)>=DLV_MAX?'（さいこう）':'')+'</p>'+
    '<dl class="facts">'+
      '<div class="fact"><dt>なまえの いみ</dt><dd>'+d.meaning+'</dd></div>'+
      '<div class="fact"><dt>おおきさ</dt><dd>'+d.size+'</dd></div>'+
@@ -3132,7 +3142,7 @@ function bMyStat(d){
   o.p=st.p+(lv-1)*.5;
   return o;
 }
-function bLvTag(d,mine){var lv=dinoLv(d.id);return mine&&lv&&!testMode?' <small class="lvtag">LV'+lv+'</small>':'';}
+function bLvTag(d,mine){var lv=dinoLv(d.id);return mine&&lv&&!testMode?' <small class="lvtag '+lvCls(lv)+'">LV'+lv+'</small>':'';}
 /* ぜんちょう（つばさの ひとは ひろげた ながさ）で みための おおきさを かえる */
 function bScale(id){
   var f=FACTS[id]||{},len=f.len||parseFloat(f.wing)||5;
@@ -4401,7 +4411,6 @@ function openRSet(){
 var homeIds=Object.keys(ART);
 var homeId=homeIds[Math.floor(Math.random()*homeIds.length)];
 $("#home-art").innerHTML=dinoSVG(homeId);
-renderStars();
 renderZukanSub();
 
 })();
