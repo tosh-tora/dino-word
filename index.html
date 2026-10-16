@@ -593,6 +593,15 @@ body.testmode .testmode-flag{display:block;}
 }
 .bmath .choices{width:min(94vw,520px);}
 .bmath .choice b{font-size:clamp(24px,3.6vw,36px);font-variant-numeric:tabular-nums;}
+/* けいさんを まちがえたら、その こたえで けいさんした けっかを 2びょう みせる（その あいだは おせない）。
+   まちがえた せんたくしは そのあと きえる */
+.bmath-x .bad{color:var(--miss);text-decoration:line-through;text-decoration-thickness:.08em;}
+.bmath .choices.wait .choice{pointer-events:none;}
+.bmath .choice.gone{visibility:hidden;pointer-events:none;}
+/* あせる じぶんの きょうりゅう：ひやあせが たれる */
+.bfx.sweat{left:72%;font-size:clamp(26px,4.6vw,46px);animation:sweat 1s ease-in 2;}
+@keyframes sweat{0%{transform:translate(-50%,-80%) scale(.6);opacity:0;}25%{transform:translate(-50%,-50%) scale(1);opacity:1;}100%{transform:translate(-50%,10%) scale(1);opacity:0;}}
+@media (prefers-reduced-motion:reduce){.bfx.sweat{animation:none;}}
 .bset h2{margin-bottom:12px;}
 .bset-row{display:flex;flex-direction:column;gap:6px;padding:10px 0;border-top:1px solid var(--line);}
 .bset-row>span{color:var(--muted);font-size:clamp(13px,1.6vw,15px);font-weight:700;}
@@ -3422,7 +3431,7 @@ function bFx(i,txt,cls){
   s.className="bfx"+(cls?" "+cls:"");s.textContent=txt;
   /* ダメージの かずは たおれても かたむかない ように、からだ ではなく わくに だす */
   $(cls==="dmg"?"#bf"+i:"#bf"+i+" .fbody").appendChild(s);
-  if(cls!=="zzz")setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},cls?1600:1100);
+  if(cls!=="zzz")setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},cls==="sweat"?2000:cls?1600:1100);
 }
 
 /* ことばを えらばない ぶんの つくりかた。
@@ -3827,8 +3836,20 @@ function bShowMath(ev){
     var c=document.createElement("button");
     c.className="choice";c.innerHTML="<b>"+n+"</b>";
     c.addEventListener("click",function(){
-      if(box.classList.contains("solved"))return;
-      if(n!==ans){wrongFeedback(c);return;}
+      if(box.classList.contains("solved")||box.classList.contains("wait"))return;
+      if(n!==ans){
+        /* まちがえた こたえで けいさんした けっかを 2びょう みせて、じぶんの きょうりゅうが ひやあせ */
+        wrongFeedback(c);
+        box.classList.add("wait");
+        $("#b-mx").innerHTML=a+op+b+' = <span class="bad">'+n+'</span>';
+        bSweat(0);
+        bLater(function(){
+          box.classList.remove("wait");
+          c.classList.add("gone");
+          $("#b-mx").textContent=a+op+b+" = ？";
+        },2000);
+        return;
+      }
       c.classList.add("right");box.classList.add("solved");
       $("#b-mx").textContent=a+op+b+" = "+ans;
       D.hp-=b;D.acc+=b;setHP(ev.di);
@@ -3859,6 +3880,18 @@ function bBonus(ev){
   speak(say,1,1.2);
   if(ev.bko)bLater(winFinish,1200);
   else bShowDone("next");
+}
+
+/* ひやあせ：え は わくの したに よせて かいてあるので、えの たかさを はかって あたまの あたりに だす。
+   じぶんの きょうりゅうは いつも みぎを むいている */
+function bSweat(i){
+  bFx(i,"💦","sweat");
+  var fi=$("#bf"+i+" .fimg"),s=$("#bf"+i+" .bfx.sweat");
+  if(!fi||!s||!fi.clientHeight)return;
+  var im=$("img,svg",fi),bw=fi.clientWidth,bh=fi.clientHeight,ratio=160/240;
+  if(im&&im.naturalWidth)ratio=im.naturalHeight/im.naturalWidth;
+  var ch=Math.min(bh,bw*ratio);
+  s.style.top=Math.round(fi.offsetTop+bh-ch*.85)+"px";
 }
 
 /* え は わくの したに よせて かいてあるので、わくの まんなかで ひっくりかえすと うえに とんでしまう。
