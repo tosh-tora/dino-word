@@ -4205,8 +4205,8 @@ function rReady(){
   });
   rAt(tok,Math.max(1600+Math.random()*2400,t),function(){rGo(tok);});
 }
-/* ひとつが でている じかん：レベル4 は 0.8〜1.2びょう、レベル5 は 0.48〜0.72びょう */
-function rGap(){return rs.lv>=5?480+Math.random()*240:800+Math.random()*400;}
+/* ひとつが でている じかん：レベル4 は 0.8〜1.2びょう、レベル5 は 0.4〜0.9びょう */
+function rGap(){return rs.lv>=5?400+Math.random()*500:800+Math.random()*400;}
 /* レベル4・5：ダミーを 1〜4こ つぎつぎ だして、そのあと 🍖。
    🍖 が おされずに きえたら、また ダミーから つづける（rGo を みる） */
 function rStream(tok,at){
