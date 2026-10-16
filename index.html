@@ -3540,14 +3540,18 @@ function bHitForms(ev,A,D,S,P){
     /* wo:「A が D に しっぽ を うちつけました」：に と を を どちらも つかう
        full:「A が D を くちばし で つつきました」：あいても なにで も いつも いれる */
     var p1=P(v.wo?"に":v.obj),p2=P(v.wo?"を":"で");
-    out.push({toks:[S(A.name),P("が"),S(D.name),p1].concat(W,[p2,V]),
-      /* wo は「D に しっぽ で 〜」に ならない よう「を」を とる どうしを ダミーに する */
-      extras:[P(v.wo?"で":(v.obj==="に"?"を":"に")),[fakeObj(v.wo?"を":v.obj,notOk),"prd"]]});
+    /* wo は「D に しっぽ で うちつけました」も ただしいので、「を」を「で」に かえた ならびも こたえに する */
+    var deAlt=function(seq){return v.wo?[seq.map(function(t){return t===p2?P("で"):t;})]:[];};
+    var t1=[S(A.name),P("が"),S(D.name),p1].concat(W,[p2,V]);
+    out.push({toks:t1,alts:deAlt(t1),
+      extras:[P(v.wo?"と":(v.obj==="に"?"を":"に")),[fakeObj(v.wo?"を":v.obj,notOk),"prd"]]});
     /* 「A が D に しっぽ を ばしっと うちつけました」（ながく なりすぎない ように 1ごの ときだけ） */
     if(W.length===1){
       var on1=[v.on,"mod"];
-      out.push({toks:[S(A.name),P("が"),S(D.name),p1,W[0],p2,on1,V],
-        alts:[[S(A.name),P("が"),on1,S(D.name),p1,W[0],p2,V],[S(A.name),P("が"),S(D.name),p1,on1,W[0],p2,V]],
+      var t2=[S(A.name),P("が"),S(D.name),p1,W[0],p2,on1,V],
+          a2=[[S(A.name),P("が"),on1,S(D.name),p1,W[0],p2,V],[S(A.name),P("が"),S(D.name),p1,on1,W[0],p2,V]];
+      out.push({toks:t2,
+        alts:a2.concat(deAlt(t2),deAlt(a2[0]),deAlt(a2[1])),
         extras:[fakeOn(),[fake(notOk),"prd"]]});
     }
   }else{
@@ -3779,7 +3783,9 @@ function bRenderSentence(toks,extras,alts){
    ようすの ことば（こうげきの おと）、そらや うみ、いない きょうりゅうの なまえ、あわない じょし */
 var BX_MOD=["がぶっと","ばりばりと","つんつんと","がおーっと"],BX_WRD=["そら","うみ","ぺちゃんこ"];
 function bMoreExtras(toks,ex){
-  var out=ex.slice(),has=function(w){return toks.concat(out).some(function(t){return t[0]===w;});};
+  /* ほかの こたえ（alts）に つかう ことばも ダミーに しない（「を」も「で」も ただしい ときなど） */
+  var all=[].concat.apply(toks,bs.cands||[]);
+  var out=ex.slice(),has=function(w){return all.concat(out).some(function(t){return t[0]===w;});};
   var role=function(r){return toks.some(function(t){return t[1]===r;});};
   var add=function(list,r){
     var c=list.filter(function(w){return !has(w);});
