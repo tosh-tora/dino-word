@@ -110,14 +110,6 @@ button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer
   font-weight:700;font-size:clamp(15px,1.7vw,18px);
 }
 .iconbtn:active{transform:translateY(2px);box-shadow:none;}
-.stars{
-  display:inline-flex;align-items:center;gap:8px;
-  padding:8px 18px;border-radius:999px;
-  background:var(--panel);box-shadow:0 2px 0 var(--line);
-  font-weight:700;font-variant-numeric:tabular-nums;
-  font-size:clamp(15px,1.7vw,18px);
-}
-.stars svg{width:22px;height:22px;}
 
 /* ---------- home ---------- */
 .home{
@@ -608,7 +600,7 @@ body.testmode .testmode-flag{display:block;}
 @media (orientation:landscape){
   #s-battle .bar{position:absolute;top:0;left:0;right:0;z-index:5;gap:6px;padding:6px clamp(10px,3vw,30px);pointer-events:none;}
   #s-battle .bar>*{pointer-events:auto;}
-  #s-battle .bar .stars,#s-battle .lbl,#s-battle .bk{display:none;}
+  #s-battle .lbl,#s-battle .bk{display:none;}
   #s-battle .iconbtn{padding:6px 12px;font-size:15px;min-height:36px;}
   #s-battle .bstage{padding-top:6px;}
   #s-battle .bhp{margin:0 var(--br,150px) 0 var(--bl,56px);min-height:36px;align-items:center;}
@@ -735,7 +727,6 @@ body.testmode .testmode-flag{display:block;}
   <section class="screen on" id="s-home">
     <div class="bar">
       <div class="spacer"></div>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span id="star-count">0</span></div>
       <button class="iconbtn" id="theme-btn" aria-label="よるモード">🌙</button>
     </div>
     <div class="home">
@@ -786,7 +777,6 @@ body.testmode .testmode-flag{display:block;}
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
       <button class="iconbtn" id="say-again">🔊 きく</button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="stage" id="build-stage"><div class="shadow"></div></div>
     <div class="confetti-layer" id="build-confetti"></div>
@@ -814,7 +804,6 @@ body.testmode .testmode-flag{display:block;}
     <div class="bar">
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="stage" id="quiz-stage"><div class="shadow"></div></div>
     <div class="confetti-layer" id="quiz-confetti"></div>
@@ -838,7 +827,6 @@ body.testmode .testmode-flag{display:block;}
       <div class="spacer"></div>
       <button class="iconbtn" id="kanji-hint">💡 ヒント</button>
       <button class="iconbtn" id="kanji-say">🔊 きく</button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="confetti-layer" id="kanji-confetti"></div>
     <div class="correct-badge" id="kanji-badge">せいかい！🎉</div>
@@ -867,7 +855,6 @@ body.testmode .testmode-flag{display:block;}
     <div class="bar">
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="zprogress" id="zprogress"></div>
     <div class="zukan" id="zukan"></div>
@@ -879,7 +866,6 @@ body.testmode .testmode-flag{display:block;}
       <button class="iconbtn" data-go="home">← もどる</button>
       <div class="spacer"></div>
       <button class="iconbtn" id="bp-set">⚙️ せってい</button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="bpick-top">
       <div class="bpick-mode" id="bpick-mode"></div>
@@ -905,7 +891,6 @@ body.testmode .testmode-flag{display:block;}
       <div class="spacer"></div>
       <button class="iconbtn" id="b-replay" aria-label="もういちど みる">🔁<span class="lbl"> もういちど みる</span></button>
       <button class="iconbtn" id="b-set" aria-label="せってい">⚙️<span class="lbl"> せってい</span></button>
-      <div class="stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent)" d="M12 2.6l2.7 5.9 6.4.7-4.8 4.3 1.3 6.3L12 16.6l-5.6 3.2 1.3-6.3L2.9 9.2l6.4-.7z"/></svg><span class="star-count">0</span></div>
     </div>
     <div class="bstage" id="bstage"></div>
     <div class="confetti-layer" id="battle-confetti"></div>
@@ -1979,8 +1964,8 @@ $("#testmode-btn").addEventListener("click",function(){
 
 var stars=0;
 try{stars=parseInt(localStorage.getItem("dinolab_stars")||"0",10)||0;}catch(e){stars=0;}
-function renderStars(){$$(".stars span, #star-count").forEach(function(el){el.textContent=stars;});}
-function addStar(){if(testMode)return;stars++;try{localStorage.setItem("dinolab_stars",String(stars));}catch(e){}renderStars();}
+/* ほしは がめんには ださないが、かずは きろくしておく */
+function addStar(){if(testMode)return;stars++;try{localStorage.setItem("dinolab_stars",String(stars));}catch(e){}}
 
 /* ゲットした きょうりゅう（ぶんを つくろうで かんせいさせると ずかんに のる）。
    got[id] = つかまえた かいすう。むかしの ほぞんけいしき（id の はいれつ）も よみこむ。 */
@@ -4414,7 +4399,6 @@ function openRSet(){
 var homeIds=Object.keys(ART);
 var homeId=homeIds[Math.floor(Math.random()*homeIds.length)];
 $("#home-art").innerHTML=dinoSVG(homeId);
-renderStars();
 renderZukanSub();
 
 })();
