@@ -588,6 +588,11 @@ body.testmode .testmode-flag{display:block;}
   top:40%;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;color:var(--miss);
   font-size:clamp(28px,5vw,52px);text-shadow:0 2px 0 var(--panel),0 0 8px var(--panel);
 }
+/* とくいわざの しるし：こうげきする きょうりゅうの うえに */
+.bfx.sig{
+  top:6%;font-family:"Zen Maru Gothic",sans-serif;font-weight:900;white-space:nowrap;color:#FFD23F;
+  font-size:clamp(18px,3.4vw,32px);text-shadow:0 2px 0 rgba(0,0,0,.5),0 0 10px rgba(0,0,0,.4);
+}
 /* あたった しるしの 💥：ぶつかった あたりに おおきく */
 .bfx.hitfx{font-size:clamp(40px,8vw,84px);z-index:4;filter:drop-shadow(0 2px 4px rgba(0,0,0,.35));}
 @keyframes fxpop{0%{transform:translate(-50%,-50%) scale(.2);opacity:0;}100%{transform:translate(-50%,-50%) scale(1);opacity:1;}}
@@ -3028,10 +3033,20 @@ var BVERBS={
   "はんげきしました":{obj:"に",fx:"🌵",sp:1},
   /* sp＝すむ ばしょの とくべつな わざ。ぶんの かたちが ちがうので ダミーには ださない */
   "きょうしゅうしました":{obj:"を",fx:"🦅",sp:1,ps:"きょうしゅうされました"},
-  "ひきずりこみました":{obj:"を",fx:"🌊",sp:1,ps:"ひきずりこまれました"}
+  "ひきずりこみました":{obj:"を",fx:"🌊",sp:1,ps:"ひきずりこまれました"},
+  /* sig＝その きょうりゅうの とくいわざ。ダミーには ださない（sp）。うごきも その わざ だけの もの。
+     ようすの ことば（on）も ほかの ぶんの ダミーには ださない */
+  "かみくだきました":{obj:"を",fx:"🦴",on:"がりがりと",g:"bite",sp:1,sig:1,ps:"かみくだかれました"},
+  "ふりまわしました":{obj:"を",fx:"🌀",on:"ぶんぶんと",g:"swing",sp:1,sig:1,ps:"ふりまわされました"},
+  "つきとばしました":{obj:"を",fx:"⭐",on:"どかーんと",g:"push",sp:1,sig:1,ps:"つきとばされました"},
+  "とびかかりました":{obj:"に",fx:"⚡",on:"ばっと",g:"jump",sp:1,sig:1,ps:"とびかかられました"},
+  "きりさきました":{obj:"を",fx:"⚔️",on:"ずばっと",g:"scratch",sp:1,sig:1,ps:"きりさかれました"},
+  "はたきました":{obj:"を",fx:"💨",on:"ぴしゃりと",g:"hit",sp:1,sig:1,ps:"はたかれました"}
 };
 /* 「どーんと うちつけました」「ばしっと たいあたりしました」も ありそうなので、hit と heavy は おたがいに ダミーに しない */
-var BON_NG={hit:["heavy"],heavy:["hit"]};
+var BON_NG={hit:["heavy"],heavy:["hit"],
+  /* とくいわざの ぶんで ありそうな ようすの ことばも ダミーに しない（「ばりばりと かみくだきました」など） */
+  bite:["scratch"],scratch:["bite","stab"],swing:["hit","heavy"],push:["hit","heavy","stab"],jump:["bite","scratch"]};
 /* こうげきを うけた がわの うごき（BHURT）→ どう なったかの ぶん。
    ng＝ダミーに しない もの（ふっとぶ ときも よろけて みえる） */
 var BRESULT={
@@ -3040,7 +3055,8 @@ var BRESULT={
   squash:{t:[["ぺちゃんこ","wrd"],["に","par"],["なりました","prd"]]},
   shiver:{t:[["ぶるぶる","mod"],["ふるえました","prd"]]},
   /* じぶんで しずんだのでは ないので うけみに する */
-  sink:{t:[["うみ","wrd"],["に","par"],["しずめられました","prd"]]}
+  sink:{t:[["うみ","wrd"],["に","par"],["しずめられました","prd"]]},
+  toss:{t:[["くるっと","mod"],["まわりました","prd"]],ng:["knock","hit"]}
 };
 /* 「〇〇で 〜ました」で ありえる どうし。ダミーに ださない（「つめで けりました」も ただしそうなので）。 */
 var BPLAUS={
@@ -3062,38 +3078,38 @@ function MV(w,v,full){return {w:w,v:v,full:!!full};}
    （sky:「A が そら から D を きょうしゅうしました」／sea:「A が D を うみ に ひきずりこみました」） */
 var SKY={w:[],v:"きょうしゅうしました",s:"sky"},SEA={w:[],v:"ひきずりこみました",s:"sea"};
 var BATTLE={
-  tyranno:{p:10,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")]},
+  tyranno:{p:10,m:[MV(["きば"],"かみくだきました",1),MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")]},
   ankylo:{p:8,m:[MV(["しっぽの","ハンマー"],"うちつけました")],d:{t:"guard",w:"よろい",r:.35},c:.2,cw:[["しっぽの","ハンマー"]]},
-  spino:{p:9,m:[MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
-  tricera:{p:8,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25}},
+  spino:{p:9,m:[MV([],"ふりまわしました"),MV(["ながい","くち"],"かみつきました"),MV(["おおきな","つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
+  tricera:{p:8,m:[MV(["つの"],"つきとばしました",1),MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25},c:.15,cw:[["つの"]]},
   ptera:{p:3,m:[MV(["くちばし"],"つつきました",1),SKY],d:{t:"fly",r:.35}},
   iguano:{p:5,m:[MV(["おやゆびの","とげ"],"つきました"),MV(["しっぽ"],"うちつけました")],c:.25},
-  pachy:{p:4,m:[MV(["かたい","あたま"],"ずつきしました")],d:{t:"dodge",r:.15}},
+  pachy:{p:4,m:[MV(["かたい","あたま"],"ずつきしました")],d:{t:"dodge",r:.15},c:.2,cw:[["かたい","あたま"]]},
   parasaur:{p:4,m:[MV(["おおきな","こえ"],"おどかしました"),MV(["しっぽ"],"うちつけました")],d:{t:"dodge",r:.15}},
   mosa:{p:9,m:[MV(["おおきな","くち"],"かみつきました"),SEA],d:{t:"dive",r:.3}},
-  raptor:{p:3,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.35}},
+  raptor:{p:3,m:[MV([],"とびかかりました"),MV(["あしの","つめ"],"けりました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.35}},
   stego:{p:7,m:[MV(["しっぽの","とげ"],"うちつけました")],c:.3},
   ampelo:{p:6,m:[MV(["ながい","しっぽ"],"うちつけました")],d:{t:"guard",w:"よろい",r:.3},c:.2},
   giganto:{p:9,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")]},
   quetz:{p:5,m:[MV(["くちばし"],"つつきました",1),SKY],d:{t:"fly",r:.3}},
-  yi:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"fly",r:.35}},
+  yi:{p:1,m:[MV(["つばさ"],"はたきました",1),MV(["つめ"],"ひっかきました")],d:{t:"fly",r:.35}},
   kentro:{p:5,m:[MV(["しっぽの","とげ"],"つきました")],c:.3},
   troodon:{p:3,m:[MV(["つめ"],"ひっかきました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.35}},
   yuty:{p:7,m:[MV(["きば"],"かみつきました"),MV(["しっぽ"],"うちつけました")]},
   archaeo:{p:1,m:[MV(["つめ"],"ひっかきました")],d:{t:"dodge",r:.3}},
-  argentino:{p:8,m:[MV(["ながい","しっぽ"],"うちつけました")],d:false},
-  brachio:{p:7,m:[MV([],"たいあたりしました"),MV(["ながい","しっぽ"],"うちつけました")],d:false},
-  diplo:{p:7,m:[MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  argentino:{p:8,m:[MV(["ながい","しっぽ"],"はたきました",1),MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  brachio:{p:7,m:[MV(["ながい","しっぽ"],"はたきました",1),MV([],"たいあたりしました"),MV(["ながい","しっぽ"],"うちつけました")],d:false},
+  diplo:{p:7,m:[MV(["ながい","しっぽ"],"はたきました",1),MV(["ながい","しっぽ"],"うちつけました")],d:false},
   allo:{p:8,m:[MV(["きば"],"かみつきました"),MV(["つめ"],"ひっかきました"),MV(["しっぽ"],"うちつけました")]},
   psitta:{p:2,m:[MV(["くちばし"],"かみつきました")],d:{t:"dodge",r:.25}},
-  therizino:{p:7,m:[MV(["ながい","つめ"],"ひっかきました")]},
+  therizino:{p:7,m:[MV(["ながい","つめ"],"きりさきました",1),MV(["ながい","つめ"],"ひっかきました")]},
   shantungo:{p:7,m:[MV(["しっぽ"],"うちつけました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.05}},
   styraco:{p:6,m:[MV(["つの"],"つきました"),MV([],"たいあたりしました")],d:{t:"guard",w:"えりかざり",r:.25},c:.2},
   elasmo:{p:5,m:[MV([],"かみつきました"),SEA],d:{t:"dive",r:.3}},
-  deino:{p:4,m:[MV(["あしの","つめ"],"けりました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.3}},
+  deino:{p:4,m:[MV([],"とびかかりました"),MV(["あしの","つめ"],"けりました"),MV([],"かみつきました"),MV([],"とびげりしました")],d:{t:"dodge",r:.3}},
   proto:{p:3,m:[MV(["くちばし"],"つつきました"),MV([],"たいあたりしました")],d:{t:"dodge",r:.15}},
   carno:{p:6,m:[MV(["きば"],"かみつきました"),MV([],"たいあたりしました"),MV(["しっぽ"],"うちつけました")],d:{t:"dodge",r:.2}},
-  carcharo:{p:9,m:[MV(["きば"],"かみつきました"),MV(["しっぽ"],"うちつけました")]}
+  carcharo:{p:9,m:[MV(["きば"],"きりさきました",1),MV(["きば"],"かみつきました"),MV(["しっぽ"],"うちつけました")]}
 };
 /* りくの いきものは、あいての 3ばい いじょう おもい ときだけ ふみつけ・のしかかりが つかえる */
 var BIG_RATIO=3;
@@ -3154,6 +3170,19 @@ var BATK={
   /* そらから きょうしゅう：たかく まいあがって、ななめに いっきに おそいかかる */
   swoop:[[0],[.18,{X:-4,Y:-60,S:.85}],[.32,{X:6,Y:-95,S:.8,R:-10}],[.46,{X:48,Y:-8,R:22}],[.56,{X:42,Y:-18,R:-4}],[.8,{X:16,Y:-40,S:.9}],[1]],
   /* うみに ひきずりこむ：とびかかって くわえ、いっしょに しずむ */
+  /* とくいわざ ---------- */
+  /* かみくだく：かみついたまま あたまを ぐいぐい ふる */
+  crunch:[[0],[.28,{X:30,Y:-6,R:-10}],[.4,{X:46,R:14}],[.5,{X:46,R:-8}],[.58,{X:46,R:14}],[.66,{X:46,R:-8}],[.74,{X:46,R:14}],[.86,{X:30}],[1]],
+  /* ふりまわす：くわえて もちあげ、ぐるんぐるん */
+  swing:[[0],[.25,{X:36}],[.38,{X:46,R:12}],[.5,{X:40,Y:-20,R:-30}],[.62,{X:40,Y:-20,R:30}],[.72,{X:40,Y:-10,R:-20}],[.85,{X:24}],[1]],
+  /* つきとばす：つので つっこんで、あたまを ぐいっと はねあげる */
+  launch:[[0],[.2,{X:-12,R:-6}],[.3,{X:-12,R:12}],[.45,{X:48,R:12}],[.55,{X:50,Y:-6,R:-22}],[.75,{X:20}],[1]],
+  /* とびかかる：ジャンプして しがみつき、ゆさゆさ */
+  pounce:[[0],[.15,{X:-6,SX:1.06,SY:.9}],[.32,{X:24,Y:-45,R:-10}],[.45,{X:46,Y:-20,R:10}],[.55,{X:48,Y:-24,R:-6}],[.65,{X:48,Y:-20,R:10}],[.75,{X:48,Y:-24,R:-6}],[.9,{X:20}],[1]],
+  /* きりさく：おおきく のびあがって、いっきに ズバッ */
+  slash:[[0],[.25,{X:30,Y:-16,R:-28,S:1.08}],[.42,{X:44,Y:4,R:20}],[.52,{X:42,R:16}],[.75,{X:20}],[1]],
+  /* はたく：うしろを むいて、しっぽを すばやく ピシャッ */
+  whip:[[0],[.18,{X:20,flip:1}],[.3,{X:26,flip:1,R:-14}],[.4,{X:40,flip:1,R:18}],[.46,{X:36,flip:1,R:-6}],[.6,{X:30,flip:1}],[.8,{X:10}],[1]],
   drag:[[0],[.25,{X:36,Y:-4}],[.42,{X:48,R:12}],[.6,{X:36,Y:30,R:8,O:.4}],[.75,{X:28,Y:40,O:.2}],[.9,{X:10,Y:15,O:.7}],[1]]
 };
 /* こうげきを うけた がわの うごき（d は おされる ほうこう） */
@@ -3167,6 +3196,8 @@ var BHURT={
   /* こわくて ちぢこまって ブルブル */
   shiver:[[0],[.12,{X:8,S:.86}],[.2,{X:12,S:.86}],[.28,{X:8,S:.86}],[.36,{X:12,S:.86}],[.44,{X:8,S:.86}],[.52,{X:12,S:.86}],[.6,{X:8,S:.86}],[.8,{X:4,S:.95}],[1]],
   /* あいての ほうへ ひっぱられて、みずの なかへ ぶくぶく */
+  /* ほうりなげられて くるっと まわって おちる */
+  toss:[[0],[.15,{Y:-30,R:-40,F:1.9}],[.4,{X:30,Y:-60,R:-200}],[.7,{X:40,R:-360}],[.85,{X:20,R:-360}],[1,{R:-360}]],
   sink:[[0],[.1,{X:-4,F:1.9}],[.3,{X:-12,Y:20,R:10,O:.6}],[.5,{X:-12,Y:45,R:14,O:.15}],[.75,{X:-6,Y:45,O:.15}],[1]]
 };
 /* まもる がわの うごき */
@@ -3188,11 +3219,14 @@ var BMOVE={
   "うちつけました":["tail","knock"],"つきました":["stab","hit"],"ふみつけました":["stomp","squash"],
   "つつきました":["peck","hit"],"たいあたりしました":["tackle","knock"],"ずつきしました":["headbutt","knock"],
   "おどかしました":["roar","shiver"],"のしかかりました":["press","squash"],
-  "きょうしゅうしました":["swoop","knock"],"ひきずりこみました":["drag","sink"]
+  "きょうしゅうしました":["swoop","knock"],"ひきずりこみました":["drag","sink"],
+  "かみくだきました":["crunch","hit"],"ふりまわしました":["swing","toss"],"つきとばしました":["launch","toss"],
+  "とびかかりました":["pounce","hit"],"きりさきました":["slash","hit"],"はたきました":["whip","knock"]
 };
 /* みための にかた。おなじ なかまや BLOOK_NEAR どうしは うごきが にているので ダミーに しない */
 var BLOOK={bite:"mouth",peck:"mouth",scratch:"claw",kick:"jump",flykick:"jump",tail:"tail",
-  stab:"charge",headbutt:"charge",tackle:"charge",stomp:"heavy",press:"heavy",roar:"roar",swoop:"sky",drag:"sea"};
+  stab:"charge",headbutt:"charge",tackle:"charge",stomp:"heavy",press:"heavy",roar:"roar",swoop:"sky",drag:"sea",
+  crunch:"mouth",swing:"mouth",launch:"charge",pounce:"jump",slash:"claw",whip:"tail"};
 var BLOOK_NEAR={charge:["heavy"],heavy:["charge","jump"],jump:["heavy"],mouth:["claw"],claw:["mouth"]};
 function bLookFar(a,b){
   var la=BLOOK[(BMOVE[a]||[])[0]],lb=BLOOK[(BMOVE[b]||[])[0]];
@@ -3494,7 +3528,7 @@ function bFx(i,txt,cls){
   var s=document.createElement("span");
   s.className="bfx"+(cls?" "+cls:"");s.textContent=txt;
   /* ダメージの かずは たおれても かたむかない ように、からだ ではなく わくに だす */
-  $(cls==="dmg"?"#bf"+i:"#bf"+i+" .fbody").appendChild(s);
+  $(cls==="dmg"||cls==="sig"?"#bf"+i:"#bf"+i+" .fbody").appendChild(s);
   if(cls!=="zzz")setTimeout(function(){if(s.parentNode)s.parentNode.removeChild(s);},cls==="sweat"?2000:cls?1600:1100);
 }
 
@@ -3545,7 +3579,7 @@ function bHitForms(ev,A,D,S,P){
   /* ダミーの ようすの ことば（にた なかまの ものは ださない） */
   var fakeOn=function(){
     var ng=[v.g].concat(BON_NG[v.g]||[]);
-    return [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].on&&ng.indexOf(BVERBS[x].g)<0;}).map(function(x){return BVERBS[x].on;})),"mod"];
+    return [pick(Object.keys(BVERBS).filter(function(x){return BVERBS[x].on&&!BVERBS[x].sig&&ng.indexOf(BVERBS[x].g)<0;}).map(function(x){return BVERBS[x].on;})),"mod"];
   };
   var V=[mv.v,"prd"];
   var W=mv.w.map(function(w){return [w,"wrd"];});
@@ -3675,6 +3709,9 @@ function nextRound(){
   bs.usedMv=bs.usedMv||{};
   var pickMv=function(list){
     var fresh=list.filter(function(m){return !bs.usedMv[ai+m.v+m.w.join("")];});
+    /* とくいわざは まだ つかって いなければ はんぶんの かくりつで さきに だす */
+    var sig=fresh.filter(function(m){return (BVERBS[m.v]||{}).sig;});
+    if(sig.length&&Math.random()<.5)return pick(sig);
     return pick(fresh.length?fresh:list);
   };
   var big=A.big.filter(function(m){return !bs.usedMv[ai+m.v+m.w.join("")];});
@@ -3725,10 +3762,12 @@ function bMotion(ev){
   var d=ev.ai===0?1:-1,mv=BMOVE[ev.move.v]||["tackle","knock"];
   var ab=$(".fbody",fa),db=$(".fbody",fd);
   bAnim(ab,bKF(d,BATK[mv[0]]),1000);
+  var vb=BVERBS[ev.move.v]||{};
+  if(vb.sig)bFx(ev.ai,"✨ とくいわざ","sig");
   if(ev.type==="hit"){
     bLater(function(){
-      bAnim(db,bKF(d,BHURT[mv[1]]),mv[1]==="hit"||mv[1]==="squash"?650:850);
-      bImpact(ev.di,d,mv[1]==="shiver"?"😱":"💥");
+      bAnim(db,bKF(d,BHURT[mv[1]]),mv[1]==="hit"||mv[1]==="squash"?650:mv[1]==="toss"?1000:850);
+      bImpact(ev.di,d,mv[1]==="shiver"?"😱":vb.sig?vb.fx:"💥");
     },430);
   }else{
     var t=BDEF_T[ev.type];
@@ -3743,9 +3782,10 @@ function bCounterMotion(ev){
   var sp=$("#bf"+ev.ai+" .fbody"),at=$("#bf"+ev.di+" .fbody");
   var d=ev.di===0?1:-1,mv=BMOVE[ev.atk.v]||["tackle","knock"];
   bAnim(at,bKF(d,BATK[mv[0]]),1000);
-  /* しっぽの ハンマーなら くるっと ふりまわす、とげなら ふんばって ピカッ */
-  var tail=ev.move.w.indexOf("ハンマー")>=0;
-  bLater(function(){bAnim(sp,tail?bKF(-d,BATK.tail):bKF(d,BDEF.guard),tail?800:700);},tail?200:280);
+  /* しっぽの ハンマーなら くるっと ふりまわす、つのや あたまなら まえに つきだす、とげなら ふんばって ピカッ */
+  var w=ev.move.w,tail=w.indexOf("ハンマー")>=0,head=w.indexOf("つの")>=0||w.indexOf("あたま")>=0;
+  var ck=tail?BATK.tail:head?[[0],[.3,{X:-6,R:10}],[.55,{X:12,R:10}],[1]]:BDEF.guard;
+  bLater(function(){bAnim(sp,bKF(tail||head?-d:d,ck),tail?800:700);},tail?200:280);
   bLater(function(){bAnim(at,bKF(d,BRECOIL),550);},470);
   bLater(function(){bAnim(at,bKF(-d,BHURT.hit),650);bImpact(ev.di,-d);},1020);
 }
