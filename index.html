@@ -2304,7 +2304,9 @@ var cur=null,curGeneral=null,curTokens=null,curCands=null,slotPos=0,lastId=null;
 
 function newSentence(){
   var stage=$("#build-stage");
-  curGeneral=Math.random()<GENERAL_RATE?pick(GENERAL):null;
+  /* おなじ ぶんが つづかない ように、まえと おなじ ぜんぱんの ぶんは ださない（きょうりゅうは lastId で ちがう ものに なる） */
+  var prevGen=curGeneral;
+  curGeneral=Math.random()<GENERAL_RATE?pick(GENERAL.filter(function(g){return g!==prevGen;})):null;
   if(curGeneral){
     cur=null;
     curTokens=curGeneral.s;
@@ -3501,18 +3503,22 @@ function bFx(i,txt,cls){
    alts＝おなじ いみで ならびかたが ちがう こたえ（「Aが がぶっと Dに」も「Aが Dに がぶっと」も ただしい）。
    x＝しゅごが いれかわる ぶん（うけみ・けっか など）。さいしょの 2かいは しゅごの きまり
    （nextRound を みてね）が くずれるので ださない。とどめの ときも、かった ほうが しゅごの ぶんに する */
+/* すぐ まえに だした じっきょうの ぶん（つぎの たいせんでも つづけて おなじ ぶんに しない） */
+var bLastSaid="";
 function bSentence(ev,r){
   var A=bs.f[ev.ai].d,D=bs.f[ev.di].d,forms;
   var S=function(n){return [n,"sub"];},P=function(p){return [p,"par"];};
   if(ev.type==="hit")forms=bHitForms(ev,A,D,S,P);
   else forms=bDefForms(ev,A,D,S,P)[ev.type];
   forms=forms.filter(function(f){return !(f.x&&(r<=1||ev.ko));});
-  /* おなじ たいせんで いちど でた ぶんは、ほかに なければ だけ だす */
+  /* おなじ たいせんで いちど でた ぶんは、ほかに なければ だけ だす。
+     ぜんぶ でて しまっても、すぐ まえと おなじ ぶんは なるべく ださない */
   var key=function(f){return f.toks.map(function(t){return t[0];}).join("");};
   bs.said=bs.said||{};
   var fresh=forms.filter(function(f){return !bs.said[key(f)];});
-  var f=pick(fresh.length?fresh:forms);
-  bs.said[key(f)]=1;
+  var notLast=forms.filter(function(f){return key(f)!==bLastSaid;});
+  var f=pick(fresh.length?fresh:notLast.length?notLast:forms);
+  bs.said[key(f)]=1;bLastSaid=key(f);
   return {toks:f.toks,extras:f.extras,alts:f.alts||[]};
 }
 function bHitForms(ev,A,D,S,P){
@@ -3680,7 +3686,10 @@ function nextRound(){
      （けいさんの かず＋さらに ダメージ）。6かいめは かならず あたって とどめ */
   /* とげの ある なかまは、じぶんの こうげきの かいに ときどき「はんげき」：
      あいてに とびかからせて、とげで やりかえす（よけたり まもったり できない） */
-  if(A.st.c&&Math.random()<A.st.c){
+  /* はんげきの ぶんは 1つの かたちしか ないので、おなじ きょうりゅうが 2かい つづけて はんげきしない */
+  var cnt=A.st.c&&bs.lastCounter!==ai&&Math.random()<A.st.c;
+  bs.lastCounter=cnt?ai:null;
+  if(cnt){
     ev.counter=true;ev.atk=pick(D.st.m.filter(function(m){return !m.s;}).concat([MV([],"たいあたりしました")]));ev.move={w:pick(A.st.cw||[["とげ"]]),v:"はんげきしました"};
     D.defended=false;
     bHit(ev,A,D,r);
@@ -3788,6 +3797,7 @@ function bRenderSentence(toks,extras,alts){
     el.dataset.i=i;
     slots.appendChild(el);
   });
+  if(bs.end>0)showSlotHint($('#b-slots .slot[data-i="0"]'),bs.cands,0);
   var bank=$("#b-bank");bank.innerHTML="";
   var ex=extras.filter(function(t){return !fixed||t[1]!=="prd";});
   if(fixed)ex=bMoreExtras(toks,ex);
@@ -3842,7 +3852,7 @@ function bTap(btn,tok){
   bs.pos++;
   speak(speechWord(tok),1);
   var nx=bs.pos<bs.end&&$('#b-slots .slot[data-i="'+bs.pos+'"]');
-  if(nx)nx.classList.add("next");
+  if(nx){nx.classList.add("next");showSlotHint(nx,bs.cands,bs.pos);}
   if(bs.pos===bs.end){$("#b-bank").innerHTML="";bFinish();}
 }
 function bSay(){return bs.toks.map(speechWord).join("");}
