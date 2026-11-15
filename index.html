@@ -278,6 +278,8 @@ body.testmode .testmode-flag{display:block;}
 .slot.n-mod{--next:var(--r-mod);}
 .slot.next{border-color:var(--next,var(--accent));animation:pulse 1.6s ease-in-out infinite;}
 @keyframes pulse{0%,100%{opacity:1;}50%{opacity:.55;}}
+/* つぎの わくの なかの ヒント（「だれが」「どう した」など） */
+.slot .slot-hint{font-size:.6em;font-weight:900;color:var(--muted);white-space:nowrap;}
 .slot.filled{color:var(--chip-text);border-color:transparent;}
 .slot.r-sub{background:var(--r-sub);}
 .slot.r-par{background:var(--r-par);}
@@ -2326,6 +2328,7 @@ function newSentence(){
     el.dataset.i=i;
     slots.appendChild(el);
   });
+  showSlotHint($('#slots .slot[data-i="0"]'),curCands,0);
 
   var extras=[];
   var used=curTokens.map(function(t){return t[0];});
@@ -2390,7 +2393,7 @@ function tapChip(btn,tok){
     slotPos++;
     speak(speechWord(tok),1);
     var nx=$('.slot[data-i="'+slotPos+'"]');
-    if(nx)nx.classList.add("next");
+    if(nx){nx.classList.add("next");showSlotHint(nx,curCands,slotPos);}
     missReset();
     if(slotPos===curTokens.length)finishSentence();
   }else{
@@ -2413,6 +2416,9 @@ function missReset(){
 function missAsk(toks,pos){
   var t=toks[pos],nx=toks[pos+1],p=nx&&nx[1]==="par"?nx[0]:"",w=t[0];
   if(p==="は")p="が";
+  /* 「なにも」「なにだと」のように へんな ききかたに なる じょしは つけない。「という」は「なんと いう」に */
+  if(p==="という"&&t[1]==="wrd")return "なんと いう？";
+  if(p&&["が","を","に","へ","で","と","の","より","から"].indexOf(p)<0)p="";
   switch(t[1]){
     case "sub":return "だれ"+(p||"かな")+"？";
     case "wrd":if(/[0-9０-９]/.test(w))return "どのくらい？";
@@ -2421,6 +2427,20 @@ function missAsk(toks,pos){
     case "prd":return w==="です"?"さいごの ことばは どれかな？":/ました$/.test(w)?"どう した？":/です$/.test(w)?"どんな？":"どう する？";
     default:return "つなぐ ことばは どれかな？";
   }
+}
+/* つぎの わくの なかに「だれが」「なにを」「どう した」などを さいしょから だしておく。
+   おてつきの ききかた（missAsk）を みじかく した もの。ならべかたが いくつか あって
+   わくの やくわりが こたえで ちがう ときは、まよわせない ように ださない。 */
+function slotAsk(cands,pos){
+  var r=cands[0][pos][1];
+  if(!cands.every(function(c){return c[pos][1]===r;}))return "";
+  var s=missAsk(cands[0],pos).replace(/？$/,"");
+  if(/どれかな$/.test(s))return r==="par"?"つなぐ ことば":"さいごの ことば";
+  return s.replace(/かな$/,"");
+}
+function showSlotHint(el,cands,pos){
+  var s=slotAsk(cands,pos);
+  el.innerHTML=s?'<span class="slot-hint">'+s+'</span>':"";
 }
 function missHint(cands,pos,battle,tok){
   missN++;
