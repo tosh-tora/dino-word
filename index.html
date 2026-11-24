@@ -4124,6 +4124,8 @@ $("#b-back").addEventListener("click",function(){bRun++;bPick[1]=null;try{window
    パパの タッチは ハンデの ぶん おそく かぞえる（おまかせ なら こどもの かちが 6わり くらいに なるよう かわる）。
    ============================================================ */
 var R_HP=100,R_MIN_RT=120,R_TIMEOUT=4000,R_LVUP=[0,8,10,12,12],R_GRACE=300,R_MISS=3;
+/* コンピュータが フェイントに つられる かくりつ（1かいの たいけつ ごと。だいたい 10かいに 1ど） */
+var R_CPU_FOUL=.1;
 var rSet={who:"papa",side:"L",handi:"auto",lv:"auto"};
 /* best・days は こどもの タッチの はやさ（ms）。h＝おまかせ ハンデ、cpu＝コンピュータの はやさ、
    streak＝おてつき なしで タッチできた かいすう（レベルアップに つかう） */
@@ -4313,6 +4315,7 @@ function rReady(){
   if(!rs||rs.over)return;
   rTally();
   var tok=++rs.tok;
+  rs.cpuFool=rs.cpu&&Math.random()<R_CPU_FOUL;
   rs.phase="wait";rs.sigT=0;rs.kidT=null;rs.otherT=null;rs.kidFoul=false;rs.kidBest=false;
   $$("#rzones .rzone").forEach(function(z){z.classList.remove("press","foul");});
   $("#rt0").innerHTML="";$("#rt1").innerHTML="";
@@ -4352,7 +4355,7 @@ function rStream(tok,at){
    alike（レベル3）＝🍗・🦴 が「ガオー！」の もじと おなじ おとで でる。🍖 だけが ほんもの */
 function rFeint(kind,tok,show){
   if(rs.phase!=="wait")return;
-  var other=1-rs.k,d=other===0?1:-1,ms=850,cpuFoul=.08;
+  var other=1-rs.k,d=other===0?1:-1,ms=850;
   if(kind==="food"){
     rSig("ready",'<div class="ic">'+pick(["🍎","🥕","🍙","🍌","🧀"])+'</div><div class="tx">…</div>');
     rSnd("pop");
@@ -4363,12 +4366,18 @@ function rFeint(kind,tok,show){
   }else{
     rSig("go",'<div class="ic">'+pick(["🍗","🦴"])+'</div><div class="tx">ガオー！</div>');
     rSnd("roar");
-    ms=750;cpuFoul=.15;
+    ms=750;
   }
   if(show)ms=show;
   rAt(tok,ms,function(){if(rs.phase==="wait")rSig("ready",'<div class="tx">よーい…</div>');});
-  /* コンピュータも ときどき つられて おてつき */
-  if(rs.cpu&&Math.random()<cpuFoul)rAt(tok,280+Math.random()*200,function(){rTap(other);});
+  /* コンピュータも ときどき つられて おてつき。つられるのは 1かいの たいけつで 1どだけ。
+     おすまでに ほんものの 🍖 が でて いたら おさない（おてつきに ならないので） */
+  if(rs.cpuFool&&Math.random()<.5){
+    rs.cpuFool=false;
+    rAt(tok,280+Math.random()*200,function(){
+      if(rs.phase==="wait"&&performance.now()>=rs.graceUntil)rTap(other);
+    });
+  }
 }
 function rGo(tok){
   if(rs.phase!=="wait")return;
