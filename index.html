@@ -3329,7 +3329,8 @@ function renderPick(){
   /* とちゅうの ルーレットは とめる */
   bRun++;bRolling=false;
   if(bPick[0]&&!(testMode||got[bPick[0].id]))bPick[0]=null;
-  if(bFoe&&!(testMode||got[bFoe.id]))bFoe=null;
+  /* あいては えらぶ がめんに くるたびに おまかせ（スタートで ルーレット）に もどす */
+  bFoe=null;
   bSide=0;
   DINOS.forEach(function(d){
     var b=document.createElement("button");
