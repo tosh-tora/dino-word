@@ -703,6 +703,10 @@ body.testmode .testmode-flag{display:block;}
 .rpad i{font-style:normal;font-size:1.5em;}
 .rzone.press .rpad{transform:translateY(5px);box-shadow:inset 0 0 0 3px var(--pc);background:var(--pc);color:var(--chip-text);}
 .rzone.foul .rpad{background:var(--slot-empty);box-shadow:inset 0 0 0 3px var(--miss);color:var(--miss);}
+/* コンピュータの がわは ボタンでは ない */
+.rzone.cpu{cursor:default;}
+.rzone.cpu .rpad{opacity:.75;}
+.rzone.cpu.press .rpad,.rzone.cpu.foul .rpad{opacity:1;}
 .rtime{
   min-height:1.3em;margin-bottom:6px;text-align:center;
   font-family:"Zen Maru Gothic",sans-serif;font-weight:900;font-variant-numeric:tabular-nums;
@@ -4282,6 +4286,7 @@ function startReact(){
     h.innerHTML='<b>'+rs.f[i].d.name+'</b><div class="hprow"><div class="hptrack"><div class="hpfill"></div></div><span class="hpnum"></span></div>';
     z.style.setProperty("--pc",pc);
     z.classList.remove("press","foul");
+    z.classList.toggle("cpu",rs.cpu&&i!==k);
     $("#rp"+i).innerHTML='<i>'+(i!==k&&rs.cpu?"🤖":"🖐")+'</i>'+rPName(i);
     $("#rt"+i).innerHTML="";
     rSetHP(i);
@@ -4551,6 +4556,8 @@ function rEnd(w){
   $$("#rzones .rzone").forEach(function(z){
     z.addEventListener(ev,function(e){
       if(e.cancelable)e.preventDefault();
+      /* コンピュータと たいけつ する ときは、コンピュータの がわは さわっても なにも おきない */
+      if(rs&&rs.cpu&&+z.dataset.i!==rs.k)return;
       rUnlock();
       rTap(+z.dataset.i);
     });
