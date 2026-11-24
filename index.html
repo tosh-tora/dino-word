@@ -287,6 +287,12 @@ body.testmode .testmode-flag{display:block;}
 .slot.r-prd{background:var(--r-prd);}
 .slot.r-mod{background:var(--r-mod);}
 .slot.pop{animation:pop .3s ease;}
+/* まちがえた ことばを つぎの わくに いれて みせる（すこしの あいだ カードは おせない） */
+.slot.bad{
+  background:var(--panel);color:var(--miss);border:3px solid var(--miss);
+  text-decoration:line-through;text-decoration-thickness:.1em;animation:pop .3s ease;
+}
+.bank.lock .chip{pointer-events:none;}
 @keyframes pop{0%{transform:scale(.6);}60%{transform:scale(1.12);}100%{transform:scale(1);}}
 
 .bank{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(7px,1.1vw,11px);}
@@ -495,6 +501,15 @@ body.testmode .testmode-flag{display:block;}
 .choice .ic{display:block;font-size:clamp(26px,4.6vw,44px);line-height:1.2;}
 .choice b{font-family:"Zen Maru Gothic",sans-serif;font-size:clamp(17px,2.3vw,26px);font-weight:700;}
 .choice.right{background:var(--r-wrd);color:var(--chip-text);box-shadow:none;}
+/* まちがえた せんたくしに あかい ✕ を つける（すこしの あいだ どれも おせない） */
+.choice{position:relative;}
+.choice.bad{box-shadow:0 0 0 4px var(--miss);color:var(--miss);}
+.choice.bad b{text-decoration:line-through;text-decoration-thickness:.1em;}
+.choice.bad::after{
+  content:"✕";position:absolute;top:-10px;right:-10px;width:1.6em;height:1.6em;border-radius:50%;
+  display:grid;place-items:center;background:var(--miss);color:#fff;font-weight:900;font-size:clamp(16px,2.2vw,22px);
+}
+.choices.lock .choice{pointer-events:none;}
 
 /* ---------- バトルを じっきょう ---------- */
 #s-battle,#s-bpick{position:relative;}
@@ -2316,6 +2331,7 @@ var cur=null,curGeneral=null,curTokens=null,curCands=null,slotPos=0,lastId=null;
 
 function newSentence(){
   var stage=$("#build-stage");
+  buildMissGen++;$("#bank").classList.remove("lock");
   /* おなじ ぶんが つづかない ように、まえと おなじ ぜんぱんの ぶんは ださない（きょうりゅうは lastId で ちがう ものに なる） */
   var prevGen=curGeneral;
   curGeneral=Math.random()<GENERAL_RATE?pick(GENERAL.filter(function(g){return g!==prevGen;})):null;
@@ -2394,8 +2410,10 @@ function newSentence(){
   $("#build-confetti").innerHTML="";
 }
 
+var buildMissGen=0;
+function buildLater(fn,ms){var g=buildMissGen;setTimeout(function(){if(g===buildMissGen)fn();},ms);}
 function tapChip(btn,tok){
-  if(slotPos>=curTokens.length)return;
+  if(slotPos>=curTokens.length||$("#bank").classList.contains("lock"))return;
   var ok=curCands.filter(function(c){return c[slotPos][0]===tok[0];});
   if(ok.length){
     curCands=ok;curTokens=ok[0];
@@ -2413,6 +2431,7 @@ function tapChip(btn,tok){
   }else{
     wrongFeedback(btn);
     missHint(curCands,slotPos,false,tok);
+    showBadSlot($('.slot[data-i="'+slotPos+'"]'),$("#bank"),tok,1500,buildLater);
   }
 }
 
@@ -2606,6 +2625,19 @@ function wrongFeedback(el){
     el.style.transform="";
     el.style.transition="";
   });
+}
+/* まちがえた ことばを つぎの わくに あかい とりけしせんで いれて、ms の あいだ カードを おせなく する。
+   later は タイマー（もんだいが かわったら うごかない もの）。おわったら わくを もとに もどす */
+function showBadSlot(slot,bank,tok,ms,later){
+  if(!slot||bank.classList.contains("lock"))return;
+  var cls=slot.className,html=slot.innerHTML;
+  slot.textContent=tok[0];
+  slot.className="slot bad";
+  bank.classList.add("lock");
+  later(function(){
+    bank.classList.remove("lock");
+    slot.className=cls;slot.innerHTML=html;
+  },ms);
 }
 function animateConfettiPiece(el,delay,dur,drift,fall,rot){
   runRAF(dur,delay,function(p){
@@ -2870,7 +2902,8 @@ function newKanji(){
 
   var others=shuffle(KANJI.filter(function(x){return x.w!==kCur.w;})).slice(0,2);
   var opts=shuffle([kCur].concat(others));
-  var box=$("#kchoices");box.innerHTML="";box.classList.remove("solved");
+  kMissGen++;
+  var box=$("#kchoices");box.innerHTML="";box.classList.remove("solved","lock");
   opts.forEach(function(o){
     var b=document.createElement("button");
     b.className="choice";
@@ -2881,8 +2914,10 @@ function newKanji(){
   speak("この かんじわ どれ",0.85);
 }
 
+var kMissGen=0;
 function tapKanji(btn,opt){
-  if(kSolved)return;
+  var box=$("#kchoices");
+  if(kSolved||box.classList.contains("lock"))return;
   if(opt.k===kCur.k){
     kSolved=true;
     btn.classList.add("right");
@@ -2905,6 +2940,13 @@ function tapKanji(btn,opt){
   }else{
     kClean=false;
     wrongFeedback(btn);
+    /* まちがえた せんたくしに ✕ を つけて 2びょう みせる（その あいだは おせない）。そのあと もとに もどす */
+    btn.classList.add("bad");box.classList.add("lock");
+    var g=kMissGen;
+    setTimeout(function(){
+      if(g!==kMissGen)return;
+      btn.classList.remove("bad");box.classList.remove("lock");
+    },2000);
   }
 }
 $("#kanji-next").addEventListener("click",function(){
@@ -3891,7 +3933,7 @@ function bRenderSentence(toks,extras,alts){
     slots.appendChild(el);
   });
   if(bs.end>0)showSlotHint($('#b-slots .slot[data-i="0"]'),bs.cands,0);
-  var bank=$("#b-bank");bank.innerHTML="";
+  var bank=$("#b-bank");bank.innerHTML="";bank.classList.remove("lock");
   var ex=extras.filter(function(t){return !fixed||t[1]!=="prd";});
   if(fixed)ex=bMoreExtras(toks,ex);
   shuffle(toks.slice(0,bs.end).concat(ex)).forEach(function(t){
@@ -3928,9 +3970,13 @@ function bMoreExtras(toks,ex){
   return out;
 }
 function bTap(btn,tok){
-  if(!bs||bs.pos>=bs.end)return;
+  if(!bs||bs.pos>=bs.end||$("#b-bank").classList.contains("lock"))return;
   var ok=bs.cands.filter(function(c){return c[bs.pos][0]===tok[0];});
-  if(!ok.length){wrongFeedback(btn);missHint(bs.cands,bs.pos,true,tok);return;}
+  if(!ok.length){
+    wrongFeedback(btn);missHint(bs.cands,bs.pos,true,tok);
+    showBadSlot($('#b-slots .slot[data-i="'+bs.pos+'"]'),$("#b-bank"),tok,1500,bLater);
+    return;
+  }
   missReset();
   bs.cands=ok;bs.toks=ok[0];
   var want=bs.toks[bs.pos];
