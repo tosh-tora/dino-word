@@ -4388,15 +4388,20 @@ function rGo(tok){
   requestAnimationFrame(function(ts){
     if(rs&&rs.tok===tok&&rs.phase==="go"&&rs.kidT==null&&rs.otherT==null&&ts>rs.sigT&&ts-rs.sigT<50)rs.sigT=ts;
   });
-  var id=++rs.goId;
+  var id=++rs.goId,gap=rs.lv>=4?rGap():0;
   if(rs.cpu){
     var ms=rs.rec.cpu*(.85+Math.random()*.3);
-    rAt(tok,ms,function(){if(rs.phase==="go"&&rs.goId===id)rTap(1-rs.k);});
+    /* レベル4・5 は 🍖 が すぐ きえるので、コンピュータは きえる まえ（か すぐ あと）に おす */
+    if(gap)ms=Math.min(ms,gap+R_GRACE*.5);
+    rAt(tok,ms,function(){
+      if(rs.goId!==id)return;
+      if(rs.phase==="go"||(rs.phase==="wait"&&performance.now()<rs.graceUntil))rTap(1-rs.k);
+    });
   }
   if(rs.lv<4){rAt(tok,R_TIMEOUT,function(){if(rs.phase==="go")rNoTap(tok);});return;}
   /* レベル4・5：🍖 も すぐ きえる。だれも おさなければ ダミーに もどる。
      きえた あと R_GRACE の あいだの タッチは、つぎの ものには はやすぎて まにあわないので 🍖 への タッチと みなす */
-  rAt(tok,rGap(),function(){
+  rAt(tok,gap,function(){
     if(rs.phase!=="go"||rs.goId!==id||rs.kidT!=null||rs.otherT!=null)return;
     rs.phase="wait";rs.graceUntil=performance.now()+R_GRACE;
     if(++rs.miss>=R_MISS){rNoTap(tok);return;}
